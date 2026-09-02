@@ -21,6 +21,11 @@ from typing import Any
 from .certificate import certificate_payload_from_records, render_certificate
 from .evidence import append_record, canonical_json, load_records
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from adapters.mutmut36 import MUTANT_SELECTION_ENV, populate_failing_tests, propose_triage, rows_from_mutants_dir  # noqa: E402
+
 try:  # Python 3.12 is enforced before a subject config is read.
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - permits an intelligible pin failure on older Python.
@@ -193,7 +198,7 @@ def mutation_rows_from_junit(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def mutation(subject: Path, run: Path) -> tuple[list[dict[str, Any]], float]:
+def mutation(subject: Path, run: Path, pins: dict[str, str], test_paths: list[str]) -> tuple[list[dict[str, Any]], float, dict[str, Any]]:
     # mutmut's cache is deliberately moved into the evidence pack, never silently reused.
     cache = subject / "mutants"
     if cache.exists():
@@ -202,22 +207,42 @@ def mutation(subject: Path, run: Path) -> tuple[list[dict[str, Any]], float]:
     code, duration, _ = run_command([sys.executable, "-m", "mutmut", "run"], subject, run / "mutmut-run.output.txt")
     if code not in (0, 1):
         die(f"mutmut failed with exit {code}; inspect {run / 'mutmut-run.output.txt'}")
-    junit = run / "mutmut.junit.xml"
-    export_code, _, _ = run_command([sys.executable, "-m", "mutmut", "junitxml", "--output", str(junit)], subject, run / "mutmut-junit.output.txt")
-    if export_code != 0 or not junit.exists():
-        die("mutmut did not produce JUnit XML; this version cannot be certified without a per-mutant adapter")
-    rows = mutation_rows_from_junit(junit)
+    major = int(pins["mutmut"].split(".", 1)[0])
+    adapter: dict[str, Any]
+    if major >= 3:
+        if not cache.exists():
+            die("mutmut 3.x produced no mutants/ directory")
+        results_code, _, results_text = run_command([sys.executable, "-m", "mutmut", "results", "--all"], subject, run / "mutmut-results.output.txt")
+        if results_code not in (0, 1):
+            results_text = ""
+        try:
+            rows, source = rows_from_mutants_dir(cache, results_text)
+        except ValueError as exc:
+            die(str(exc))
+        killing = populate_failing_tests(rows, cache, test_paths, executable=sys.executable)
+        adapter = {"name": "mutmut36", "source": source, "mutant_selection_env": MUTANT_SELECTION_ENV, "killing_test": killing}
+    else:
+        junit = run / "mutmut.junit.xml"
+        export_code, _, _ = run_command([sys.executable, "-m", "mutmut", "junitxml", "--output", str(junit)], subject, run / "mutmut-junit.output.txt")
+        if export_code != 0 or not junit.exists():
+            die("mutmut did not produce JUnit XML; this version cannot be certified without a per-mutant adapter")
+        rows = mutation_rows_from_junit(junit)
+        adapter = {"name": "junitxml", "source": "mutmut junitxml", "mutant_selection_env": None, "killing_test": "junitxml"}
     if not rows or len({row["id"] for row in rows}) != len(rows):
-        die("mutmut JUnit export did not provide one unique, parseable row per mutant")
+        die("mutation adapter did not provide one unique, parseable row per mutant")
     rows[0]["mutation_stage_runtime_seconds"] = round(duration, 6)
     if cache.exists():
         shutil.move(str(cache), str(run / "mutmut-cache-generated"))
-    return rows, round(duration, 6)
+    return rows, round(duration, 6), adapter
 
 
-def write_queue(run: Path, rows: list[dict[str, Any]]) -> None:
+def write_queue(run: Path, rows: list[dict[str, Any]], proposals: dict[str, dict[str, str]] | None = None) -> None:
     survivors = [row for row in rows if row["outcome"] == "SURVIVED"]
-    queue = [{"mutant_id": row["id"], "location": row["location"], "operator": row["operator"], "classification": "UNDER_INVESTIGATION"} for row in survivors]
+    proposals = proposals or {}
+    queue = []
+    for row in survivors:
+        proposal = proposals.get(row["id"], {"classification": "UNDER_INVESTIGATION", "rationale": ""})
+        queue.append({"mutant_id": row["id"], "location": row["location"], "operator": row["operator"], "classification": proposal["classification"], "rationale": proposal.get("rationale", "")})
     (run / "survivors.json").write_text(json.dumps(queue, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -232,16 +257,30 @@ def certify(subject: Path) -> Path:
     log = run / "evidence.jsonl"
     source_paths = [subject / path for path in config["subject"]["source_paths"]]
     test_paths = [subject / path for path in config["subject"]["test_paths"]]
-    config_record = append_record(log, "CONFIG", {"subject": config["subject"]["name"], "source_revision": revision(subject), "suite_revision": hashlib.sha256(canonical_json([revision(path) for path in test_paths]).encode()).hexdigest(), "tools": pins, "executor": {"role": "Executor", "identity": f"{environment['implementation']} {environment['versions']['python']}", "executable": environment["executable"], "tools": pins}, "operator_set": config["subject"]["operator_set"], "unverified_scope": config["subject"]["unverified_scope"], "source_paths": [str(path.relative_to(subject)) for path in source_paths], "test_paths": [str(path.relative_to(subject)) for path in test_paths], "environment": environment})
+    test_path_names = [str(path.relative_to(subject)) for path in test_paths]
     baseline_payload = baseline(subject, config, run)
+    rows, mutation_runtime, adapter = mutation(subject, run, pins, test_path_names)
+    config_record = append_record(log, "CONFIG", {"subject": config["subject"]["name"], "source_revision": revision(subject), "suite_revision": hashlib.sha256(canonical_json([revision(path) for path in test_paths]).encode()).hexdigest(), "tools": pins, "executor": {"role": "Executor", "identity": f"{environment['implementation']} {environment['versions']['python']}", "executable": environment["executable"], "tools": pins}, "adapter": adapter, "operator_set": config["subject"]["operator_set"], "unverified_scope": config["subject"]["unverified_scope"], "source_paths": [str(path.relative_to(subject)) for path in source_paths], "test_paths": test_path_names, "environment": environment})
     append_record(log, "BASELINE", baseline_payload)
-    rows, mutation_runtime = mutation(subject, run)
     for row in rows:
         append_record(log, "MUTANT_RESULT", row)
-    write_queue(run, rows)
-    for row in rows:
-        if row["outcome"] == "SURVIVED":
-            append_record(log, "TRIAGE", {"mutant_id": row["id"], "classification": "UNDER_INVESTIGATION"})
+    generated_cache = run / "mutmut-cache-generated"
+    restored = False
+    if generated_cache.exists() and not (subject / "mutants").exists():
+        shutil.move(str(generated_cache), str(subject / "mutants"))
+        restored = True
+    proposals: dict[str, dict[str, str]] = {}
+    try:
+        for row in rows:
+            if row["outcome"] != "SURVIVED":
+                continue
+            classification, rationale = propose_triage(row, subject, executable=sys.executable)
+            proposals[row["id"]] = {"classification": classification, "rationale": rationale}
+            append_record(log, "TRIAGE", {"mutant_id": row["id"], "classification": classification, "rationale": rationale})
+    finally:
+        if restored and (subject / "mutants").exists():
+            shutil.move(str(subject / "mutants"), str(generated_cache))
+    write_queue(run, rows, proposals)
     provisional = {"config_hash": config_record["hash"]}
     payload = certificate_payload_from_records(load_records(log), {"payload": provisional, "type": "CERTIFICATE"})
     certificate = append_record(log, "CERTIFICATE", payload)

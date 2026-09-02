@@ -29,9 +29,9 @@ def certificate_payload_from_records(records: list[dict[str, Any]], certificate:
     if not mutants:
         raise ValueError("no MUTANT_RESULT records")
     outcomes = Counter(mutant.get("outcome") for mutant in mutants)
-    if set(outcomes) - {"KILLED", "SURVIVED", "TIMEOUT"}:
+    if set(outcomes) - {"KILLED", "SURVIVED", "TIMEOUT", "SUSPICIOUS", "SKIPPED"}:
         raise ValueError("invalid mutant outcome")
-    survivor_ids = {mutant["id"] for mutant in mutants if mutant.get("outcome") == "SURVIVED"}
+    survivor_ids = {str(mutant.get("mutant_id") or mutant["id"]) for mutant in mutants if mutant.get("outcome") == "SURVIVED"}
     classes = {mutant_id: "UNDER_INVESTIGATION" for mutant_id in survivor_ids}
     signed: dict[str, dict[str, str]] = {}
     for record in run:
@@ -63,7 +63,7 @@ def certificate_payload_from_records(records: list[dict[str, Any]], certificate:
         f"{killed}/{seeded} killed ({(100 * killed / seeded):.1f}%); "
         f"survivor classes E={class_counts['EQUIVALENT']} / GR={class_counts['GAP_REMEDIATED']} / "
         f"UI={class_counts['UNDER_INVESTIGATION']} / SR={class_counts['SIGNED_RESIDUAL']}; "
-        f"timeouts={outcomes['TIMEOUT']}"
+        f"timeouts={outcomes['TIMEOUT']}; suspicious={outcomes['SUSPICIOUS']}; skipped={outcomes['SKIPPED']}"
     )
     unverified = config["payload"].get("unverified_scope", "not declared")
     return {
