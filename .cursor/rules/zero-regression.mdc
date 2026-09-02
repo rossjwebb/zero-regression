@@ -1,0 +1,12 @@
+---
+description: Zero-Regression harness — standing rules
+alwaysApply: true
+---
+- Never edit any file under subjects/*/legacy/ or subjects/*/golden/.
+- Never run git push, never change repository visibility, never rewrite git history.
+- Pinned environment: Python 3.12.3, mutmut 3.6.0, pytest 9.1.1, pytest-cov 7.1.0. Do not upgrade or substitute.
+- Every CONFIG record is written from the lockfile, never typed by hand.
+- No client names, no "ADL", no "Agent Factory", no "Deal Desk", no Fly.io names, no secrets in any file or commit message.
+- If a step in a work order fails, stop and report. Do not work around it.
+- Evidence-log record types: CONFIG, BASELINE, MUTANT_RESULT, TRIAGE, OVERRIDE, CERTIFICATE. Nothing else.
+- Roles only in public-facing text: Generator, Adjudicator, Executor. No commercial model names.
