@@ -36,6 +36,6 @@ Exit 0 means the chain holds. On failure the first broken `seq` is printed. Step
 
 Three executed `accounting-service` chains are kept:
 
-- `fixtures/accounting-service/` — post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. `CONFIG` hash `60df647fc89a72ea0627b9bf933482bea4e9259f53f6614c4b61c78590a8be06`.
-- `fixtures/accounting-service/superseded/publish-4/` — same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. `CONFIG` hash `eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b`.
-- `fixtures/accounting-service/pre-remediation/` — the executed chain that found the two gaps. `CONFIG` hash `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd`.
+- `fixtures/accounting-service/` — post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. `CONFIG` hash `8ecb042134c8fb756f2e3686489681b96c26b9f111b6b84b614c72f95729b455`.
+- `fixtures/accounting-service/superseded/publish-4/` — same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. `CONFIG` hash `059f40e476d9e8d1d5be65e241e28acc334f110b7523d5bf3a562e4b2117e97e`.
+- `fixtures/accounting-service/pre-remediation/` — the executed chain that found the two gaps. `CONFIG` hash `1c206c919541b9d95637837e60570cd9ca466c2450cb4a6c2ee7f74e2f66581e`.

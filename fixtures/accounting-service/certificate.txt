@@ -4,5 +4,5 @@ Pinned:      mutmut 3.6.0, pytest 9.1.1, pytest-cov 7.1.0, python 3.12.3 · Oper
 Line 1 — COVERAGE:    100.0% line coverage (190/190 statements)
 Line 2 — KILL RATE:   248/252 killed (98.4%); survivor classes E=4 / GR=0 / UI=0 / SR=0; timeouts=0; suspicious=0; skipped=0
 Line 3 — UNVERIFIED:  Java tree, telemetry JSON, and mutmut cache are outside the certified module. Only account_service_impl.py is in scope.
-Chain:       60df647fc89a72ea0627b9bf933482bea4e9259f53f6614c4b61c78590a8be06 … fe677dfcbee1e89de2a62509f1fb48bee8d5bce4508bb4e1cfde90cb1b9c9cd4
+Chain:       8ecb042134c8fb756f2e3686489681b96c26b9f111b6b84b614c72f95729b455 … 26075fb863d02f812b7e0c5cd0022c331d300a5504a03074c06b1e901891c72e
 Expiry:      valid only for the pinned artifact above; any change to code, tests, tools, versions or operators voids this certificate.
