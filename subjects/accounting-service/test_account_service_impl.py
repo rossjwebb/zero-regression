@@ -102,9 +102,11 @@ def test_update_null_account_raises(service, make_entry):
     service.account_repo.lock_account.return_value = None
     assert AccountServiceImpl.flash_not_negative is False
     assert AccountServiceImpl.check_last_balance is False
+    entry = make_entry()
     with pytest.raises(RuntimeError) as exc_info:
-        service.update(make_entry(), Restriction())
+        service.update(entry, Restriction())
     assert str(exc_info.value) == "No account found with accountNo:123"
+    service.account_repo.lock_account.assert_called_with(entry.accountNo)
 
 def test_negative_frozen_amt_normalised_to_zero(service, make_account, make_entry):
     AccountServiceImpl.flash_not_negative = True
@@ -131,6 +133,7 @@ def test_plus_operator_positive_amount_adds_balance(service, make_account, make_
     service.code_of_accounts_repo.get_by_accounts_code_no.return_value = accounts_code
     entry = make_entry(amount=Decimal("50.00"), symbol=TransactionSymbolEnum.DEBIT)
     updated_acct = service.update(entry, Restriction())
+    service.code_of_accounts_repo.get_by_accounts_code_no.assert_called_with(entry.accountCodeNo)
     assert entry.balance == Decimal("150.00")
     assert entry.balanceAccum == Decimal("0.00")
     assert updated_acct.accountNo == entry.accountNo
