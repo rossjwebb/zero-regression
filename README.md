@@ -34,4 +34,8 @@ Given the log: (1) recompute every record's `hash` from its canonical serialisat
 
 Exit 0 means the chain holds. On failure the first broken `seq` is printed. Steps 1–3 need no trust in the issuer and no execution environment.
 
-`fixtures/accounting-service/` is the post-remediation executed chain (not a reconstruction). Its `CONFIG` hash is `eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b`. `fixtures/accounting-service/pre-remediation/` is the executed chain that found the two gaps. Its `CONFIG` hash is `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd`.
+Three executed `accounting-service` chains are kept:
+
+- `fixtures/accounting-service/` — post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. `CONFIG` hash `60df647fc89a72ea0627b9bf933482bea4e9259f53f6614c4b61c78590a8be06`.
+- `fixtures/accounting-service/superseded/publish-4/` — same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. `CONFIG` hash `eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b`.
+- `fixtures/accounting-service/pre-remediation/` — the executed chain that found the two gaps. `CONFIG` hash `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd`.

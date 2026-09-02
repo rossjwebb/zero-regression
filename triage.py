@@ -25,13 +25,23 @@ def main() -> int:
     override.add_argument("--name", required=True)
     override.add_argument("--reason-code", required=True)
     override.add_argument("--justification", required=True)
+    override.add_argument("--evidence-ref")
+    override.add_argument("--approval-ref")
     args = parser.parse_args()
     if args.command == "list":
         print(show_queue(args.run), end="")
     elif args.command == "set":
         set_class(args.run, args.mutant_id, args.classification)
     else:
-        add_override(args.run, args.mutant_id, args.name, args.reason_code, args.justification)
+        add_override(
+            args.run,
+            args.mutant_id,
+            args.name,
+            args.reason_code,
+            args.justification,
+            evidence_ref=args.evidence_ref,
+            approval_ref=args.approval_ref,
+        )
     return 0
 
 

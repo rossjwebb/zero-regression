@@ -51,7 +51,10 @@ def certificate_payload_from_records(records: list[dict[str, Any]], certificate:
             if not required <= payload.keys() or not all(isinstance(payload[key], str) and payload[key].strip() for key in required):
                 raise ValueError("OVERRIDE lacks named human, reason code, or justification")
             signed[mutant_id] = {key: payload[key] for key in required}
-            classes[mutant_id] = "SIGNED_RESIDUAL"
+            if payload.get("reason_code") == "EQUIVALENT_BY_INSPECTION":
+                classes[mutant_id] = "EQUIVALENT"
+            else:
+                classes[mutant_id] = "SIGNED_RESIDUAL"
     class_counts = Counter(classes.values())
     coverage = baseline.get("coverage")
     if not isinstance(coverage, dict) or not {"covered", "statements", "percent"} <= coverage.keys():

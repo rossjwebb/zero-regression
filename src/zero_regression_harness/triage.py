@@ -50,15 +50,35 @@ def set_class(run: Path, mutant_id: str, classification: str) -> None:
     _refresh_certificate(run)
 
 
-def add_override(run: Path, mutant_id: str, name: str, reason_code: str, justification: str) -> None:
+def add_override(
+    run: Path,
+    mutant_id: str,
+    name: str,
+    reason_code: str,
+    justification: str,
+    *,
+    evidence_ref: str | None = None,
+    approval_ref: str | None = None,
+) -> None:
     log, _ = _paths(run)
     queue = _queue(run)
     entry = next((item for item in queue if item.get("mutant_id") == mutant_id), None)
     if entry is None:
         raise ValueError(f"{mutant_id} is not a survivor in this run")
-    append_record(log, "OVERRIDE", {"mutant_id": mutant_id, "name": name, "reason_code": reason_code, "justification": justification})
-    append_record(log, "TRIAGE", {"mutant_id": mutant_id, "classification": "SIGNED_RESIDUAL"})
-    entry["classification"] = "SIGNED_RESIDUAL"
+    payload: dict[str, str] = {"mutant_id": mutant_id, "name": name, "reason_code": reason_code, "justification": justification}
+    if reason_code == "EQUIVALENT_BY_INSPECTION":
+        if not (evidence_ref and evidence_ref.strip()):
+            raise ValueError("EQUIVALENT_BY_INSPECTION requires an evidence_ref")
+        classification = "EQUIVALENT"
+    else:
+        classification = "SIGNED_RESIDUAL"
+    if evidence_ref and evidence_ref.strip():
+        payload["evidence_ref"] = evidence_ref.strip()
+    if approval_ref and approval_ref.strip():
+        payload["approval_ref"] = approval_ref.strip()
+    append_record(log, "OVERRIDE", payload)
+    append_record(log, "TRIAGE", {"mutant_id": mutant_id, "classification": classification})
+    entry["classification"] = classification
     _write_queue(run, queue)
     _refresh_certificate(run)
 
