@@ -12,9 +12,9 @@
   "equivalent_mutants": 25,
   "total_tests": 43,
   "pipeline_nodes": [
-    "claude-opus-4-6",
-    "gemini-ultra-antigravity",
-    "codex-gpt-5.4"
+    "Generator",
+    "Adjudicator",
+    "Executor"
   ],
   "guarantee": "Mathematical parity achieved. Safe for AWS Strangler Fig decoupling.",
   "generated_at": "2026-04-12T15:18:30Z",

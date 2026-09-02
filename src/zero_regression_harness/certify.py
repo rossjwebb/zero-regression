@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
 import argparse
@@ -25,11 +26,40 @@ try:  # Python 3.12 is enforced before a subject config is read.
 except ModuleNotFoundError:  # pragma: no cover - permits an intelligible pin failure on older Python.
     tomllib = None  # type: ignore[assignment]
 
-PINS = {"python": "3.12.3", "mutmut": "3.6.0", "pytest": "9.1.1", "pytest-cov": "7.1.0"}
+LOCKFILE_NAME = "requirements-certification.txt"
+REQUIRED_PINS = ("python", "mutmut", "pytest", "pytest-cov")
 
 
 def die(message: str) -> None:
     raise SystemExit(f"CERTIFICATION FAILURE: {message}")
+
+
+def lockfile_path() -> Path:
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / LOCKFILE_NAME
+        if candidate.is_file():
+            return candidate
+    die(f"cannot locate {LOCKFILE_NAME} above {here}")
+
+
+def pins_from_lockfile(path: Path | None = None) -> dict[str, str]:
+    lock = path or lockfile_path()
+    pins: dict[str, str] = {}
+    for raw in lock.read_text(encoding="utf-8").splitlines():
+        stripped = raw.strip()
+        if stripped.startswith("#"):
+            stripped = stripped[1:].strip()
+        if "==" not in stripped:
+            continue
+        name, version = stripped.split("==", 1)
+        name, version = name.strip(), version.strip()
+        if name and version and " " not in name:
+            pins[name] = version
+    missing = [name for name in REQUIRED_PINS if name not in pins]
+    if missing:
+        die(f"{lock}: missing pins {', '.join(missing)}")
+    return {name: pins[name] for name in REQUIRED_PINS}
 
 
 def read_subject_config(subject: Path) -> dict[str, Any]:
@@ -68,9 +98,9 @@ def environment_payload() -> dict[str, Any]:
     }
 
 
-def check_pins() -> dict[str, Any]:
+def check_pins(pins: dict[str, str]) -> dict[str, Any]:
     environment = environment_payload()
-    mismatches = [f"{name}={environment['versions'].get(name)!r} (requires {value!r})" for name, value in PINS.items() if environment["versions"].get(name) != value]
+    mismatches = [f"{name}={environment['versions'].get(name)!r} (requires {value!r})" for name, value in pins.items() if environment["versions"].get(name) != value]
     if mismatches:
         die("un-pinned environment: " + "; ".join(mismatches))
     return environment
@@ -185,7 +215,8 @@ def write_queue(run: Path, rows: list[dict[str, Any]]) -> None:
 
 def certify(subject: Path) -> Path:
     subject = subject.resolve()
-    environment = check_pins()
+    pins = pins_from_lockfile()
+    environment = check_pins(pins)
     config = read_subject_config(subject)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run = subject / "evidence" / f"run-{stamp}-{uuid.uuid4().hex[:8]}"
@@ -193,7 +224,7 @@ def certify(subject: Path) -> Path:
     log = run / "evidence.jsonl"
     source_paths = [subject / path for path in config["subject"]["source_paths"]]
     test_paths = [subject / path for path in config["subject"]["test_paths"]]
-    config_record = append_record(log, "CONFIG", {"subject": config["subject"]["name"], "source_revision": revision(subject), "suite_revision": hashlib.sha256(canonical_json([revision(path) for path in test_paths]).encode()).hexdigest(), "tools": PINS, "operator_set": config["subject"]["operator_set"], "unverified_scope": config["subject"]["unverified_scope"], "source_paths": [str(path.relative_to(subject)) for path in source_paths], "test_paths": [str(path.relative_to(subject)) for path in test_paths], "environment": environment})
+    config_record = append_record(log, "CONFIG", {"subject": config["subject"]["name"], "source_revision": revision(subject), "suite_revision": hashlib.sha256(canonical_json([revision(path) for path in test_paths]).encode()).hexdigest(), "tools": pins, "operator_set": config["subject"]["operator_set"], "unverified_scope": config["subject"]["unverified_scope"], "source_paths": [str(path.relative_to(subject)) for path in source_paths], "test_paths": [str(path.relative_to(subject)) for path in test_paths], "environment": environment})
     baseline_payload = baseline(subject, config, run)
     append_record(log, "BASELINE", baseline_payload)
     rows, mutation_runtime = mutation(subject, run)

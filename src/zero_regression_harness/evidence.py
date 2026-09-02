@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
 import hashlib
@@ -26,13 +27,13 @@ def load_records(log_path: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for line_number, line in enumerate(log_path.read_text(encoding="utf-8").splitlines(), 1):
         if not line.strip():
-            raise ValueError(f"row {line_number}: blank rows are not permitted")
+            raise ValueError(f"seq {line_number}: blank rows are not permitted")
         try:
             record = json.loads(line)
         except json.JSONDecodeError as exc:
-            raise ValueError(f"row {line_number}: invalid JSON: {exc.msg}") from exc
+            raise ValueError(f"seq {line_number}: invalid JSON: {exc.msg}") from exc
         if not isinstance(record, dict):
-            raise ValueError(f"row {line_number}: record must be an object")
+            raise ValueError(f"seq {line_number}: record must be an object")
         records.append(record)
     return records
 
@@ -73,27 +74,27 @@ def verify_records(records: list[dict[str, Any]], *, allow_no_certificate: bool 
         required = {"seq", "ts", "type", "payload", "prev_hash", "hash"}
         missing = required - record.keys()
         if missing:
-            errors.append(f"row {row}: missing fields {', '.join(sorted(missing))}")
+            errors.append(f"seq {row}: missing fields {', '.join(sorted(missing))}")
             continue
         if record["seq"] != row:
-            errors.append(f"row {row}: seq is {record['seq']!r}, expected {row}")
+            errors.append(f"seq {row}: seq is {record['seq']!r}, expected {row}")
         if record["type"] not in VALID_TYPES:
-            errors.append(f"row {row}: unknown record type {record['type']!r}")
+            errors.append(f"seq {row}: unknown record type {record['type']!r}")
         if not isinstance(record["payload"], dict):
-            errors.append(f"row {row}: payload must be an object")
+            errors.append(f"seq {row}: payload must be an object")
         if record["prev_hash"] != prior:
-            errors.append(f"row {row}: prev_hash link break")
+            errors.append(f"seq {row}: prev_hash link break")
         try:
             expected_hash = record_hash(record)
         except (TypeError, ValueError) as exc:
-            errors.append(f"row {row}: cannot canonicalise: {exc}")
+            errors.append(f"seq {row}: cannot canonicalise: {exc}")
             expected_hash = None
         if expected_hash and record["hash"] != expected_hash:
-            errors.append(f"row {row}: hash mismatch")
+            errors.append(f"seq {row}: hash mismatch")
         prior = record.get("hash", prior)
     certificates = [record for record in records if record.get("type") == "CERTIFICATE"]
     if not allow_no_certificate and not certificates:
-        errors.append("no CERTIFICATE record")
+        errors.append("seq ?: no CERTIFICATE record")
     if certificates:
         from .certificate import certificate_payload_from_records
 
@@ -101,8 +102,8 @@ def verify_records(records: list[dict[str, Any]], *, allow_no_certificate: bool 
             try:
                 expected = certificate_payload_from_records(records, certificate)
             except ValueError as exc:
-                errors.append(f"row {certificate.get('seq', '?')}: certificate cannot derive from chain: {exc}")
+                errors.append(f"seq {certificate.get('seq', '?')}: certificate cannot derive from chain: {exc}")
                 continue
             if certificate["payload"] != expected:
-                errors.append(f"row {certificate['seq']}: certificate does not derive from chain")
+                errors.append(f"seq {certificate['seq']}: certificate does not derive from chain")
     return errors, {"records": len(records), "certificates": len(certificates)}

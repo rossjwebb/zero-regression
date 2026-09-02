@@ -1,5 +1,5 @@
 {
-  "pipeline_node": "node-2-antigravity",
+  "pipeline_node": "node-2-adjudicator",
   "target_module": "org.fintx.accounting.service.impl.AccountServiceImpl",
   "status": "PASS",
   "total_tests": 35,

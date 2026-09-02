@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Create a hash-valid reconstruction of the published fintx aggregate evidence.
 
 This is deliberately not a claim that the production source was re-executed in
@@ -32,7 +33,7 @@ def main() -> int:
         "tools": {"python": "3.12.3", "mutmut": "3.6.0", "pytest": "9.1.1", "pytest-cov": "7.1.0"},
         "operator_set": "mutmut-3.6.0-default",
         "unverified_scope": "Exact source, test checkout, and original production evidence were not supplied with this workspace.",
-        "provenance": "aggregate figures transcribed from claude_zero-regression-paper-v0.5-30-aug-2026.md",
+        "provenance": "aggregate figures transcribed from the paper (v0.5, 30 Aug 2026)",
     })
     append_record(log, "BASELINE", {"attempts": [{"summary": {"tests": 43, "failures": 0, "errors": 0, "skipped": 0, "passed": 43}, "coverage": {"covered": 190, "statements": 190, "percent": 100.0}, "runtime_seconds": 0.36}, {"summary": {"tests": 43, "failures": 0, "errors": 0, "skipped": 0, "passed": 43}, "coverage": {"covered": 190, "statements": 190, "percent": 100.0}, "runtime_seconds": 0.36}], "tests": {"tests": 43, "failures": 0, "errors": 0, "skipped": 0, "passed": 43}, "coverage": {"covered": 190, "statements": 190, "percent": 100.0}, "runtime_seconds": 0.72, "deterministic": True})
     for mutant in range(1, 253):

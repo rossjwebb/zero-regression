@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Verify a Zero-Regression evidence chain without running tests or mutmut."""
 from __future__ import annotations
 
@@ -17,8 +18,7 @@ def main() -> int:
     args = parser.parse_args()
     errors, summary = verify_log(args.log)
     if errors:
-        for error in errors:
-            print(f"FAIL: {error}")
+        print(errors[0])
         return 1
     print(f"OK: {args.log} ({summary['records']} records; certificate derives from chain)")
     return 0

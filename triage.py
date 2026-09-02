@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Append human survivor decisions or signed overrides to an evidence chain."""
 from __future__ import annotations
 

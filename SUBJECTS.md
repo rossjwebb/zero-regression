@@ -4,7 +4,7 @@ Each selected subject must be Python, permissively licensed, deterministic and g
 
 Before selection, record the commit SHA, licence text, installation command, test command, source/test paths, offline-test evidence, and LOC count in the subject’s `zero-regression.toml` and `evidence/` folder. Do not certify a moving default branch. A green test suite is a precondition, not a result.
 
-## Shortlist for Ross’s selection
+## Public-replication shortlist
 
 | Public repository | Candidate slice | Fit note |
 |---|---|---|

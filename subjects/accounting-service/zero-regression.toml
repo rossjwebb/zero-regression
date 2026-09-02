@@ -1,0 +1,6 @@
+[subject]
+name = "accounting-service"
+source_paths = ["account_service_impl.py"]
+test_paths = ["test_account_service_impl.py"]
+operator_set = "mutmut-3.6.0-default"
+unverified_scope = "Java tree, telemetry JSON, and mutmut cache are outside the certified module. Only account_service_impl.py is in scope."
