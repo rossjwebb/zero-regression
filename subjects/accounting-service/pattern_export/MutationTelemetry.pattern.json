@@ -1,0 +1,189 @@
+{
+  "pipeline_node": "node-3-mutation-testing",
+  "tool": "mutmut-2.5.1",
+  "target_module": "9598ed890672efbb.0473048be230661f",
+  "total_mutants": 279,
+  "killed_mutants": 186,
+  "suspicious_mutants": 68,
+  "survived_mutants_count": 25,
+  "timeout_mutants": 0,
+  "mutation_score_raw": 66.67,
+  "mutation_score_detected": 91.04,
+  "mutation_score_adjusted": 100.0,
+  "equivalent_mutants_count": 25,
+  "actionable_survivors_count": 0,
+  "test_count": 43,
+  "surviving_mutants": [
+    {
+      "mutant_id": 30,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "c4da79ddeae0ee1f"
+    },
+    {
+      "mutant_id": 32,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "b73ca0678448077d"
+    },
+    {
+      "mutant_id": 34,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "dc9826cdd862d506"
+    },
+    {
+      "mutant_id": 36,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "5b0557063c22cbcc"
+    },
+    {
+      "mutant_id": 38,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "09d1d21a9d21dccd"
+    },
+    {
+      "mutant_id": 40,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "4ea65e50518cf95f"
+    },
+    {
+      "mutant_id": 42,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "2cd2e0ecbf73c4f2"
+    },
+    {
+      "mutant_id": 44,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "1e39ce2a0fb49c39"
+    },
+    {
+      "mutant_id": 46,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "d5b8ef37857b72de"
+    },
+    {
+      "mutant_id": 48,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "3fce18eea8b898a7"
+    },
+    {
+      "mutant_id": 50,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "483eda5d5d3a6c9a"
+    },
+    {
+      "mutant_id": 53,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "defe619500518b23"
+    },
+    {
+      "mutant_id": 61,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "2310dd681088a595"
+    },
+    {
+      "mutant_id": 64,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "da862bb3a3e1337f"
+    },
+    {
+      "mutant_id": 66,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "6ea9c14ddfe2e94a"
+    },
+    {
+      "mutant_id": 76,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "5c82ca2776dd9cba"
+    },
+    {
+      "mutant_id": 83,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "a2325249714f3238"
+    },
+    {
+      "mutant_id": 85,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "253bd5449b6b89e3"
+    },
+    {
+      "mutant_id": 87,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "7c4dda24a30ef915"
+    },
+    {
+      "mutant_id": 89,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "f2722b5ec345a625"
+    },
+    {
+      "mutant_id": 91,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_STRING_MUTATION",
+      "line_hash": "bcc382b00b2e34dc"
+    },
+    {
+      "mutant_id": 115,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_TO_NONE",
+      "line_hash": "be82ce4e44fc4311"
+    },
+    {
+      "mutant_id": 126,
+      "classification": "equivalent",
+      "mutation_type": "BOUNDARY_LT_TO_LTE",
+      "line_hash": "8cab40b47ef3b7c8"
+    },
+    {
+      "mutant_id": 184,
+      "classification": "equivalent",
+      "mutation_type": "BOUNDARY_GT_TO_GTE",
+      "line_hash": "f104056344623399"
+    },
+    {
+      "mutant_id": 218,
+      "classification": "equivalent",
+      "mutation_type": "LITERAL_TO_NONE",
+      "line_hash": "7679e3d08638572d"
+    }
+  ],
+  "equivalent_mutant_analysis": {
+    "decimal_string_false_positives": {
+      "count": 21,
+      "reason": "import_time_literal_invalid_operation"
+    },
+    "frozen_amt_boundary": {
+      "mutant_id": 126,
+      "reason": "zero_normalization_no_op_boundary"
+    },
+    "day_gap_boundary": {
+      "mutant_id": 184,
+      "reason": "preceding_branch_catches_boundary"
+    },
+    "dead_initializers": {
+      "mutant_ids": [
+        115,
+        218
+      ],
+      "reason": "dead_initializer_overwritten"
+    }
+  }
+}

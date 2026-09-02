@@ -1,0 +1,214 @@
+{
+  "pipeline_node": "node-3-mutation-testing",
+  "tool": "mutmut-2.5.1",
+  "target_module": "account_service_impl.AccountServiceImpl",
+  "total_mutants": 279,
+  "killed_mutants": 186,
+  "suspicious_mutants": 68,
+  "survived_mutants_count": 25,
+  "timeout_mutants": 0,
+  "mutation_score_raw": 66.67,
+  "mutation_score_detected": 91.04,
+  "mutation_score_adjusted": 100.0,
+  "equivalent_mutants_count": 25,
+  "actionable_survivors_count": 0,
+  "test_count": 43,
+  "surviving_mutants": [
+    {
+      "mutant_id": 30,
+      "line_number": 33,
+      "original_code": "balance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "balance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 32,
+      "line_number": 34,
+      "original_code": "frozenAmt: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "frozenAmt: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 34,
+      "line_number": 35,
+      "original_code": "drBalance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "drBalance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 36,
+      "line_number": 36,
+      "original_code": "crBalance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "crBalance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 38,
+      "line_number": 37,
+      "original_code": "drTransactionAmt: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "drTransactionAmt: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 40,
+      "line_number": 38,
+      "original_code": "crTransactionAmt: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "crTransactionAmt: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 42,
+      "line_number": 39,
+      "original_code": "lastBalance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "lastBalance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 44,
+      "line_number": 40,
+      "original_code": "lastDrBalance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "lastDrBalance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 46,
+      "line_number": 41,
+      "original_code": "lastCrBalance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "lastCrBalance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 48,
+      "line_number": 42,
+      "original_code": "lastDrTransactionAmt: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "lastDrTransactionAmt: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 50,
+      "line_number": 43,
+      "original_code": "lastCrTransactionAmt: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "lastCrTransactionAmt: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 53,
+      "line_number": 45,
+      "original_code": "balanceAccum: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "balanceAccum: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 61,
+      "line_number": 52,
+      "original_code": "amount: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "amount: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 64,
+      "line_number": 54,
+      "original_code": "balance: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "balance: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 66,
+      "line_number": 55,
+      "original_code": "balanceAccum: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "balanceAccum: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 76,
+      "line_number": 63,
+      "original_code": "amount: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "amount: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 83,
+      "line_number": 72,
+      "original_code": "drTransAmtLimit: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "drTransAmtLimit: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 85,
+      "line_number": 73,
+      "original_code": "crTransAmtLimit: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "crTransAmtLimit: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 87,
+      "line_number": 74,
+      "original_code": "transAmtLimit: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "transAmtLimit: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 89,
+      "line_number": 75,
+      "original_code": "MaxBalanceLimit: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "MaxBalanceLimit: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 91,
+      "line_number": 76,
+      "original_code": "MinBalanceLimit: Decimal = Decimal(\"0.00\")",
+      "mutated_code": "MinBalanceLimit: Decimal = Decimal(\"XX0.00XX\")",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 115,
+      "line_number": 122,
+      "original_code": "newBalance = Decimal(\"0.00\")",
+      "mutated_code": "newBalance = None",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 126,
+      "line_number": 134,
+      "original_code": "if frozenAmt < Decimal(\"0.00\"):",
+      "mutated_code": "if frozenAmt <= Decimal(\"0.00\"):",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 184,
+      "line_number": 168,
+      "original_code": "elif day_gap > 1:",
+      "mutated_code": "elif day_gap >= 1:",
+      "classification": "equivalent"
+    },
+    {
+      "mutant_id": 218,
+      "line_number": 191,
+      "original_code": "newLastBal = Decimal(\"0.00\")",
+      "mutated_code": "newLastBal = None",
+      "classification": "equivalent"
+    }
+  ],
+  "equivalent_mutant_analysis": {
+    "decimal_string_false_positives": {
+      "count": 21,
+      "reason": "Decimal('XX0.00XX') raises InvalidOperation at class-definition time, crashing import. mutmut v2 misclassifies import-time exceptions as survived."
+    },
+    "frozen_amt_boundary": {
+      "mutant_id": 126,
+      "reason": "frozenAmt < 0 -> <= 0: normalising 0 to 0 is a no-op, behaviour identical."
+    },
+    "day_gap_boundary": {
+      "mutant_id": 184,
+      "reason": "day_gap > 1 -> >= 1: the preceding 'if day_gap == 1' branch catches ==1 first."
+    },
+    "dead_initializers": {
+      "mutant_ids": [
+        115,
+        218
+      ],
+      "reason": "newBalance/newLastBal always overwritten in PLUS or MINUS branch before use."
+    }
+  }
+}

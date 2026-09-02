@@ -1,0 +1,47 @@
+{
+  "target_module": "org.fintx.accounting.service.impl.AccountServiceImpl",
+  "cyclomatic_complexity": 34,
+  "deterministic_seams": [
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "AccountRepo.lockAccount"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "AccountRepo.getByAccountNo"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "AccountRepo.modifyBalance"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "AccountRepo.plusToFrozenAmt"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "AccountRepo.minusToFrozenAmt"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "TransactionEntryRepo.save"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "TransactionEntryRepo.recordDetailAccount"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "OperationEntryRepo.save"
+    },
+    {
+      "dependency_type": "DB_QUERY",
+      "target": "CodeOfAccountsRepo.getByAccountsCodeNo"
+    },
+    {
+      "dependency_type": "EXTERNAL_SERVICE",
+      "target": "org.fintx.util.Objects.deepClone"
+    }
+  ],
+  "required_coverage": 85.0
+}
