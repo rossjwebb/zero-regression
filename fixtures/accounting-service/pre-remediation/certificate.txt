@@ -1,8 +1,8 @@
 BEHAVIOURAL-PARITY CERTIFICATE  v1
-Subject:     14e011d0c400704eaaf9272a60bac9f2139159a0 · Suite: 4a3e8de2cebef2201e9bc75ffc519345ff42a39b11f5331a545102382ba4352d
+Subject:     12b4c2f73ed8283da83d84c4d8e4b7255abf3cbf · Suite: 59b77a474d89e13caf5b9d6855a9bba8c75df17388a19cb44637dfdb546ff32c
 Pinned:      mutmut 3.6.0, pytest 9.1.1, pytest-cov 7.1.0, python 3.12.3 · Operators: mutmut-3.6.0-default
 Line 1 — COVERAGE:    100.0% line coverage (190/190 statements)
-Line 2 — KILL RATE:   248/252 killed (98.4%); survivor classes E=4 / GR=0 / UI=0 / SR=0; timeouts=0; suspicious=0; skipped=0
+Line 2 — KILL RATE:   246/252 killed (97.6%); survivor classes E=3 / GR=0 / UI=3 / SR=0; timeouts=0; suspicious=0; skipped=0
 Line 3 — UNVERIFIED:  Java tree, telemetry JSON, and mutmut cache are outside the certified module. Only account_service_impl.py is in scope.
-Chain:       eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b … 05e14679f7a53a1958321d510280366d3c8b2c8faebb30156b736f02d7e05788
+Chain:       1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd … 9035f4357e14af7e610d93911cd8eefbbaf253f3e4f90bc789bea683fc41f811
 Expiry:      valid only for the pinned artifact above; any change to code, tests, tools, versions or operators voids this certificate.
