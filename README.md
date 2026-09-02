@@ -33,3 +33,5 @@ Given the log: (1) recompute every record's `hash` from its canonical serialisat
 ```
 
 Exit 0 means the chain holds. On failure the first broken `seq` is printed. Steps 1–3 need no trust in the issuer and no execution environment.
+
+`fixtures/accounting-service/` is an executed certification run (not a reconstruction). Its `CONFIG` hash is `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd`.
