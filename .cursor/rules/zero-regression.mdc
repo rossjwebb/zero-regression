@@ -9,4 +9,4 @@ alwaysApply: true
 - No client names, no "ADL", no "Agent Factory", no "Deal Desk", no Fly.io names, no secrets in any file or commit message.
 - If a step in a work order fails, stop and report. Do not work around it.
 - Evidence-log record types: CONFIG, BASELINE, MUTANT_RESULT, TRIAGE, OVERRIDE, CERTIFICATE. Nothing else.
-- Roles only in public-facing text: Generator, Adjudicator, Executor. No commercial model names.
+- Roles only (Generator, Adjudicator, Executor) in README and other prose. Evidence-log records (CONFIG, CERTIFICATE) MUST pin concrete tool, model and version identities. Never redact an evidence log.

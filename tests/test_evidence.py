@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from zero_regression_harness.certificate import certificate_payload_from_records
+from zero_regression_harness.certify import coverage_module_name
 from zero_regression_harness.evidence import append_record, load_records, verify_log
 
 REPO = Path(__file__).resolve().parents[1]
@@ -53,6 +54,13 @@ class EvidenceChainTests(unittest.TestCase):
             result = subprocess.run([sys.executable, str(REPO / "verify.py"), str(log)], capture_output=True, text=True, check=False)
             self.assertNotEqual(result.returncode, 0)
             self.assertRegex(result.stdout, r"^seq 1\b")
+
+
+class CoverageModuleNameTests(unittest.TestCase):
+    def test_file_package_and_bare_module(self) -> None:
+        self.assertEqual(coverage_module_name("account_service_impl.py"), "account_service_impl")
+        self.assertEqual(coverage_module_name("pkg/sub/mod.py"), "pkg.sub.mod")
+        self.assertEqual(coverage_module_name("pkg"), "pkg")
 
 
 if __name__ == "__main__":

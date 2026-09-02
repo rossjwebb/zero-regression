@@ -34,6 +34,14 @@ def die(message: str) -> None:
     raise SystemExit(f"CERTIFICATION FAILURE: {message}")
 
 
+def coverage_module_name(source_path: str) -> str:
+    """Derive a pytest-cov module name from a file path, package path, or bare module."""
+    path = source_path.replace("\\", "/").strip().rstrip("/")
+    if path.endswith(".py"):
+        path = path[: -len(".py")]
+    return path.replace("/", ".")
+
+
 def lockfile_path() -> Path:
     here = Path(__file__).resolve()
     for parent in here.parents:
@@ -155,7 +163,7 @@ def baseline(subject: Path, config: dict[str, Any], run: Path) -> dict[str, Any]
         coverage = run / f"coverage-{number}.json"
         command = [sys.executable, "-m", "pytest", *tests, "-q", f"--junitxml={junit}"]
         for path in source_paths:
-            command.extend([f"--cov={path}"])
+            command.extend([f"--cov={coverage_module_name(path)}"])
         command.append(f"--cov-report=json:{coverage}")
         code, seconds, _ = run_command(command, subject, run / f"baseline-{number}.output.txt")
         if code != 0:
@@ -224,7 +232,7 @@ def certify(subject: Path) -> Path:
     log = run / "evidence.jsonl"
     source_paths = [subject / path for path in config["subject"]["source_paths"]]
     test_paths = [subject / path for path in config["subject"]["test_paths"]]
-    config_record = append_record(log, "CONFIG", {"subject": config["subject"]["name"], "source_revision": revision(subject), "suite_revision": hashlib.sha256(canonical_json([revision(path) for path in test_paths]).encode()).hexdigest(), "tools": pins, "operator_set": config["subject"]["operator_set"], "unverified_scope": config["subject"]["unverified_scope"], "source_paths": [str(path.relative_to(subject)) for path in source_paths], "test_paths": [str(path.relative_to(subject)) for path in test_paths], "environment": environment})
+    config_record = append_record(log, "CONFIG", {"subject": config["subject"]["name"], "source_revision": revision(subject), "suite_revision": hashlib.sha256(canonical_json([revision(path) for path in test_paths]).encode()).hexdigest(), "tools": pins, "executor": {"role": "Executor", "identity": f"{environment['implementation']} {environment['versions']['python']}", "executable": environment["executable"], "tools": pins}, "operator_set": config["subject"]["operator_set"], "unverified_scope": config["subject"]["unverified_scope"], "source_paths": [str(path.relative_to(subject)) for path in source_paths], "test_paths": [str(path.relative_to(subject)) for path in test_paths], "environment": environment})
     baseline_payload = baseline(subject, config, run)
     append_record(log, "BASELINE", baseline_payload)
     rows, mutation_runtime = mutation(subject, run)
