@@ -1,0 +1,9 @@
+# Copy this file to <subject>/zero-regression.toml. The subject must also carry
+# mutmut's own [tool.mutmut] configuration in its pyproject.toml.
+
+[subject]
+name = "example-subject"
+source_paths = ["src/example"]
+test_paths = ["tests"]
+operator_set = "mutmut-3.6.0-default"
+unverified_scope = "No source outside source_paths; integration boundaries are out of scope."

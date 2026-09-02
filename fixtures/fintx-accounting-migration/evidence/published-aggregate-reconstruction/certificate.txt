@@ -1,0 +1,8 @@
+BEHAVIOURAL-PARITY CERTIFICATE  v1
+Subject:     NOT_AVAILABLE_IN_THIS_WORKSPACE · Suite: NOT_AVAILABLE_IN_THIS_WORKSPACE
+Pinned:      mutmut 3.6.0, pytest 9.1.1, pytest-cov 7.1.0, python 3.12.3 · Operators: mutmut-3.6.0-default
+Line 1 — COVERAGE:    100.0% line coverage (190/190 statements)
+Line 2 — KILL RATE:   246/252 killed (97.6%); survivor classes E=0 / GR=0 / UI=6 / SR=0; timeouts=0
+Line 3 — UNVERIFIED:  Exact source, test checkout, and original production evidence were not supplied with this workspace.
+Chain:       b0397b61a91472567e393fa9ecd22838ddf1dd6c718900c639d44dba3b9e3e8a … 45abdb7cbae7a07ddae9250450c0de22cc6bd0d1e30a708625262d0554927a7e
+Expiry:      valid only for the pinned artifact above; any change to code, tests, tools, versions or operators voids this certificate.
