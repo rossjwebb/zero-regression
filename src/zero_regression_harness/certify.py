@@ -219,8 +219,10 @@ def mutation(subject: Path, run: Path, pins: dict[str, str], test_paths: list[st
             rows, source = rows_from_mutants_dir(cache, results_text)
         except ValueError as exc:
             die(str(exc))
+        kill_started = time.perf_counter()
         killing = populate_failing_tests(rows, cache, test_paths, executable=sys.executable)
-        adapter = {"name": "mutmut36", "source": source, "mutant_selection_env": MUTANT_SELECTION_ENV, "killing_test": killing}
+        killing_runtime = round(time.perf_counter() - kill_started, 6)
+        adapter = {"name": "mutmut36", "source": source, "mutant_selection_env": MUTANT_SELECTION_ENV, "killing_test": killing, "killing_test_runtime_seconds": killing_runtime}
     else:
         junit = run / "mutmut.junit.xml"
         export_code, _, _ = run_command([sys.executable, "-m", "mutmut", "junitxml", "--output", str(junit)], subject, run / "mutmut-junit.output.txt")
@@ -286,6 +288,8 @@ def certify(subject: Path) -> Path:
     certificate = append_record(log, "CERTIFICATE", payload)
     (run / "certificate.txt").write_text(render_certificate(payload, config_record, certificate["hash"]), encoding="utf-8")
     print(f"CERTIFIED: {run}")
+    print(f"mutation_runtime_seconds={mutation_runtime}")
+    print(f"killing_test_runtime_seconds={adapter.get('killing_test_runtime_seconds')}")
     return run
 
 
