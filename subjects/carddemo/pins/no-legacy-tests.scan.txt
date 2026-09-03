@@ -1,0 +1,14 @@
+upstream=https://github.com/aws-samples/aws-mainframe-modernization-carddemo
+commit=59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e
+file_count=329
+command=git ls-tree -r --name-only 59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e
+legacy_dir=absent
+tests_dir=absent
+test_dir=absent
+cobol_count=44
+name_contains_test_count=3
+name_contains_test=samples/jcl/REPRTEST.jcl
+name_contains_test=samples/jcl/SORTTEST.jcl
+name_contains_test=scripts/markers/REPRTEST
+note=REPRTEST.jcl and SORTTEST.jcl are sample IDCAMS/SORT JCL, not COBOL unit tests. scripts/markers/REPRTEST is a marker file. There is no unit-test tree and no COBOL test program at this pin.
+legacy_tests=none

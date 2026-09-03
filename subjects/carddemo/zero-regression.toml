@@ -1,0 +1,6 @@
+[subject]
+name = "carddemo"
+source_paths = ["batch/app/cbl/CBTRN02C.cbl"]
+test_paths = []
+operator_set = "none-no-legacy-tests"
+unverified_scope = "Pinned at aws-samples/aws-mainframe-modernization-carddemo 59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e. The slice is the POSTTRAN batch program CBTRN02C and the five copybooks it COPY's. Online CICS programs, remaining batch programs, VSAM/EBCDIC data, optional IMS/DB2/MQ modules, and sample JCL are outside the slice. There is no legacy test tree at this pin. This subject is not certified by the Python mutmut harness. No mutation score is recorded here."

@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+name: S3 CardDemo pins
+
+on:
+  pull_request:
+  push:
+    paths:
+      - "subjects/carddemo/**"
+      - "tests/test_carddemo_pins.py"
+      - ".github/workflows/s3-carddemo.yml"
+
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Verify pins
+        run: |
+          python3.12 subjects/carddemo/check-pins.py
+          python3.12 -m unittest tests.test_carddemo_pins

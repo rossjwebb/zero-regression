@@ -35,6 +35,15 @@ python3.12 subjects/commons-csv/check-pins.py
 ./subjects/commons-csv/run-pit.sh
 ```
 
+S3 is public CardDemo COBOL (batch POSTTRAN / `CBTRN02C`). The pin is `aws-samples/aws-mainframe-modernization-carddemo` `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e`. There are no legacy tests. This repository does not record a mutation score for S3 and does not claim that the paper already executed it.
+
+```bash
+python3.12 subjects/carddemo/check-pins.py
+./subjects/carddemo/run-cobol.sh
+```
+
+`check-pins.py` exits 0 when the pin holds. `run-cobol.sh` is fail-closed and exits 2 if no COBOL compiler is present, if compile fails, or if compile succeeds (there is still no test suite).
+
 ## Evidence-chain schema
 
 The log is an append-only sequence of JSON records. Every record carries: `seq` (monotonic integer); `ts` (UTC timestamp); `type` (one of `CONFIG`, `BASELINE`, `MUTANT_RESULT`, `TRIAGE`, `OVERRIDE`, `CERTIFICATE`, `COST`); `payload` (type-specific body); `prev_hash` (the SHA-256 fingerprint of the preceding record's canonical serialisation); `hash` (the SHA-256 fingerprint of this record's canonical serialisation, including `prev_hash`). `COST` records attributable spend from an external generation run: role, token count, spend in USD, and an immutable reference.

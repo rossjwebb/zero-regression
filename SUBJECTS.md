@@ -43,3 +43,17 @@ The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That
 | PIT | Pitest 1.15.3 command-line JARs, mutators DEFAULTS, JDK Temurin 11.0.32.1+1, subject `--release 8` |
 | Test command | `python3.12 subjects/commons-csv/check-pins.py` then `./subjects/commons-csv/run-pit.sh` |
 | Working tree | `subjects/commons-csv/` |
+
+## Selected: CardDemo (S3)
+
+The 2 September programme note names S3 as CardDemo COBOL, no legacy tests. The public CardDemo is AWS Mainframe Modernization CardDemo (IBM-style COBOL/CICS/JCL). This is a pin and a fail-closed compile script. It is not a paper execution of S3 and it does not record a mutation score.
+
+| Field | Record |
+|---|---|
+| Upstream | https://github.com/aws-samples/aws-mainframe-modernization-carddemo |
+| Pin | `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e` (16 October 2025) |
+| Licence | Apache-2.0 (`subjects/carddemo/batch/LICENSE`) |
+| Slice | POSTTRAN / `CBTRN02C` plus five `COPY` books |
+| Legacy tests | none (no `tests/` tree; `test_paths = []`) |
+| Test command | `python3.12 subjects/carddemo/check-pins.py` then `./subjects/carddemo/run-cobol.sh` |
+| Working tree | `subjects/carddemo/` |
