@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import shutil
 import subprocess
 import tomllib
 import unittest
@@ -48,6 +49,8 @@ class CardDemoPinTests(unittest.TestCase):
         self.assertIn("S3 FAIL-CLOSED", script)
         self.assertIn("no score is recorded", script)
         self.assertIn("looked for cobc", script)
+        self.assertIn("-x", script)
+        self.assertNotIn("killed/seeded", script)
 
     def test_runner_exits_nonzero_with_a_real_reason(self) -> None:
         completed = subprocess.run(
@@ -60,15 +63,21 @@ class CardDemoPinTests(unittest.TestCase):
         self.assertIn("S3 FAIL-CLOSED", completed.stderr)
         combined = (completed.stderr + completed.stdout).lower()
         self.assertNotIn("killed/seeded", combined)
-        self.assertNotIn("mutation score", combined)
-        # On this VM the compiler is absent; if a compiler is present the
-        # script must still fail closed (compile error or no legacy tests).
-        self.assertTrue(
-            "no cobol compiler on path" in combined
-            or "exited" in combined
-            or "no legacy tests" in combined,
-            completed.stderr,
-        )
+        self.assertIn("no score is recorded", combined)
+        self.assertNotRegex(combined, r"killed/\s*seeded")
+        # If cobc is present the script must compile CBTRN02C and still
+        # fail closed (no legacy tests). If cobc is absent it must say so.
+        if shutil.which("cobc"):
+            self.assertIn("s3 compile ok", combined)
+            self.assertIn("compiled cbtrn02c", combined)
+            self.assertIn("no legacy tests", combined)
+            self.assertTrue((SUBJECT / "work" / "CBTRN02C").is_file())
+            self.assertTrue((SUBJECT / "work" / "COMPILE").is_file())
+            receipt = (SUBJECT / "work" / "COMPILE").read_text(encoding="utf-8")
+            self.assertIn("result=compile-ok", receipt)
+            self.assertIn("mutation_score=not-recorded", receipt)
+        else:
+            self.assertIn("no cobol compiler on path", combined)
 
     def test_no_committed_mutation_score(self) -> None:
         forbidden_names = {"mutations.xml", "SCORE", "mutation-score"}

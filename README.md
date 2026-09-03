@@ -27,7 +27,7 @@ python3.12 subjects/carddemo/check-pins.py
 ./subjects/carddemo/run-cobol.sh
 ```
 
-`check-pins.py` exits 0 when the pin holds. `run-cobol.sh` is fail-closed and exits 2 if no COBOL compiler is present, if compile fails, or if compile succeeds (there is still no test suite).
+`check-pins.py` exits 0 when the pin holds. GnuCOBOL (`cobc`) is installable with `sudo apt-get install -y gnucobol` on Ubuntu 24.04 / GitHub Actions `ubuntu-latest`. With `cobc` present, `run-cobol.sh` compiles `CBTRN02C` and still exits 2: there is no test suite, and compile is not a green run. If `cobc` is missing or compile fails, it also exits 2.
 
 ## Evidence-chain schema
 

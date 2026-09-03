@@ -25,3 +25,47 @@ jobs:
         run: |
           python3.12 subjects/carddemo/check-pins.py
           python3.12 -m unittest tests.test_carddemo_pins
+
+  # GnuCOBOL is in Ubuntu universe (jammy and noble). ubuntu-latest
+  # can install the gnucobol metapackage, which provides cobc 3.1.2
+  # on Ubuntu 24.04. This job checks compile only. It is not a test
+  # run and it does not record a mutation score.
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Install GnuCOBOL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnucobol
+          command -v cobc
+          cobc --version
+
+      - name: Compile pinned POSTTRAN CBTRN02C
+        run: |
+          set +e
+          ./subjects/carddemo/run-cobol.sh
+          status=$?
+          set -e
+          if [[ ! -x subjects/carddemo/work/CBTRN02C ]]; then
+            echo "S3 FAIL-CLOSED: cobc did not produce subjects/carddemo/work/CBTRN02C" >&2
+            exit 1
+          fi
+          if [[ ! -f subjects/carddemo/work/COMPILE ]]; then
+            echo "S3 FAIL-CLOSED: missing compile receipt; compile did not succeed" >&2
+            exit 1
+          fi
+          if [[ "$status" -ne 2 ]]; then
+            echo "S3 FAIL-CLOSED: expected exit 2 after compile (no tests, no score); got $status" >&2
+            exit 1
+          fi
+          grep -q "result=compile-ok" subjects/carddemo/work/COMPILE
+          grep -q "mutation_score=not-recorded" subjects/carddemo/work/COMPILE
+          echo "CI compile check: cobc produced CBTRN02C; runner stayed fail-closed (exit 2, no tests)."

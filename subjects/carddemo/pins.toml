@@ -13,8 +13,8 @@ licence = "Apache-2.0"
 file_count = 329
 cobol_count = 44
 legacy_tests = "none"
-ibm_enterprise_cobol = "not-on-this-vm"
-gnucobol_cobc = "not-on-this-vm"
+ibm_enterprise_cobol = "absent"
+gnucobol_cobc = "installable-via-apt-gnucobol-3.1.2"
 
 [slice]
 job = "POSTTRAN"
@@ -34,9 +34,11 @@ copybooks = [
 # optional IMS/DB2/MQ modules, and sample JCL are outside this slice.
 
 [compiler]
-looks_for = ["cobc", "cob"]
+looks_for = ["cobc", "cob", "cob2"]
 ibm_enterprise_cobol = "absent"
-note = "Fail closed if no COBOL compiler is on PATH, or if compile fails, or if compile succeeds but no legacy tests exist. Do not invent a mutation score."
+gnucobol_apt_package = "gnucobol"
+gnucobol_observed = "cobc (GnuCOBOL) 3.1.2.0 from Ubuntu 24.04 package gnucobol3=3.1.2-5.1ubuntu1"
+note = "Fail closed if no COBOL compiler is on PATH, or if compile fails, or if compile succeeds but no legacy tests exist. Do not invent a mutation score. Compile is not a green run."
 
 [[file]]
 path = "batch/LICENSE"

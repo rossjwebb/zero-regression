@@ -26,7 +26,7 @@ The three paths whose names contain `test` are sample IDCAMS/SORT JCL (`samples/
 - `batch/` — bit-identical snapshot of the POSTTRAN program, its copybooks, the POSTTRAN JCL, and the upstream licence/notice
 - `pins/` — full `ls-tree` at the pin, and the no-legacy-tests scan
 - `check-pins.py` — hash and metadata gate
-- `run-cobol.sh` — fail-closed compile attempt; never records a score
+- `run-cobol.sh` — compile CBTRN02C with `cobc` when present; fail-closed if compile fails or if there are no tests; never records a score
 
 There is no `legacy/` directory. S1 uses `legacy/` for a Python oracle; S3 does not, because CardDemo has no legacy tests.
 
@@ -49,7 +49,27 @@ python3.12 -m unittest tests.test_carddemo_pins
 3. the compiler is present but `CBTRN02C` does not compile, or
 4. the compiler succeeds — there is still no test suite, so the script refuses to report a green run.
 
-This VM image has Python 3.12.3 and no GnuCOBOL / IBM Enterprise COBOL. On that image the script prints the missing-compiler reason and exits 2. That is the real reason, not a skipped step.
+## What compiles, and what still cannot
+
+GnuCOBOL is installable on Ubuntu 24.04 and on GitHub Actions `ubuntu-latest` (jammy and noble both ship the `gnucobol` metapackage):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y gnucobol
+cobc --version
+```
+
+Observed on Ubuntu 24.04.4: `cobc (GnuCOBOL) 3.1.2.0` from `gnucobol3=3.1.2-5.1ubuntu1`.
+
+With that compiler, `run-cobol.sh` **does compile** the pinned POSTTRAN program `CBTRN02C` (`cobc -std=ibm -x`) plus its five `COPY` books. That is a compile only.
+
+The following still cannot happen on this image, and the runner does not pretend otherwise:
+
+- IBM Enterprise COBOL (`cob2`) is absent
+- There is no legacy test suite, so the script still exits 2 after a successful compile
+- No mutation score is recorded
+- The binary is not a POSTTRAN job run: there is no `DALYTRAN` sequential file, no VSAM/INDEXED data, and no IBM Language Environment `CEE3ABD`
+- Online CICS programs, remaining batch programs, JCL, and EBCDIC data are outside this slice
 
 The script does not write a mutation score. This repository does not store a mutation score for S3.
 

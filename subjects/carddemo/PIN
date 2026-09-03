@@ -13,4 +13,5 @@ slice_program=CBTRN02C
 slice_function=Post the records from daily transaction file.
 
 compiler_ibm_enterprise_cobol=absent
-compiler_gnucobol_cobc=not-on-this-vm
+compiler_gnucobol_cobc=installable-via-apt-gnucobol-3.1.2
+compiler_gnucobol_apt=sudo apt-get install -y gnucobol
