@@ -27,9 +27,9 @@ python3.12 subjects/carddemo/check-pins.py
 ./subjects/carddemo/run-cobol.sh
 ```
 
-`check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. With the pin present, `run-cobol.sh` compiles `CBTRN02C` and still exits 2. That is compile-only, not a green POSTTRAN job. S3 remains unexecuted: no legacy tests, no claimed CardDemo run, no score. If `cobc` is missing, the version mismatches, or compile fails, the script also exits 2.
+`check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. With the pin present, `run-cobol.sh` compiles `CBTRN02C` (`cobc_status=0`) and then the harness exits 2. That exit 2 means `posttran_job=not-run`, not a GnuCOBOL error. Do not treat it as a `cobc` failure, and do not change it to exit 0. A real GnuCOBOL error prints `S3 COBC FAIL` and CI fails the job. S3 remains unexecuted: no legacy tests, no claimed CardDemo run, no score.
 
-CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. There is no skip path. A missing runner fails. Success must still be `S3 COMPILE OK`, exit 2, `posttran_job=not-run`. That is not paper S3.
+CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. There is no skip path. A missing runner fails. A `cobc` compile error fails the job. Success must still be `S3 COMPILE OK`, harness exit 2, `posttran_job=not-run`. That is not paper S3.
 
 ## Evidence-chain schema
 

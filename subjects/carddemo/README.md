@@ -43,13 +43,14 @@ python3.12 -m unittest tests.test_carddemo_pins tests.test_carddemo_toolchain
 
 `check-pins.py` should print `S3 PIN OK` and exit 0.
 
-`run-cobol.sh` is fail-closed. It exits 2 if:
+`run-cobol.sh` is fail-closed. It never exits 0 after a successful compile: that would look like a passing POSTTRAN job.
 
-1. the pin check fails, or
-2. the pinned `cobc` is missing, or
-3. the Ubuntu `.deb` hash, `/usr/bin/cobc` hash, `cobc --version`, or `dpkg` package version does not match the pin (PATH `cobc` cannot silently mix), or
-4. the pinned compiler is present but `CBTRN02C` does not compile, or
-5. the compiler succeeds — there is still no test suite, so the script refuses to report a green POSTTRAN job.
+Two different exit-2 cases must not be mixed:
+
+1. **GnuCOBOL compile error** — prints `S3 COBC FAIL`, writes `work/COBC-FAIL` with `result=cobc-fail`, and CI **fails** the job.
+2. **Harness job-not-run** — `cobc` returned 0, prints `S3 COMPILE OK` then `S3 HARNESS EXIT 2`, writes `work/COMPILE` with `cobc_status=0` and `harness_meaning=posttran-job-not-run`. Exit 2 here means the POSTTRAN job was not run, **not** that GnuCOBOL failed.
+
+Pin or PATH-mix failures print `S3 FAIL-CLOSED` and do not write a compile-ok receipt.
 
 ## Pinned GnuCOBOL
 
@@ -76,7 +77,7 @@ The following still cannot happen, and the runner does not pretend otherwise:
 - IBM Enterprise COBOL (`cob2`) is not the pin and is not used
 - Online CICS programs, remaining batch programs, JCL, and EBCDIC data are outside this slice
 
-CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. That workflow has no skip path. A missing `run-cobol.sh` fails. A PATH `cobc` mix fails. Compile success must still print `S3 COMPILE OK`, exit 2, and record `posttran_job=not-run`. That is not paper S3.
+CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. That workflow has no skip path. A missing `run-cobol.sh` fails. A PATH `cobc` mix fails. A `S3 COBC FAIL` / `work/COBC-FAIL` fails the GitHub job (GnuCOBOL error). Compile success must still print `S3 COMPILE OK` and `S3 HARNESS EXIT 2`, exit 2, and record `cobc_status=0` / `posttran_job=not-run`. Exit 2 is the harness job-not-run code, not a GnuCOBOL error. That is not paper S3.
 
 The script does not write a mutation score. This repository does not store a mutation score for S3.
 

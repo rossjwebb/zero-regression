@@ -47,11 +47,15 @@ class CardDemoPinTests(unittest.TestCase):
         script = script_path.read_text(encoding="utf-8")
         self.assertTrue(script_path.stat().st_mode & 0o111)
         self.assertIn("S3 FAIL-CLOSED", script)
+        self.assertIn("S3 COBC FAIL", script)
+        self.assertIn("S3 HARNESS EXIT 2", script)
         self.assertIn("no score is recorded", script)
         self.assertIn("toolchain.py", script)
         self.assertIn("S3_COBC", script)
         self.assertIn("-x", script)
         self.assertNotIn("killed/seeded", script)
+        # Compile-OK must stay at harness exit 2, not look like a passing job.
+        self.assertIn("Do not change compile-OK to exit 0", script)
 
     def test_runner_exits_nonzero_with_a_real_reason(self) -> None:
         completed = subprocess.run(
@@ -71,13 +75,20 @@ class CardDemoPinTests(unittest.TestCase):
         # If cobc is missing or the pin mismatches it must say so.
         if shutil.which("cobc"):
             self.assertIn("s3 compile ok", combined)
+            self.assertIn("s3 harness exit 2", combined)
+            self.assertIn("not a gnucobol error", combined)
             self.assertIn("compiled cbtrn02c", combined)
             self.assertIn("no legacy tests", combined)
             self.assertIn("not a green posttran job", combined)
+            self.assertNotIn("s3 cobc fail", combined)
+            self.assertFalse((SUBJECT / "work" / "COBC-FAIL").exists())
             self.assertTrue((SUBJECT / "work" / "CBTRN02C").is_file())
             self.assertTrue((SUBJECT / "work" / "COMPILE").is_file())
             receipt = (SUBJECT / "work" / "COMPILE").read_text(encoding="utf-8")
             self.assertIn("result=compile-ok", receipt)
+            self.assertIn("cobc_status=0", receipt)
+            self.assertIn("harness_exit=2", receipt)
+            self.assertIn("harness_meaning=posttran-job-not-run", receipt)
             self.assertIn("mutation_score=not-recorded", receipt)
             self.assertIn("posttran_job=not-run", receipt)
             self.assertIn("compiler_release=3.1.2.0", receipt)

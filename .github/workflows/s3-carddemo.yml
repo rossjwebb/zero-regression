@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # Pin checks always run on this branch. The compile path lives in
 # s3-carddemo-compile.yml and must not skip.
+# Exit 2 after a successful cobc compile is the harness "job not-run"
+# code (posttran_job=not-run), not a GnuCOBOL error. A real cobc
+# failure is S3 COBC FAIL / work/COBC-FAIL and the compile job fails.
 name: S3 CardDemo pins
 
 on:

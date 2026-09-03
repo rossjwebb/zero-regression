@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # This branch has subjects/carddemo/run-cobol.sh. Skip is not allowed.
 # Compile OK is not a POSTTRAN job and is not paper S3.
+#
+# Exit 2 from the harness is the "job not-run" code, not a GnuCOBOL error.
+# cobc returns 0 when CBTRN02C compiles. The harness then exits 2 to mean
+# posttran_job=not-run. Do not change that to exit 0: it would look like
+# a passing POSTTRAN job.
+# A GnuCOBOL compile error writes work/COBC-FAIL and prints S3 COBC FAIL;
+# this GitHub Actions job must then fail.
 name: S3 CardDemo compile
 
 on:
@@ -63,6 +70,10 @@ jobs:
             echo "S3 FAIL-CLOSED: PATH mix output invented a score" >&2
             exit 1
           fi
+          if [[ -f subjects/carddemo/work/COMPILE ]]; then
+            echo "S3 FAIL-CLOSED: PATH mix must not write a compile-ok receipt" >&2
+            exit 1
+          fi
 
       - name: Compile pinned POSTTRAN CBTRN02C
         run: |
@@ -72,6 +83,15 @@ jobs:
           status=$?
           set -e
           printf '%s\n' "$output"
+          if [[ -f subjects/carddemo/work/COBC-FAIL ]]; then
+            echo "S3 CI: GnuCOBOL compile failed (work/COBC-FAIL). This is a cobc error. The job fails." >&2
+            cat subjects/carddemo/work/COBC-FAIL >&2 || true
+            exit 1
+          fi
+          if printf '%s\n' "$output" | grep -q "S3 COBC FAIL"; then
+            echo "S3 CI: stdout has S3 COBC FAIL. This is a GnuCOBOL compile error. The job fails." >&2
+            exit 1
+          fi
           if [[ ! -x subjects/carddemo/work/CBTRN02C ]]; then
             echo "S3 FAIL-CLOSED: cobc did not produce subjects/carddemo/work/CBTRN02C" >&2
             exit 1
@@ -80,13 +100,22 @@ jobs:
             echo "S3 FAIL-CLOSED: missing compile receipt; compile did not succeed" >&2
             exit 1
           fi
+          if [[ "$status" -eq 0 ]]; then
+            echo "S3 FAIL-CLOSED: compile-OK must not exit 0 (that would look like a passing POSTTRAN job); got 0" >&2
+            exit 1
+          fi
           if [[ "$status" -ne 2 ]]; then
-            echo "S3 FAIL-CLOSED: expected exit 2 after compile (no tests, no score); got $status" >&2
+            echo "S3 FAIL-CLOSED: expected harness exit 2 (job not-run, not a cobc error); got $status" >&2
             exit 1
           fi
           printf '%s\n' "$output" | grep -q "S3 COMPILE OK"
+          printf '%s\n' "$output" | grep -q "S3 HARNESS EXIT 2"
+          printf '%s\n' "$output" | grep -q "not a GnuCOBOL error"
           printf '%s\n' "$output" | grep -q "not a green POSTTRAN job"
           grep -q "result=compile-ok" subjects/carddemo/work/COMPILE
+          grep -q "cobc_status=0" subjects/carddemo/work/COMPILE
+          grep -q "harness_exit=2" subjects/carddemo/work/COMPILE
+          grep -q "harness_meaning=posttran-job-not-run" subjects/carddemo/work/COMPILE
           grep -q "mutation_score=not-recorded" subjects/carddemo/work/COMPILE
           grep -q "posttran_job=not-run" subjects/carddemo/work/COMPILE
           grep -q "compiler_release=3.1.2.0" subjects/carddemo/work/COMPILE
@@ -94,4 +123,5 @@ jobs:
             echo "S3 FAIL-CLOSED: compile output invented a score" >&2
             exit 1
           fi
-          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; runner stayed fail-closed (exit 2, no tests, not a POSTTRAN job). This is not paper S3."
+          echo "S3 CI: cobc_status=0. harness_exit=2 means posttran_job=not-run, not a GnuCOBOL error."
+          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; harness exit 2 is job-not-run. This is not paper S3."
