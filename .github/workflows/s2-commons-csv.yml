@@ -10,6 +10,14 @@ on:
       - "tests/test_commons_csv_toolchain.py"
       - ".github/workflows/s2-commons-csv.yml"
 
+# This branch carries the S2 files from draft PR #4, so the job RUNs.
+# If this workflow is present without those files, the job SKIPs and
+# says so. A skip is not a PIT result and records no mutation score.
+#
+# Do not install PATH Java 21. The runner fetches hash-checked
+# Temurin 11.0.32.1+1 and uses that tree for javac --release 8,
+# classfile major 52, and PIT 1.15.3 --jvmPath. Mutators are
+# DEFAULTS as pinned in pins.toml.
 jobs:
   pins-and-pit:
     runs-on: ubuntu-latest
@@ -22,10 +30,49 @@ jobs:
         with:
           python-version: "3.12.3"
 
+      - name: Decide skip vs run
+        id: s2
+        run: |
+          if [ -f subjects/commons-csv/check-pins.py ] && [ -x subjects/commons-csv/run-pit.sh ]; then
+            echo "mode=run" >> "$GITHUB_OUTPUT"
+            echo "RUN: S2 files are on this branch."
+            echo "This job will run:"
+            echo "  python3.12 subjects/commons-csv/check-pins.py"
+            echo "  python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain"
+            echo "  ./subjects/commons-csv/run-pit.sh"
+            echo "The runner uses hash-checked Temurin 11.0.32.1+1, not PATH Java 21."
+          else
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+            echo "SKIP: S2 files are not on this branch."
+            echo "python3.12 subjects/commons-csv/check-pins.py was not run."
+            echo "./subjects/commons-csv/run-pit.sh was not run."
+            echo "This is not a PIT result. No mutation score is recorded."
+          fi
+
       - name: Verify pins
+        if: steps.s2.outputs.mode == 'run'
         run: |
           python3.12 subjects/commons-csv/check-pins.py
           python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain
 
       - name: Run PIT on pinned JDK 11 (fail closed)
+        if: steps.s2.outputs.mode == 'run'
         run: ./subjects/commons-csv/run-pit.sh
+
+      - name: Confirm PIT report is local and no score is stored
+        if: steps.s2.outputs.mode == 'run'
+        run: |
+          if [ ! -f subjects/commons-csv/work/pit-reports/index.html ]; then
+            echo "S2 FAIL-CLOSED: PIT did not write work/pit-reports/index.html" >&2
+            exit 1
+          fi
+          if git ls-files --error-unmatch subjects/commons-csv/work/pit-reports/index.html >/dev/null 2>&1; then
+            echo "S2 FAIL-CLOSED: PIT report must not be a git object" >&2
+            exit 1
+          fi
+          tracked="$(git ls-files subjects/commons-csv)"
+          if echo "$tracked" | grep -E '(^|/)(SCORE|mutations\.xml|mutation-score)($|/)'; then
+            echo "S2 FAIL-CLOSED: a mutation-score artifact is tracked" >&2
+            exit 1
+          fi
+          echo "PIT wrote a local HTML report. It is gitignored. No mutation score is stored."
