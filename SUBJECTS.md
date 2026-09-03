@@ -28,6 +28,6 @@ The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That
 | Pin | `de1838ea067f3fbc4c7c21b9eeae077c739ecb73` (27 March 2012, CSV-75) |
 | Licence | Apache-2.0 (`subjects/commons-csv/legacy/LICENSE.txt`) |
 | Slice | `org.apache.commons.csv.ExtendedBufferedReader` (Defects4J modified class for Csv-1) |
-| PIT | Pitest 1.15.3 command-line JARs |
+| PIT | Pitest 1.15.3 command-line JARs, mutators DEFAULTS, JDK Temurin 11.0.32.1+1, subject `--release 8` |
 | Test command | `python3.12 subjects/commons-csv/check-pins.py` then `./subjects/commons-csv/run-pit.sh` |
 | Working tree | `subjects/commons-csv/` |

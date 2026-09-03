@@ -43,6 +43,9 @@ def check_pin_text(pins: dict) -> list[str]:
         "commons_csv_commit": pins["commons_csv"]["commit"],
         "modified_class": pins["defects4j"]["modified_class"],
         "pit_version": pins["pit"]["version"],
+        "pit_mutators": pins["pit"]["mutators"],
+        "subject_release": str(pins["pit"]["subject_release"]),
+        "pit_jdk": pins["jdk"]["release"],
     }
     for key, value in expected.items():
         line = f"{key}={value}"
@@ -94,6 +97,12 @@ def main() -> int:
     parser.parse_args()
     pins = load_pins()
     errors = check_pin_text(pins) + check_files(pins) + check_defects4j_row(pins)
+    if pins["pit"]["mutators"] != "DEFAULTS":
+        errors.append("pit.mutators must be the named DEFAULTS group")
+    if pins["pit"]["subject_release"] != 8:
+        errors.append("pit.subject_release must be 8")
+    if not pins["jdk"]["url"] or not pins["jdk"]["sha256"]:
+        errors.append("jdk url/sha256 must be pinned from the fetched tarball")
     if errors:
         print("S2 FAIL-CLOSED: pin check failed", file=sys.stderr)
         for error in errors:
@@ -106,6 +115,9 @@ def main() -> int:
         f"defects4j={pins['defects4j']['tag']}@{pins['defects4j']['commit'][:12]} "
         f"csv={pins['commons_csv']['commit'][:12]} "
         f"pit={pins['pit']['version']} "
+        f"mutators={pins['pit']['mutators']} "
+        f"jdk={pins['jdk']['release']} "
+        f"release={pins['pit']['subject_release']} "
         f"files={file_count} jars={jar_count}"
     )
     return 0

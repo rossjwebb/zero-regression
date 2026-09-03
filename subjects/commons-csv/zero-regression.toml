@@ -7,5 +7,5 @@ test_paths = [
     "legacy/src/test/java/org/apache/commons/csv/CSVPrinterTest.java",
     "legacy/src/test/java/org/apache/commons/csv/CSVFormatTest.java",
 ]
-operator_set = "pitest-1.15.3-default"
+operator_set = "pitest-1.15.3-DEFAULTS"
 unverified_scope = "Pinned at Defects4J v3.0.1 Csv-1f (apache/commons-csv de1838ea067f3fbc4c7c21b9eeae077c739ecb73). PIT target is ExtendedBufferedReader only. CSVFormat, CSVLexer, CSVParser, CSVPrinter, CSVRecord, Lexer, Token, PerformanceTest, and the red upstream ExtendedBufferedReaderTest are outside the PIT target. This subject is not certified by the Python mutmut harness. No mutation score is recorded here."

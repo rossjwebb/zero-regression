@@ -17,6 +17,9 @@ modified_class=org.apache.commons.csv.ExtendedBufferedReader
 
 pit_tool=pitest
 pit_version=1.15.3
+pit_mutators=DEFAULTS
+subject_release=8
+pit_jdk=11.0.32.1+1
 pit_invocation=command-line jars (Maven is not required)
 junit_version=4.13.2
 hamcrest_core_version=1.3
