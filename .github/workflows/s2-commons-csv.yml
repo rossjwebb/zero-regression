@@ -7,6 +7,7 @@ on:
     paths:
       - "subjects/commons-csv/**"
       - "tests/test_commons_csv_pins.py"
+      - "tests/test_commons_csv_toolchain.py"
       - ".github/workflows/s2-commons-csv.yml"
 
 jobs:
@@ -21,16 +22,10 @@ jobs:
         with:
           python-version: "3.12.3"
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-
       - name: Verify pins
         run: |
           python3.12 subjects/commons-csv/check-pins.py
-          python3.12 -m unittest tests.test_commons_csv_pins
+          python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain
 
-      - name: Run PIT (fail closed)
+      - name: Run PIT on pinned JDK 11 (fail closed)
         run: ./subjects/commons-csv/run-pit.sh

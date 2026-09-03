@@ -24,6 +24,17 @@ committed = "2012-03-27T00:49:17Z"
 message = "CSV-75 ExtendedBufferReader does not handle EOL consistently"
 licence = "Apache-2.0"
 
+[jdk]
+# PIT 1.15.3 runs on Java 11+. The 2012 Commons-CSV pin is Java 5 source
+# (Defects4J-era 7/8 bytecode). Compile with this JDK's javac --release 8
+# and run PIT on the same JDK 11. Never mix PATH Java 21 into javac/java.
+vendor = "eclipse-temurin"
+release = "11.0.32.1+1"
+version_marker = "11.0.32.1"
+filename = "OpenJDK11U-jdk_x64_linux_hotspot_11.0.32.1_1.tar.gz"
+url = "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.32.1%2B1/OpenJDK11U-jdk_x64_linux_hotspot_11.0.32.1_1.tar.gz"
+sha256 = "5c3f68887c325d36d852ba534303e1f5f1f5cae7d6cc1e951d73e0d8e98a058d"
+
 [pit]
 # Pitest, not Defects4J Major. 1.15.3 is pinned because the 2012 subject
 # uses JUnit 4 and does not need the JUnit 5 plugin.
@@ -31,7 +42,23 @@ tool = "pitest"
 version = "1.15.3"
 invocation = "command-line"
 output_formats = "HTML"
+# DEFAULTS is the named PIT 1.15.3 group (not STRONGER, not an implicit
+# unversioned default). In 1.15.3 that group includes
+# REMOVE_CONDITIONALS_ORDER_ELSE and REMOVE_CONDITIONALS_EQUAL_ELSE
+# (hcoles/pitest#1400). STRONGER adds EXPERIMENTAL_SWITCH and the
+# REMOVE_CONDITIONALS_*_IF variants and is not used.
+mutators = "DEFAULTS"
+subject_release = 8
 target_class = "org.apache.commons.csv.ExtendedBufferedReader"
+excluded_classes = [
+    "org.apache.commons.csv.CSVFormat",
+    "org.apache.commons.csv.CSVLexer",
+    "org.apache.commons.csv.CSVParser",
+    "org.apache.commons.csv.CSVPrinter",
+    "org.apache.commons.csv.CSVRecord",
+    "org.apache.commons.csv.Lexer",
+    "org.apache.commons.csv.Token",
+]
 green_tests = [
     "org.apache.commons.csv.CSVParserTest",
     "org.apache.commons.csv.CSVLexerTest",
@@ -40,7 +67,15 @@ green_tests = [
 ]
 # Upstream ExtendedBufferedReaderTest is red at Csv-1f (CSV-75 TODOs left
 # in the fixed commit). It is not a gate and is not a PIT targetTests entry.
-excluded_red_test = "org.apache.commons.csv.ExtendedBufferedReaderTest"
+excluded_tests = [
+    "org.apache.commons.csv.ExtendedBufferedReaderTest",
+    "org.apache.commons.csv.PerformanceTest",
+]
+threads = 1
+timeout_factor = 2
+timeout_const_ms = 4000
+# Comma-separated: PIT's --jvmArgs is a comma list, not a shell string.
+minion_jvm_args = "-Xmx256m,-Xms64m"
 
 [[file]]
 path = "legacy/LICENSE.txt"

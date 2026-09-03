@@ -19,7 +19,8 @@ Do not edit `legacy/`.
 | Issue | [CSV-75](https://issues.apache.org/jira/browse/CSV-75) |
 | Modified class | `org.apache.commons.csv.ExtendedBufferedReader` |
 | Licence | Apache-2.0 (`legacy/LICENSE.txt`) |
-| PIT | Pitest 1.15.3 command-line JARs (JUnit 4; no Maven plugin) |
+| PIT | Pitest 1.15.3 command-line JARs, named mutator group **DEFAULTS** (not STRONGER) |
+| JDK | Eclipse Temurin 11.0.32.1+1 (PIT 1.15.3 / Java 11+). Subject bytecode is `javac --release 8`. |
 
 Hashes for every vendored file and every JAR are in `pins.toml`. They were written from fetched artifacts.
 
@@ -45,17 +46,21 @@ At Csv-1f these classes pass:
 
 ## How to run
 
-From the repository root, with Python 3.12.3 and a JDK that can run `javac --release 8`:
+From the repository root, with Python 3.12.3. Do not put Java 21 on `PATH` and expect the runner to use it. The script fetches the pinned Temurin 11 tarball (hash in `pins.toml`) unless `S2_JAVA_HOME` is already that same 11.0.32.1 release.
 
 ```bash
 python3.12 subjects/commons-csv/check-pins.py
-python3.12 -m unittest tests.test_commons_csv_pins
+python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain
 ./subjects/commons-csv/run-pit.sh
 ```
 
-`run-pit.sh` downloads the pinned JARs into `subjects/commons-csv/work/lib/`, checks their SHA-256, compiles the snapshot, runs the four green test classes, then invokes PIT. It exits 2 if any step fails (missing `javac`, download failure, hash mismatch, red green-suite, or no PIT report).
+`run-pit.sh` downloads the pinned JDK 11 and JARs into `subjects/commons-csv/work/`, checks SHA-256, compiles with that JDK's `javac --release 8`, checks the classfile major version is 52 (Java 8), runs the four green test classes on JDK 11, then invokes PIT on the same JDK with `--mutators DEFAULTS` and explicit target/exclude class filters.
 
-Maven is not required. This VM image has OpenJDK and no Maven; the command-line JARs are still PIT. Defects4J Major is not used.
+PIT minions get a 256m heap and a pinned timeout so one mutant TIMED_OUT or OOM does not crash the parent process. That isolation is **not** a success: the log judge still exits 2 if any mutant is TIMED_OUT, MEMORY_ERROR, or RUN_ERROR, or if a minion exits abnormally. No partial score is written.
+
+The script exits 2 if any step fails (wrong JDK, download failure, hash mismatch, non-Java-8 classfiles, red green-suite, PIT process failure, isolated edge case, or no HTML report).
+
+Maven is not required. Defects4J Major is not used.
 
 The HTML report is written to `subjects/commons-csv/work/pit-reports/index.html`. That path is gitignored. This repository does not store a mutation score for S2.
 

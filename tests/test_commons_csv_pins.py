@@ -32,7 +32,12 @@ class CommonsCsvPinTests(unittest.TestCase):
         self.assertEqual(pins["commons_csv"]["commit"], "de1838ea067f3fbc4c7c21b9eeae077c739ecb73")
         self.assertEqual(pins["pit"]["tool"], "pitest")
         self.assertEqual(pins["pit"]["version"], "1.15.3")
+        self.assertEqual(pins["pit"]["mutators"], "DEFAULTS")
+        self.assertEqual(pins["pit"]["subject_release"], 8)
         self.assertEqual(pins["pit"]["target_class"], "org.apache.commons.csv.ExtendedBufferedReader")
+        self.assertEqual(pins["jdk"]["release"], "11.0.32.1+1")
+        self.assertTrue(pins["jdk"]["sha256"])
+        self.assertIn("org.apache.commons.csv.CSVParser", pins["pit"]["excluded_classes"])
 
     def test_run_script_is_fail_closed_and_does_not_record_a_score(self) -> None:
         script = (SUBJECT / "run-pit.sh").read_text(encoding="utf-8")
@@ -40,7 +45,11 @@ class CommonsCsvPinTests(unittest.TestCase):
         self.assertIn("S2 FAIL-CLOSED", script)
         self.assertIn("does not record a mutation score", script)
         self.assertIn("pitest.mutationtest.commandline.MutationCoverageReport", script)
+        self.assertIn("--mutators", script)
+        self.assertIn("judge_pit_log", script)
+        self.assertIn("S2_JAVA_HOME", script)
         self.assertNotIn("defects4j mutation", script)
+        self.assertNotIn("java-version: \"21\"", script)
 
     def test_no_committed_mutation_score(self) -> None:
         forbidden_names = {"mutations.xml", "SCORE", "mutation-score"}
