@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0
+name: PR checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  verify-and-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Verify executed fixture chains
+        run: |
+          python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl
+          python3.12 ./verify.py fixtures/accounting-service/pre-remediation/evidence.jsonl
+          python3.12 ./verify.py fixtures/accounting-service/superseded/publish-4/evidence.jsonl
+
+      - name: Run django-accounting golden-file oracle
+        run: |
+          if [ -f subjects/django-accounting/oracle.py ]; then
+            python3.12 subjects/django-accounting/oracle.py
+          else
+            echo "subjects/django-accounting/oracle.py is not on this branch."
+            echo "S1 (draft PR #1) adds it. This step will run the oracle once that file is present."
+          fi

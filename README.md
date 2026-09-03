@@ -39,3 +39,14 @@ Three executed `accounting-service` chains are kept:
 - `fixtures/accounting-service/` — post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. `CONFIG` hash `60df647fc89a72ea0627b9bf933482bea4e9259f53f6614c4b61c78590a8be06`.
 - `fixtures/accounting-service/superseded/publish-4/` — same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. `CONFIG` hash `eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b`.
 - `fixtures/accounting-service/pre-remediation/` — the executed chain that found the two gaps. `CONFIG` hash `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd`.
+
+An earlier April 2026 figure of 91.0% / 279 mutants is superseded. See `APRIL-2026-SUPERSEDED.md`. Do not cite that figure.
+
+Pull-request checks re-run the fixture verifier and, when the S1 subject is present, the django-accounting oracle:
+
+```bash
+python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl
+python3.12 ./verify.py fixtures/accounting-service/pre-remediation/evidence.jsonl
+python3.12 ./verify.py fixtures/accounting-service/superseded/publish-4/evidence.jsonl
+python3.12 subjects/django-accounting/oracle.py
+```
