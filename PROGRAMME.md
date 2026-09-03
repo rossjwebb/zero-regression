@@ -30,7 +30,7 @@ If the oracle is missing, the step skips. A skip is not a pass. The old `cases=1
 
 **PR #4 / PR #7.** PIT runs on hash-checked Temurin 11.0.32.1. Subject classfiles are major 52 (`javac --release 8`). Mutators are the named DEFAULTS group. The runner is fail-closed. No mutation score is stored.
 
-**PR #6.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`.
+**PR #6.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`. PR #6 now splits a `cobc` failure (`S3 COBC FAIL`, job fails) from compile-OK plus harness exit 2 (`S3 HARNESS EXIT 2`, `posttran_job=not-run`, not a GnuCOBOL error). Still not paper S3.
 
 **Dedicated workflows.** PR #1 now has `s1-django-accounting-oracle.yml` (always runs; requires `cases=27 replay-only`; skip not allowed). PR #6 now has `s3-carddemo-compile.yml` (always runs; `S3 COMPILE OK` + exit 2 + `posttran_job=not-run`; skip not allowed). Still not paper S1/S3.
 
