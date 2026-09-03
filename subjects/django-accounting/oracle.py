@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Golden-file oracle for the pinned django-accounting pricing slice.
+"""Golden-file oracle for the pinned django-accounting slice.
 
-Runs the legacy Price object, sale-line totals, payment allocation, and
-collected-profits calculator through a Django stub. Compare mode is the
-default. Generators must not read subjects/django-accounting/golden/.
+This runner replays recorded traces against
+dulacp/django-accounting 2e61776a653e719a4c15578ab385603a6066c2b6.
+A match is not a proof of accounting correctness. Django ORM and SQL
+are not executed. See ORACLE.md next to this file.
+
+Compare mode is the default. A Generator must not read
+subjects/django-accounting/golden/.
 """
 from __future__ import annotations
 
@@ -22,6 +26,12 @@ LEGACY = SUBJECT / "legacy"
 DEFAULT_GOLDEN = SUBJECT / "golden" / "expected.json"
 PIN = (LEGACY / "PIN").read_text(encoding="utf-8").splitlines()
 PIN_COMMIT = next(line.split("=", 1)[1] for line in PIN if line.startswith("commit="))
+CLAIM = (
+    "Replay of recorded traces from the pinned dulacp/django-accounting "
+    "commit 2e61776a653e719a4c15578ab385603a6066c2b6. "
+    "This is not a proof of accounting correctness. "
+    "Django ORM and SQL are not executed; the stub is import-only."
+)
 
 for path in (STUBS, LEGACY):
     if str(path) not in sys.path:
@@ -42,6 +52,7 @@ from accounting.apps.books.models import (  # noqa: E402
     Payment,
     TaxRate,
 )
+from accounting.libs.intervals import TimeInterval  # noqa: E402
 from accounting.libs.prices import Price  # noqa: E402
 
 
@@ -51,6 +62,10 @@ def dec(value: Any) -> str | None:
     if not isinstance(value, Decimal):
         value = Decimal(str(value))
     return format(value, "f")
+
+
+def exception_payload(exc: BaseException) -> dict[str, str]:
+    return {"type": type(exc).__name__, "message": str(exc)}
 
 
 def tax_rate(pk: int, name: str, rate: str) -> TaxRate:
@@ -79,6 +94,7 @@ def price_payload(price: Price) -> dict[str, Any]:
         "incl_tax": dec(price.incl_tax),
         "tax": dec(price.tax) if price.is_tax_known else None,
         "is_tax_known": price.is_tax_known,
+        "repr": repr(price),
     }
 
 
@@ -106,6 +122,26 @@ def sale_payload(sale: Invoice | Bill) -> dict[str, Any]:
     }
 
 
+def allocation_payload(sale: Invoice | Bill, amount: str, paid: date) -> dict[str, Any]:
+    processed = SalePaymentLineProcessed(sale, Payment(amount=Decimal(amount), date_paid=paid))
+    processed.process()
+    return {
+        "amount_excl_tax": dec(processed.amount_excl_tax),
+        "tax_pk": processed.tax_rate.pk,
+        "tax_rate": dec(processed.tax_rate.rate),
+    }
+
+
+def profits_payload(calculator: ProfitsLossCalculator) -> dict[str, Any]:
+    return {
+        "collected": dec(calculator.total_collected()),
+        "expenses": dec(calculator.total_expenses()),
+        "profits": dec(calculator.profits()),
+        "period_start": calculator.period.start.isoformat() if calculator.period.start else None,
+        "period_end": calculator.period.end.isoformat() if calculator.period.end else None,
+    }
+
+
 def run_cases() -> dict[str, Any]:
     standard = tax_rate(1, "standard", "0.20")
     reduced = tax_rate(2, "reduced", "0.05")
@@ -113,6 +149,7 @@ def run_cases() -> dict[str, Any]:
 
     org = Organization(pk=1, display_name="Pin", legal_name="Pin")
     other = Organization(pk=2, display_name="Other", legal_name="Other")
+    empty = Organization(pk=4, display_name="Empty", legal_name="Empty")
 
     inv_multi = bind_sale(
         Invoice(pk=10, number=10, organization=org),
@@ -133,6 +170,14 @@ def run_cases() -> dict[str, Any]:
         Invoice(pk=14, number=14, organization=org),
         [invoice_line(standard, "10.00", "1")],
         [Payment(amount=Decimal("12.001"), date_paid=date(2024, 2, 2))],
+    )
+    inv_half = bind_sale(
+        Invoice(pk=19, number=19, organization=org),
+        [invoice_line(standard, "10.00", "0.50")],
+    )
+    inv_past_due = bind_sale(
+        Invoice(pk=17, number=17, organization=org, date_dued=date(2020, 1, 1)),
+        [invoice_line(standard, "10.00", "1")],
     )
     bill = bind_sale(
         Bill(pk=20, number=20, organization=org),
@@ -163,87 +208,106 @@ def run_cases() -> dict[str, Any]:
     )
     other.invoices = RelatedManager([outsider])
     other.bills = RelatedManager()
+    empty.invoices = RelatedManager()
+    empty.bills = RelatedManager()
+
+    dated_only = Organization(pk=5, display_name="Dated", legal_name="Dated")
+    dated_only.invoices = RelatedManager([dated])
+    dated_only.bills = RelatedManager()
 
     mixed = bind_sale(
         Invoice(pk=16, number=16, organization=org),
         [invoice_line(standard, "10.00", "1"), invoice_line(reduced, "10.00", "1")],
         [Payment(amount=Decimal("10.00"), date_paid=date(2024, 1, 1))],
     )
-    mixed_error: str | None = None
+    mixed_error: dict[str, str] | None = None
     try:
         SalePaymentLineProcessed(mixed, Payment(amount=Decimal("10.00"), date_paid=date(2024, 1, 1))).process()
     except NotImplementedError as exc:
-        mixed_error = str(exc)
+        mixed_error = exception_payload(exc)
 
-    single_alloc = SalePaymentLineProcessed(inv_paid, Payment(amount=Decimal("60.00"), date_paid=date(2024, 1, 15)))
-    single_alloc.process()
+    unknown_tax_error: dict[str, str] | None = None
+    try:
+        _ = Price("USD", Decimal("10.00")).tax
+    except TypeError as exc:
+        unknown_tax_error = exception_payload(exc)
+
+    interval_error: dict[str, str] | None = None
+    try:
+        TimeInterval("2024-01-01", None)
+    except AssertionError as exc:
+        interval_error = exception_payload(exc)
+
+    sum_type_error: dict[str, str] | None = None
+    try:
+        ProfitsLossCalculator(org, sum_type="accurial")
+    except AssertionError as exc:
+        sum_type_error = exception_payload(exc)
 
     collected = ProfitsLossCalculator(org, start=date(2024, 1, 1), end=date(2024, 2, 28))
     year = ProfitsLossCalculator(org)
+    dated_period = ProfitsLossCalculator(dated_only, start=date(2024, 1, 1), end=date(2024, 2, 28))
+    dated_all = ProfitsLossCalculator(dated_only)
 
     price_tax = Price("EUR", Decimal("10.00"), tax=Decimal("2.00"))
     price_incl = Price("EUR", Decimal("10.00"), incl_tax=Decimal("12.00"))
     price_unknown = Price("USD", Decimal("10.00"))
     price_later = Price("USD", Decimal("10.00"))
     price_later.tax = Decimal("2.00")
-
-    due_invoice = bind_sale(
-        Invoice(pk=17, number=17, organization=org, date_dued=date(2020, 1, 1)),
-        [invoice_line(standard, "10.00", "1")],
-    )
-    current_invoice = bind_sale(
-        Invoice(pk=18, number=18, organization=org, date_dued=date(2099, 1, 1)),
-        [invoice_line(standard, "30.00", "1")],
-    )
-    org_overdue = Organization(pk=3, display_name="Due", legal_name="Due")
-    org_overdue.invoices = RelatedManager([due_invoice, current_invoice])
-    org_overdue.bills = RelatedManager()
+    price_zero_tax = Price("EUR", Decimal("10.00"), tax=Decimal("0"))
+    open_interval = TimeInterval(None, None)
+    bounded_interval = TimeInterval(date(2024, 1, 1), date(2024, 2, 28))
 
     return {
+        "claim": CLAIM,
         "pin": PIN_COMMIT,
         "cases": {
             "price_from_tax": price_payload(price_tax),
             "price_from_incl": price_payload(price_incl),
-            "price_unknown": price_payload(price_unknown),
+            "price_unknown": {
+                "currency": price_unknown.currency,
+                "excl_tax": dec(price_unknown.excl_tax),
+                "incl_tax": dec(price_unknown.incl_tax),
+                "is_tax_known": price_unknown.is_tax_known,
+                "repr": repr(price_unknown),
+            },
+            "price_unknown_tax_access": unknown_tax_error,
             "price_set_later": price_payload(price_later),
+            "price_tax_zero": price_payload(price_zero_tax),
             "price_equality": {
                 "tax_vs_incl": price_tax == price_incl,
                 "unknown_vs_tax": price_unknown == price_tax,
                 "currency_matters": Price("USD", Decimal("10.00"), tax=Decimal("2.00")) == price_tax,
+                "same_values": Price("EUR", Decimal("10.00"), tax=Decimal("2.00")) == price_tax,
+            },
+            "time_interval": {
+                "open_start": open_interval.start,
+                "open_end": open_interval.end,
+                "bounded_start": bounded_interval.start.isoformat(),
+                "bounded_end": bounded_interval.end.isoformat(),
+                "bad_start": interval_error,
             },
             "invoice_multi_rate": sale_payload(inv_multi),
             "invoice_zero_rate": sale_payload(inv_zero),
             "invoice_fully_paid": sale_payload(inv_paid),
             "invoice_partial": sale_payload(inv_partial),
             "invoice_quantize_paid": sale_payload(inv_quantize),
+            "invoice_half_quantity": sale_payload(inv_half),
+            "invoice_past_due_unpaid": sale_payload(inv_past_due),
             "bill_standard": sale_payload(bill),
-            "payment_allocation_single_rate": {
-                "amount_excl_tax": dec(single_alloc.amount_excl_tax),
-                "tax_pk": single_alloc.tax_rate.pk,
+            "payment_allocation_single_rate": allocation_payload(inv_paid, "60.00", date(2024, 1, 15)),
+            "payment_allocation_partial": allocation_payload(inv_partial, "40.00", date(2024, 2, 1)),
+            "payment_allocation_zero_rate": allocation_payload(inv_zero, "25.00", date(2024, 1, 20)),
+            "payment_allocation_mixed_rate": mixed_error,
+            "profits_period_2024_jan_feb": profits_payload(collected),
+            "profits_all_time": profits_payload(year),
+            "profits_empty_organization": profits_payload(ProfitsLossCalculator(empty)),
+            "profits_dated_invoice_only": {
+                "jan_feb": profits_payload(dated_period),
+                "all_time": profits_payload(dated_all),
             },
-            "payment_allocation_mixed_rate": {"error": mixed_error},
-            "profits_period_2024_jan_feb": {
-                "collected": dec(collected.total_collected()),
-                "expenses": dec(collected.total_expenses()),
-                "profits": dec(collected.profits()),
-            },
-            "profits_all_time": {
-                "collected": dec(year.total_collected()),
-                "expenses": dec(year.total_expenses()),
-                "profits": dec(year.profits()),
-            },
-            "organization_derived": {
-                "turnover_excl_tax": dec(org.turnover_excl_tax),
-                "turnover_incl_tax": dec(org.turnover_incl_tax),
-                "debts_excl_tax": dec(org.debts_excl_tax),
-                "debts_incl_tax": dec(org.debts_incl_tax),
-                "profits": dec(org.profits),
-                "collected_tax": dec(org.collected_tax),
-                "deductible_tax": dec(org.deductible_tax),
-                "tax_provisionning": dec(org.tax_provisionning),
-            },
+            "calculator_rejects_unknown_sum_type": sum_type_error,
             "payroll_on_partial": {"payroll_taxes": dec(inv_partial.payroll_taxes)},
-            "overdue_total": {"overdue_total": dec(org_overdue.overdue_total)},
             "outsider_excluded": {
                 "other_collected": dec(ProfitsLossCalculator(other).total_collected()),
                 "org_ignores_other": dec(year.total_collected()) != dec(ProfitsLossCalculator(other).total_collected()),
@@ -263,13 +327,15 @@ def compare(payload: dict[str, Any], golden: Path) -> int:
         return 2
     expected = json.loads(golden.read_text(encoding="utf-8"))
     if payload == expected:
-        print(f"ORACLE OK pin={PIN_COMMIT} cases={len(payload['cases'])}")
+        print(f"ORACLE OK pin={PIN_COMMIT} cases={len(payload['cases'])} replay-only")
         return 0
     print(f"ORACLE FAILURE: computed output differs from {golden}", file=sys.stderr)
     got_cases = payload.get("cases", {})
     exp_cases = expected.get("cases", {})
     if payload.get("pin") != expected.get("pin"):
         print(f"  pin: computed {payload.get('pin')!r} expected {expected.get('pin')!r}", file=sys.stderr)
+    if payload.get("claim") != expected.get("claim"):
+        print(f"  claim: computed {payload.get('claim')!r} expected {expected.get('claim')!r}", file=sys.stderr)
     for name in sorted(set(got_cases) | set(exp_cases)):
         if got_cases.get(name) != exp_cases.get(name):
             print(f"  case {name}:", file=sys.stderr)
@@ -279,7 +345,7 @@ def compare(payload: dict[str, Any], golden: Path) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the django-accounting golden-file oracle")
+    parser = argparse.ArgumentParser(description="Replay recorded django-accounting traces (not a correctness proof)")
     parser.add_argument("--write", action="store_true", help="rewrite the golden file from the pinned slice")
     parser.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN, help="golden file to compare or write")
     args = parser.parse_args()
@@ -287,7 +353,7 @@ def main() -> int:
     golden = args.golden
     if args.write:
         write_golden(payload, golden)
-        print(f"WROTE {golden} pin={PIN_COMMIT} cases={len(payload['cases'])}")
+        print(f"WROTE {golden} pin={PIN_COMMIT} cases={len(payload['cases'])} replay-only")
         return 0
     return compare(payload, golden)
 

@@ -24,6 +24,6 @@ The entries are candidates, not completed replications. At selection time, rejec
 | Pin | `2e61776a653e719a4c15578ab385603a6066c2b6` (2 December 2017) |
 | Licence | MIT (`subjects/django-accounting/legacy/LICENSE`) |
 | Slice | `Price` and the collected-profits calculator (174 executable lines) |
-| Offline evidence | Django is stubbed; `python3.12 subjects/django-accounting/oracle.py` compares the slice to `golden/expected.json` |
+| Offline evidence | Import stubs only (no Django ORM/SQL). `python3.12 subjects/django-accounting/oracle.py` replays recorded traces against `golden/expected.json`. That match is not a proof of accounting correctness. |
 | Test command | `python3.12 subjects/django-accounting/oracle.py` |
 | Working tree | `subjects/django-accounting/` |

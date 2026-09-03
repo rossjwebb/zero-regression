@@ -1,8 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
+"""Import shims for Django 1.7-era ``django.db.models``.
+
+These classes let the 2 December 2017 pin import on Python 3.12.3.
+They do not execute Django ORM or SQL. ``QuerySet.filter`` is a no-op.
+``aggregate``, ``dued``, and the turnover/debt helpers are absent on
+purpose: those are ORM/SQL entry points from the pin's managers, not
+behaviour this stub may invent.
+"""
 from __future__ import annotations
 
-from datetime import date
-from decimal import Decimal
 from typing import Any, Iterable
 
 
@@ -58,6 +64,8 @@ class ManyToManyField(Field):
 
 
 class Sum:
+    """Marker imported by the pin's managers. No SQL is issued."""
+
     def __init__(self, field: str) -> None:
         self.field = field
 
@@ -78,65 +86,22 @@ class QuerySet:
     def all(self) -> "QuerySet":
         return QuerySet(self._items)
 
-    def distinct(self) -> "QuerySet":
-        return QuerySet(self._items)
-
-    def prefetch_related(self, *args: Any) -> "QuerySet":
-        return self
-
-    def select_related(self, *args: Any) -> "QuerySet":
-        return self
-
-    def filter(self, **kwargs: Any) -> "QuerySet":
-        items = self._items
-        for key, expected in kwargs.items():
-            parts = key.split("__")
-            if len(parts) > 2:
-                # Related-field lookups are re-applied in the calculator's payment loop.
-                continue
-            if len(parts) == 2 and parts[1] == "lte":
-                items = [item for item in items if _lookup(item, parts[0]) is not None and _lookup(item, parts[0]) <= expected]
-            elif len(parts) == 2 and parts[1] == "gte":
-                items = [item for item in items if _lookup(item, parts[0]) is not None and _lookup(item, parts[0]) >= expected]
-            elif "__" in key:
-                continue
-            else:
-                items = [item for item in items if _matches(item, key, expected)]
-        return QuerySet(items)
-
     def first(self) -> Any:
         return self._items[0] if self._items else None
 
-    def aggregate(self, **kwargs: Any) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        for key, expr in kwargs.items():
-            field = getattr(expr, "field", None)
-            total = None
-            for item in self._items:
-                value = _lookup(item, field) if field else None
-                if value is None:
-                    continue
-                total = value if total is None else total + value
-            result[key] = total
-        return result
+    def distinct(self) -> "QuerySet":
+        return QuerySet(self._items)
 
-    def dued(self) -> "QuerySet":
-        return self.filter(date_dued__lte=date.today())
+    def prefetch_related(self, *args: Any, **kwargs: Any) -> "QuerySet":
+        return self
 
-    def turnover_excl_tax(self) -> Any:
-        return self.aggregate(sum=Sum("total_excl_tax"))["sum"]
+    def select_related(self, *args: Any, **kwargs: Any) -> "QuerySet":
+        return self
 
-    def turnover_incl_tax(self) -> Any:
-        return self.aggregate(sum=Sum("total_incl_tax"))["sum"]
-
-    def debts_excl_tax(self) -> Any:
-        return self.turnover_excl_tax()
-
-    def debts_incl_tax(self) -> Any:
-        return self.turnover_incl_tax()
-
-    def total_paid(self) -> Any:
-        return self.aggregate(sum=Sum("payments__amount"))["sum"] or Decimal("0")
+    def filter(self, **kwargs: Any) -> "QuerySet":
+        # Django ORM/SQL is not executed. The pin's ProfitsLossCalculator
+        # re-checks payment dates in Python after this call.
+        return QuerySet(self._items)
 
     @classmethod
     def as_manager(cls) -> "Manager":
@@ -152,27 +117,6 @@ class RelatedManager:
 
     def all(self) -> QuerySet:
         return QuerySet(self._items)
-
-    def filter(self, **kwargs: Any) -> QuerySet:
-        return self.all().filter(**kwargs)
-
-    def dued(self) -> QuerySet:
-        return self.all().dued()
-
-    def turnover_excl_tax(self) -> Any:
-        return self.all().turnover_excl_tax()
-
-    def turnover_incl_tax(self) -> Any:
-        return self.all().turnover_incl_tax()
-
-    def debts_excl_tax(self) -> Any:
-        return self.all().debts_excl_tax()
-
-    def debts_incl_tax(self) -> Any:
-        return self.all().debts_incl_tax()
-
-    def total_paid(self) -> Any:
-        return self.all().total_paid() or Decimal("0")
 
 
 class Manager:
@@ -214,30 +158,3 @@ class Model:
         if not isinstance(other, Model):
             return NotImplemented
         return self is other or (type(self) is type(other) and self.pk == other.pk)
-
-
-def _lookup(item: Any, field: str) -> Any:
-    current = item
-    for part in field.split("__"):
-        if current is None:
-            return None
-        if part == "amount" and hasattr(current, "all"):
-            values = [getattr(pay, "amount", None) for pay in current.all()]
-            values = [value for value in values if value is not None]
-            if not values:
-                return None
-            total = values[0]
-            for value in values[1:]:
-                total += value
-            return total
-        current = getattr(current, part, None)
-    return current
-
-
-def _matches(item: Any, key: str, expected: Any) -> bool:
-    value = getattr(item, key, None)
-    if value is expected:
-        return True
-    if isinstance(value, Decimal) or isinstance(expected, Decimal):
-        return value == expected
-    return value == expected
