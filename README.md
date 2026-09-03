@@ -10,6 +10,8 @@ A deterministic certification harness. A completed run issues a three-line certi
 
 This repository makes no Generator, Adjudicator, or Executor calls.
 
+Unexecuted replication steps (S1–S3) and the draft pull requests that hold them are listed in [PROGRAMME.md](PROGRAMME.md). None of those steps is a paper execution until merged and the paper says so.
+
 ## How to run
 
 From a fresh clone, with Python 3.12.3 on `PATH`:
