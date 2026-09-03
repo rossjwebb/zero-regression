@@ -1,3 +1,7 @@
+.coverage
+.mutmut-cache
+__pycache__/
+mutants/
 *~
 #*
 *#

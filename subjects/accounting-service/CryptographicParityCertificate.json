@@ -1,7 +1,9 @@
 {
+  "verification_status": "SUPERSEDED",
+  "superseded_note": "April 2026 figure of 91.0 / 279 / 186. Do not cite. Live executed certificate is 248/252. See APRIL-2026-SUPERSEDED.md and fixtures/accounting-service/.",
+  "historical_verification_status": "CRYPTOGRAPHICALLY_VERIFIED",
   "artifact_hash": "330b84f429dfbcd4b9b743aa3569d461c81131d441ebceae181dd8796261217e",
   "module": "org.fintx.accounting.service.impl.AccountServiceImpl",
-  "verification_status": "CRYPTOGRAPHICALLY_VERIFIED",
   "line_coverage": 100.0,
   "branch_coverage": 100.0,
   "mutation_score": 91.0,

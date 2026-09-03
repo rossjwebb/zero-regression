@@ -1,1 +1,3 @@
 This case-study subject is the author's original Python rewrite of a public double-entry account-update example. It contains no client code. The certified artifact is `account_service_impl.py` with `test_account_service_impl.py`; the Java tree and telemetry files are outside the certification scope.
+
+The April 2026 files `CryptographicParityCertificate.json`, `MutationTelemetry.json`, and `pattern_export/MutationTelemetry.pattern.json` are superseded (91.0 / 279 / 186). Do not cite them. See `APRIL-2026-SUPERSEDED.md` in this directory. The live executed certificate is 248/252 on `fixtures/accounting-service/`.
