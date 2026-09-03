@@ -6,9 +6,9 @@
 `2e61776a653e719a4c15578ab385603a6066c2b6` (2 December 2017, MIT).
 
 A match against `golden/expected.json` means those same calls still
-produce the same JSON. It is **not** a proof that the pin does
-accounting correctly. It does not certify tax law, double-entry
-invariants, or collected-versus-accrual profits.
+produce the same JSON. This is not a proof of accounting correctness.
+It does not certify tax law, double-entry invariants, or
+collected-versus-accrual profits.
 
 ## What is executed
 
