@@ -25,11 +25,20 @@ jobs:
           python3.12 ./verify.py fixtures/accounting-service/pre-remediation/evidence.jsonl
           python3.12 ./verify.py fixtures/accounting-service/superseded/publish-4/evidence.jsonl
 
-      - name: Run django-accounting golden-file oracle
+      - name: Run django-accounting replay oracle if present
         run: |
-          if [ -f subjects/django-accounting/oracle.py ]; then
-            python3.12 subjects/django-accounting/oracle.py
-          else
-            echo "subjects/django-accounting/oracle.py is not on this branch."
-            echo "S1 (draft PR #1) adds it. This step will run the oracle once that file is present."
+          set -euo pipefail
+          ORACLE=subjects/django-accounting/oracle.py
+          if [ ! -f "$ORACLE" ]; then
+            echo "subjects/django-accounting/oracle.py is not on this tree."
+            echo "The replay runner lives on draft PR #1. Skip. This is not paper S1."
+            exit 0
+          fi
+          output=$(python3.12 "$ORACLE")
+          printf '%s\n' "$output"
+          expected='ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only'
+          if [ "$output" != "$expected" ]; then
+            echo "ORACLE FAILURE: stdout was not the replay-only OK line" >&2
+            echo "expected: $expected" >&2
+            exit 1
           fi

@@ -42,7 +42,7 @@ Three executed `accounting-service` chains are kept:
 
 An earlier April 2026 figure of 91.0% / 279 mutants is superseded. See `APRIL-2026-SUPERSEDED.md`. Do not cite that figure.
 
-Pull-request checks re-run the fixture verifier and, when the S1 subject is present, the django-accounting oracle:
+Pull-request checks re-run the fixture verifier and, when the draft PR #1 runner is present, the django-accounting replay oracle. A match is a replay of 27 recorded traces, not a proof of accounting correctness and not a paper S1 result.
 
 ```bash
 python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl
@@ -50,3 +50,5 @@ python3.12 ./verify.py fixtures/accounting-service/pre-remediation/evidence.json
 python3.12 ./verify.py fixtures/accounting-service/superseded/publish-4/evidence.jsonl
 python3.12 subjects/django-accounting/oracle.py
 ```
+
+The oracle must print `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only` and exit 0. Any other line fails the check.
