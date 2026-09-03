@@ -16,6 +16,18 @@ Before selection, record the commit SHA, licence text, installation command, tes
 
 The entries are candidates, not completed replications. At selection time, reject any whose selected checkout cannot run offline under the exact certification pins. Record that rejection in the evidence folder rather than silently replacing the subject.
 
+## Selected: django-accounting
+
+| Field | Record |
+|---|---|
+| Upstream | https://github.com/dulacp/django-accounting |
+| Pin | `2e61776a653e719a4c15578ab385603a6066c2b6` (2 December 2017) |
+| Licence | MIT (`subjects/django-accounting/legacy/LICENSE`) |
+| Slice | `Price` and the collected-profits calculator (174 executable lines) |
+| Offline evidence | Import stubs only (no Django ORM/SQL). `python3.12 subjects/django-accounting/oracle.py` replays recorded traces against `golden/expected.json`. That match is not a proof of accounting correctness. |
+| Test command | `python3.12 subjects/django-accounting/oracle.py` |
+| Working tree | `subjects/django-accounting/` |
+
 ## Selected: Commons-CSV (S2)
 
 The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That is Apache Commons CSV (Defects4J project `Csv`), mutated with Pitest, not with Defects4J Major. This is a pin and a reproduce script. It is not a paper execution of S2 and it does not record a mutation score.
