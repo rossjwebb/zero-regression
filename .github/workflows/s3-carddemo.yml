@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
+# Pin checks always run on this branch. The compile path lives in
+# s3-carddemo-compile.yml and must not skip.
 name: S3 CardDemo pins
 
 on:
   pull_request:
   push:
-    paths:
-      - "subjects/carddemo/**"
-      - "tests/test_carddemo_pins.py"
-      - "tests/test_carddemo_toolchain.py"
-      - ".github/workflows/s3-carddemo.yml"
+    branches:
+      - master
 
 jobs:
   pins:
@@ -22,53 +21,15 @@ jobs:
         with:
           python-version: "3.12.3"
 
+      - name: Require the pin files
+        run: |
+          set -euo pipefail
+          if [[ ! -f subjects/carddemo/check-pins.py ]]; then
+            echo "S3 FAIL-CLOSED: subjects/carddemo/check-pins.py is missing. Skip is not a pass on this branch." >&2
+            exit 1
+          fi
+
       - name: Verify pins
         run: |
           python3.12 subjects/carddemo/check-pins.py
           python3.12 -m unittest tests.test_carddemo_pins tests.test_carddemo_toolchain
-
-  # Install the pinned Ubuntu noble package, not an unpinned PATH cobc.
-  # This job checks compile only. It is not a POSTTRAN job and it
-  # does not record a mutation score.
-  compile:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-
-      - name: Set up Python 3.12.3
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12.3"
-
-      - name: Install pinned GnuCOBOL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1
-          test "$(dpkg-query -W -f='${Version}' gnucobol3)" = "3.1.2-5.1ubuntu1"
-          test "$(command -v cobc)" = "/usr/bin/cobc"
-          cobc --version | grep -F "3.1.2.0"
-
-      - name: Compile pinned POSTTRAN CBTRN02C
-        run: |
-          set +e
-          ./subjects/carddemo/run-cobol.sh
-          status=$?
-          set -e
-          if [[ ! -x subjects/carddemo/work/CBTRN02C ]]; then
-            echo "S3 FAIL-CLOSED: cobc did not produce subjects/carddemo/work/CBTRN02C" >&2
-            exit 1
-          fi
-          if [[ ! -f subjects/carddemo/work/COMPILE ]]; then
-            echo "S3 FAIL-CLOSED: missing compile receipt; compile did not succeed" >&2
-            exit 1
-          fi
-          if [[ "$status" -ne 2 ]]; then
-            echo "S3 FAIL-CLOSED: expected exit 2 after compile (no tests, no score); got $status" >&2
-            exit 1
-          fi
-          grep -q "result=compile-ok" subjects/carddemo/work/COMPILE
-          grep -q "mutation_score=not-recorded" subjects/carddemo/work/COMPILE
-          grep -q "posttran_job=not-run" subjects/carddemo/work/COMPILE
-          grep -q "compiler_release=3.1.2.0" subjects/carddemo/work/COMPILE
-          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; runner stayed fail-closed (exit 2, no tests, not a POSTTRAN job)."

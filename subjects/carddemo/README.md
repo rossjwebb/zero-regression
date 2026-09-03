@@ -37,7 +37,7 @@ From the repository root, with Python 3.12.3:
 
 ```bash
 python3.12 subjects/carddemo/check-pins.py
-python3.12 -m unittest tests.test_carddemo_pins
+python3.12 -m unittest tests.test_carddemo_pins tests.test_carddemo_toolchain
 ./subjects/carddemo/run-cobol.sh
 ```
 
@@ -75,6 +75,8 @@ The following still cannot happen, and the runner does not pretend otherwise:
 - The binary is not a POSTTRAN job: there is no `DALYTRAN` sequential file, no VSAM/INDEXED data, and no IBM Language Environment `CEE3ABD`
 - IBM Enterprise COBOL (`cob2`) is not the pin and is not used
 - Online CICS programs, remaining batch programs, JCL, and EBCDIC data are outside this slice
+
+CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. That workflow has no skip path. A missing `run-cobol.sh` fails. A PATH `cobc` mix fails. Compile success must still print `S3 COMPILE OK`, exit 2, and record `posttran_job=not-run`. That is not paper S3.
 
 The script does not write a mutation score. This repository does not store a mutation score for S3.
 

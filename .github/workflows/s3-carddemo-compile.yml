@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: Apache-2.0
+# This branch has subjects/carddemo/run-cobol.sh. Skip is not allowed.
+# Compile OK is not a POSTTRAN job and is not paper S3.
+name: S3 CardDemo compile
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Require the pinned compile runner
+        run: |
+          set -euo pipefail
+          if [[ ! -x subjects/carddemo/run-cobol.sh ]]; then
+            echo "S3 FAIL-CLOSED: subjects/carddemo/run-cobol.sh is missing or not executable. Skip is not a pass on this branch." >&2
+            exit 1
+          fi
+          if [[ ! -f subjects/carddemo/toolchain.py ]]; then
+            echo "S3 FAIL-CLOSED: subjects/carddemo/toolchain.py is missing. Skip is not a pass on this branch." >&2
+            exit 1
+          fi
+
+      - name: Install pinned GnuCOBOL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1
+          test "$(dpkg-query -W -f='${Version}' gnucobol3)" = "3.1.2-5.1ubuntu1"
+          test "$(command -v cobc)" = "/usr/bin/cobc"
+          cobc --version | grep -F "3.1.2.0"
+
+      - name: Refuse a mixed PATH cobc
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fake-cobc
+          printf '%s\n' '#!/bin/sh' 'echo cobc "(GnuCOBOL) 99.0.0"' > /tmp/fake-cobc/cobc
+          chmod +x /tmp/fake-cobc/cobc
+          set +e
+          mix="$(PATH="/tmp/fake-cobc:$PATH" ./subjects/carddemo/run-cobol.sh 2>&1)"
+          mix_status=$?
+          set -e
+          printf '%s\n' "$mix"
+          if [[ "$mix_status" -ne 2 ]]; then
+            echo "S3 FAIL-CLOSED: PATH mix did not exit 2 (got $mix_status)" >&2
+            exit 1
+          fi
+          printf '%s\n' "$mix" | grep -q "PATH cobc"
+          printf '%s\n' "$mix" | grep -q "not the pinned"
+          if printf '%s\n' "$mix" | grep -qi "killed/seeded"; then
+            echo "S3 FAIL-CLOSED: PATH mix output invented a score" >&2
+            exit 1
+          fi
+
+      - name: Compile pinned POSTTRAN CBTRN02C
+        run: |
+          set -euo pipefail
+          set +e
+          output="$(./subjects/carddemo/run-cobol.sh 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [[ ! -x subjects/carddemo/work/CBTRN02C ]]; then
+            echo "S3 FAIL-CLOSED: cobc did not produce subjects/carddemo/work/CBTRN02C" >&2
+            exit 1
+          fi
+          if [[ ! -f subjects/carddemo/work/COMPILE ]]; then
+            echo "S3 FAIL-CLOSED: missing compile receipt; compile did not succeed" >&2
+            exit 1
+          fi
+          if [[ "$status" -ne 2 ]]; then
+            echo "S3 FAIL-CLOSED: expected exit 2 after compile (no tests, no score); got $status" >&2
+            exit 1
+          fi
+          printf '%s\n' "$output" | grep -q "S3 COMPILE OK"
+          printf '%s\n' "$output" | grep -q "not a green POSTTRAN job"
+          grep -q "result=compile-ok" subjects/carddemo/work/COMPILE
+          grep -q "mutation_score=not-recorded" subjects/carddemo/work/COMPILE
+          grep -q "posttran_job=not-run" subjects/carddemo/work/COMPILE
+          grep -q "compiler_release=3.1.2.0" subjects/carddemo/work/COMPILE
+          if printf '%s\n' "$output" | grep -qi "killed/seeded"; then
+            echo "S3 FAIL-CLOSED: compile output invented a score" >&2
+            exit 1
+          fi
+          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; runner stayed fail-closed (exit 2, no tests, not a POSTTRAN job). This is not paper S3."

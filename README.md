@@ -29,6 +29,8 @@ python3.12 subjects/carddemo/check-pins.py
 
 `check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. With the pin present, `run-cobol.sh` compiles `CBTRN02C` and still exits 2. That is compile-only, not a green POSTTRAN job. S3 remains unexecuted: no legacy tests, no claimed CardDemo run, no score. If `cobc` is missing, the version mismatches, or compile fails, the script also exits 2.
 
+CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. There is no skip path. A missing runner fails. Success must still be `S3 COMPILE OK`, exit 2, `posttran_job=not-run`. That is not paper S3.
+
 ## Evidence-chain schema
 
 The log is an append-only sequence of JSON records. Every record carries: `seq` (monotonic integer); `ts` (UTC timestamp); `type` (one of `CONFIG`, `BASELINE`, `MUTANT_RESULT`, `TRIAGE`, `OVERRIDE`, `CERTIFICATE`, `COST`); `payload` (type-specific body); `prev_hash` (the SHA-256 fingerprint of the preceding record's canonical serialisation); `hash` (the SHA-256 fingerprint of this record's canonical serialisation, including `prev_hash`). `COST` records attributable spend from an external generation run: role, token count, spend in USD, and an immutable reference.

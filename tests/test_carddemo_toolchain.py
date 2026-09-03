@@ -81,3 +81,25 @@ class CardDemoToolchainTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as raised:
             fail("unit")
         self.assertEqual(str(raised.exception), "S3 FAIL-CLOSED: unit")
+
+    def test_dedicated_compile_workflow_never_skips(self) -> None:
+        workflow = (REPO / ".github" / "workflows" / "s3-carddemo-compile.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("This branch has subjects/carddemo/run-cobol.sh. Skip is not allowed.", workflow)
+        self.assertNotIn("paths:", workflow)
+        self.assertNotIn("if: ", workflow)
+        self.assertNotIn("if [ ! -f", workflow)
+        self.assertIn("run-cobol.sh is missing", workflow)
+        self.assertIn("Skip is not a pass on this branch", workflow)
+        self.assertIn("S3 COMPILE OK", workflow)
+        self.assertIn("posttran_job=not-run", workflow)
+        self.assertIn("PATH=\"/tmp/fake-cobc:$PATH\"", workflow)
+        self.assertIn("gnucobol3=3.1.2-5.1ubuntu1", workflow)
+        self.assertIn("not paper S3", workflow)
+
+    def test_pins_workflow_has_no_path_skip(self) -> None:
+        workflow = (REPO / ".github" / "workflows" / "s3-carddemo.yml").read_text(encoding="utf-8")
+        self.assertNotIn("paths:", workflow)
+        self.assertIn("Skip is not a pass on this branch", workflow)
+        self.assertIn("check-pins.py is missing", workflow)
