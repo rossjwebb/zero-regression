@@ -1,0 +1,185 @@
+# Written from fetched artifacts (Defects4J v3.0.1, apache/commons-csv
+# de1838ea067f3fbc4c7c21b9eeae077c739ecb73, Maven Central JARs).
+# Do not type hashes by hand. Recompute with check-pins.py --write only
+# after a deliberate pin change.
+
+[defects4j]
+upstream = "https://github.com/rjust/defects4j"
+tag = "v3.0.1"
+commit = "6d54320e0db5a357f9ab38a8e4d2e5aead7e1c09"
+project = "Csv"
+project_name = "commons-csv"
+bug_id = "1"
+version = "1f"
+buggy_commit = "0833f45bffd40f44ba6f294d84e9bac8a9ba0a37"
+fixed_commit = "de1838ea067f3fbc4c7c21b9eeae077c739ecb73"
+report_id = "CSV-75"
+report_url = "https://issues.apache.org/jira/browse/CSV-75"
+modified_class = "org.apache.commons.csv.ExtendedBufferedReader"
+
+[commons_csv]
+upstream = "https://github.com/apache/commons-csv"
+commit = "de1838ea067f3fbc4c7c21b9eeae077c739ecb73"
+committed = "2012-03-27T00:49:17Z"
+message = "CSV-75 ExtendedBufferReader does not handle EOL consistently"
+licence = "Apache-2.0"
+
+[jdk]
+# PIT 1.15.3 runs on Java 11+. The 2012 Commons-CSV pin is Java 5 source
+# (Defects4J-era 7/8 bytecode). Compile with this JDK's javac --release 8
+# and run PIT on the same JDK 11. Never mix PATH Java 21 into javac/java.
+vendor = "eclipse-temurin"
+release = "11.0.32.1+1"
+version_marker = "11.0.32.1"
+filename = "OpenJDK11U-jdk_x64_linux_hotspot_11.0.32.1_1.tar.gz"
+url = "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.32.1%2B1/OpenJDK11U-jdk_x64_linux_hotspot_11.0.32.1_1.tar.gz"
+sha256 = "5c3f68887c325d36d852ba534303e1f5f1f5cae7d6cc1e951d73e0d8e98a058d"
+
+[pit]
+# Pitest, not Defects4J Major. 1.15.3 is pinned because the 2012 subject
+# uses JUnit 4 and does not need the JUnit 5 plugin.
+tool = "pitest"
+version = "1.15.3"
+invocation = "command-line"
+output_formats = "HTML"
+# DEFAULTS is the named PIT 1.15.3 group (not STRONGER, not an implicit
+# unversioned default). In 1.15.3 that group includes
+# REMOVE_CONDITIONALS_ORDER_ELSE and REMOVE_CONDITIONALS_EQUAL_ELSE
+# (hcoles/pitest#1400). STRONGER adds EXPERIMENTAL_SWITCH and the
+# REMOVE_CONDITIONALS_*_IF variants and is not used.
+mutators = "DEFAULTS"
+subject_release = 8
+target_class = "org.apache.commons.csv.ExtendedBufferedReader"
+excluded_classes = [
+    "org.apache.commons.csv.CSVFormat",
+    "org.apache.commons.csv.CSVLexer",
+    "org.apache.commons.csv.CSVParser",
+    "org.apache.commons.csv.CSVPrinter",
+    "org.apache.commons.csv.CSVRecord",
+    "org.apache.commons.csv.Lexer",
+    "org.apache.commons.csv.Token",
+]
+green_tests = [
+    "org.apache.commons.csv.CSVParserTest",
+    "org.apache.commons.csv.CSVLexerTest",
+    "org.apache.commons.csv.CSVPrinterTest",
+    "org.apache.commons.csv.CSVFormatTest",
+]
+# Upstream ExtendedBufferedReaderTest is red at Csv-1f (CSV-75 TODOs left
+# in the fixed commit). It is not a gate and is not a PIT targetTests entry.
+excluded_tests = [
+    "org.apache.commons.csv.ExtendedBufferedReaderTest",
+    "org.apache.commons.csv.PerformanceTest",
+]
+threads = 1
+timeout_factor = 2
+timeout_const_ms = 4000
+# Comma-separated: PIT's --jvmArgs is a comma list, not a shell string.
+minion_jvm_args = "-Xmx256m,-Xms64m"
+
+[[file]]
+path = "legacy/LICENSE.txt"
+sha256 = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+
+[[file]]
+path = "legacy/NOTICE.txt"
+sha256 = "fc5ce3ff87aec723d12fc68eb6ffea4c798e4c2a6a4d48cc3fc7afa18d6fd8a3"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/CSVFormat.java"
+sha256 = "8e63f17cb1c2921ce12040577d7e60e6eb7a58fbd6b8bc855aec3c5fd8f47520"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/CSVLexer.java"
+sha256 = "1d3ed6188f77047ce74d2338bec9193c41a5c17f32d1d665c1df87b9af36eab1"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/CSVParser.java"
+sha256 = "713d52c2d700af6fa7b19df90c0ec05b7040239ae61bae55e9cd6172ec93994a"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/CSVPrinter.java"
+sha256 = "87243e8e41629e66716df4403453a429d854f6adc127e4889f4506520ce97f3f"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/CSVRecord.java"
+sha256 = "b7a7f1a8657176e5129e98b7ceec69603dc6d0034c2d8d747c4c47a032dae333"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/ExtendedBufferedReader.java"
+sha256 = "b09b4e6ae43f1914f8e53e0bad7ba5f9483dc9b3e7ae8889c1d9d40c0de19508"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/Lexer.java"
+sha256 = "1c98447355ecbb19f80913a0ee83fa6cb624cb43f857082e83d5602a45ed1c51"
+
+[[file]]
+path = "legacy/src/main/java/org/apache/commons/csv/Token.java"
+sha256 = "a03e51cfeb11eedad5937ff776d482b55a58ada4a2c06bd30ddef5c5b803ccdd"
+
+[[file]]
+path = "legacy/src/test/java/org/apache/commons/csv/CSVParserTest.java"
+sha256 = "7b8c557a69a6afc5441b2252a8a652ae90908417505b2678727812be9b6cbddd"
+
+[[file]]
+path = "legacy/src/test/java/org/apache/commons/csv/CSVLexerTest.java"
+sha256 = "376bb78f1b384aa2fdd06a1fe2244f0393a293c51f1de03f9eb741eabd082764"
+
+[[file]]
+path = "legacy/src/test/java/org/apache/commons/csv/CSVPrinterTest.java"
+sha256 = "0f32de567bc5493b9f7ea5d95fbd5f3f81e4b5040d23e6a476505eeff734f5f7"
+
+[[file]]
+path = "legacy/src/test/java/org/apache/commons/csv/CSVFormatTest.java"
+sha256 = "63b9ecc19bbfc33a623a48ab27053b594f482703a2f0b41c4323e24cc42bf1eb"
+
+[[file]]
+path = "legacy/src/test/java/org/apache/commons/csv/CSVLexer1.java"
+sha256 = "87c5e4da710b72cd4d474a736d5f8d5964de432a4aa4cd29eaf50d6c54df469a"
+
+[[file]]
+path = "legacy/src/test/java/org/apache/commons/csv/ExtendedBufferedReaderTest.java"
+sha256 = "8e64d50fc15bcf76d3ec77ccb832de79ed61f8b2a2d00fa31ff4ca9fa5a62db5"
+
+[[file]]
+path = "pins/defects4j-v3.0.1-Csv-1.active-bugs.row.csv"
+sha256 = "88593a02bb28f3a6f981f838777d33480aba188d7859ed31adec5208ef812095"
+
+[[file]]
+path = "pins/defects4j-v3.0.1-Csv-1.modified_classes"
+sha256 = "2c1af8e002ab3f8051e05831246f89a519c7fcf4a12a91b23cfedf8dc790f119"
+
+[[jar]]
+group = "org.pitest"
+artifact = "pitest"
+version = "1.15.3"
+url = "https://repo1.maven.org/maven2/org/pitest/pitest/1.15.3/pitest-1.15.3.jar"
+sha256 = "b20311331a1031d2302848e390f242c0e01a88eed03f2c54a9efca64f5736c1b"
+
+[[jar]]
+group = "org.pitest"
+artifact = "pitest-command-line"
+version = "1.15.3"
+url = "https://repo1.maven.org/maven2/org/pitest/pitest-command-line/1.15.3/pitest-command-line-1.15.3.jar"
+sha256 = "5c5e09d52034b5f9daf606482139a36c5394b90144460cc7cb4f968a9f732248"
+
+[[jar]]
+group = "org.pitest"
+artifact = "pitest-entry"
+version = "1.15.3"
+url = "https://repo1.maven.org/maven2/org/pitest/pitest-entry/1.15.3/pitest-entry-1.15.3.jar"
+sha256 = "05f80128b2b16a4b21afdb9aa48a33ab4c875fcd1f6f499e535cf74e6b4abdc6"
+
+[[jar]]
+group = "junit"
+artifact = "junit"
+version = "4.13.2"
+url = "https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar"
+sha256 = "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+
+[[jar]]
+group = "org.hamcrest"
+artifact = "hamcrest-core"
+version = "1.3"
+url = "https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
+sha256 = "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"

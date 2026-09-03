@@ -28,6 +28,13 @@ python3.12 subjects/django-accounting/oracle.py
 
 That command replays recorded traces. CI on the S1 branch requires stdout to be exactly `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. `cases=19` fails. This is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
 
+S2 is Defects4J Commons-CSV under PIT. The pin is Csv-1f (`de1838ea067f3fbc4c7c21b9eeae077c739ecb73`). This repository does not record a mutation score for S2 and does not claim that the paper already executed it.
+
+```bash
+python3.12 subjects/commons-csv/check-pins.py
+./subjects/commons-csv/run-pit.sh
+```
+
 ## Evidence-chain schema
 
 The log is an append-only sequence of JSON records. Every record carries: `seq` (monotonic integer); `ts` (UTC timestamp); `type` (one of `CONFIG`, `BASELINE`, `MUTANT_RESULT`, `TRIAGE`, `OVERRIDE`, `CERTIFICATE`, `COST`); `payload` (type-specific body); `prev_hash` (the SHA-256 fingerprint of the preceding record's canonical serialisation); `hash` (the SHA-256 fingerprint of this record's canonical serialisation, including `prev_hash`). `COST` records attributable spend from an external generation run: role, token count, spend in USD, and an immutable reference.

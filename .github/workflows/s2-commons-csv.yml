@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: Apache-2.0
+name: S2 Commons-CSV pins and PIT
+
+on:
+  pull_request:
+  push:
+    paths:
+      - "subjects/commons-csv/**"
+      - "tests/test_commons_csv_pins.py"
+      - "tests/test_commons_csv_toolchain.py"
+      - ".github/workflows/s2-commons-csv.yml"
+
+jobs:
+  pins-and-pit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Verify pins
+        run: |
+          python3.12 subjects/commons-csv/check-pins.py
+          python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain
+
+      - name: Run PIT on pinned JDK 11 (fail closed)
+        run: ./subjects/commons-csv/run-pit.sh
