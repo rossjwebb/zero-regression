@@ -46,7 +46,7 @@ The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That
 
 ## Selected: CardDemo (S3)
 
-The 2 September programme note names S3 as CardDemo COBOL, no legacy tests. The public CardDemo is AWS Mainframe Modernization CardDemo (IBM-style COBOL/CICS/JCL). This is a pin and a fail-closed compile script. It is not a paper execution of S3 and it does not record a mutation score.
+The 2 September programme note names S3 as CardDemo COBOL, no legacy tests. The public CardDemo is AWS Mainframe Modernization CardDemo (IBM-style COBOL/CICS/JCL). This is a pin and a fail-closed compile script. Pinned GnuCOBOL `3.1.2.0` (Ubuntu `gnucobol3=3.1.2-5.1ubuntu1`) can compile `CBTRN02C`. That compile is not a paper execution of S3, not a green POSTTRAN job, and it does not record a mutation score. S3 remains unexecuted.
 
 | Field | Record |
 |---|---|
@@ -55,5 +55,7 @@ The 2 September programme note names S3 as CardDemo COBOL, no legacy tests. The 
 | Licence | Apache-2.0 (`subjects/carddemo/batch/LICENSE`) |
 | Slice | POSTTRAN / `CBTRN02C` plus five `COPY` books |
 | Legacy tests | none (no `tests/` tree; `test_paths = []`) |
-| Test command | `python3.12 subjects/carddemo/check-pins.py` then `./subjects/carddemo/run-cobol.sh` |
+| Test command | `python3.12 subjects/carddemo/check-pins.py` then `sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1` then `./subjects/carddemo/run-cobol.sh` |
+| Compiler pin | Ubuntu noble `gnucobol3=3.1.2-5.1ubuntu1`; `.deb` URL + SHA-256 in `pins.toml`; `/usr/bin/cobc` hash and `cobc --version` must match; PATH `cobc` may not mix |
+| Compile | pinned `cobc` 3.1.2.0 compiles `CBTRN02C`; not a POSTTRAN job; no tests; runner exits 2 |
 | Working tree | `subjects/carddemo/` |

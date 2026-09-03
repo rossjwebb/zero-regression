@@ -25,8 +25,9 @@ The three paths whose names contain `test` are sample IDCAMS/SORT JCL (`samples/
 
 - `batch/` — bit-identical snapshot of the POSTTRAN program, its copybooks, the POSTTRAN JCL, and the upstream licence/notice
 - `pins/` — full `ls-tree` at the pin, and the no-legacy-tests scan
-- `check-pins.py` — hash and metadata gate
-- `run-cobol.sh` — fail-closed compile attempt; never records a score
+- `check-pins.py` — hash and metadata gate, including the GnuCOBOL pin
+- `toolchain.py` — fetch/hash-check the Ubuntu `gnucobol3` `.deb`; refuse a mixed PATH `cobc`
+- `run-cobol.sh` — compile `CBTRN02C` with the pinned `cobc` only; fail-closed if the pin mismatches, compile fails, or there are no tests; never records a score
 
 There is no `legacy/` directory. S1 uses `legacy/` for a Python oracle; S3 does not, because CardDemo has no legacy tests.
 
@@ -36,20 +37,47 @@ From the repository root, with Python 3.12.3:
 
 ```bash
 python3.12 subjects/carddemo/check-pins.py
-python3.12 -m unittest tests.test_carddemo_pins
+python3.12 -m unittest tests.test_carddemo_pins tests.test_carddemo_toolchain
 ./subjects/carddemo/run-cobol.sh
 ```
 
 `check-pins.py` should print `S3 PIN OK` and exit 0.
 
-`run-cobol.sh` is fail-closed. It exits 2 if:
+`run-cobol.sh` is fail-closed. It never exits 0 after a successful compile: that would look like a passing POSTTRAN job.
 
-1. the pin check fails, or
-2. no COBOL compiler is on `PATH` (looks for `cobc`, `cob`, `cob2`), or
-3. the compiler is present but `CBTRN02C` does not compile, or
-4. the compiler succeeds — there is still no test suite, so the script refuses to report a green run.
+Two different exit-2 cases must not be mixed:
 
-This VM image has Python 3.12.3 and no GnuCOBOL / IBM Enterprise COBOL. On that image the script prints the missing-compiler reason and exits 2. That is the real reason, not a skipped step.
+1. **GnuCOBOL compile error** — prints `S3 COBC FAIL`, writes `work/COBC-FAIL` with `result=cobc-fail`, and CI **fails** the job.
+2. **Harness job-not-run** — `cobc` returned 0, prints `S3 COMPILE OK` then `S3 HARNESS EXIT 2`, writes `work/COMPILE` with `cobc_status=0` and `harness_meaning=posttran-job-not-run`. Exit 2 here means the POSTTRAN job was not run, **not** that GnuCOBOL failed.
+
+Pin or PATH-mix failures print `S3 FAIL-CLOSED` and do not write a compile-ok receipt.
+
+## Pinned GnuCOBOL
+
+S3 uses one compiler: Ubuntu noble `gnucobol3=3.1.2-5.1ubuntu1`, which provides `cobc (GnuCOBOL) 3.1.2.0` at `/usr/bin/cobc`. The runner fetches the `.deb` from the Ubuntu pool and checks its SHA-256, then requires the installed `cobc` binary hash and version to match. A different `cobc` earlier on `PATH` is a fail-closed error, not a substitute.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1
+python3.12 subjects/carddemo/check-pins.py
+./subjects/carddemo/run-cobol.sh
+```
+
+## What this is, and what it is not
+
+This is still **unexecuted S3**. Compile OK is the current truth. It is not a green CardDemo run and not a paper result.
+
+With the pinned compiler, `run-cobol.sh` **does compile** the pinned POSTTRAN program `CBTRN02C` (`cobc -std=ibm -x`) plus its five `COPY` books. That is a compile only. The script still exits 2.
+
+The following still cannot happen, and the runner does not pretend otherwise:
+
+- There is no legacy test suite
+- No mutation score or test score is recorded
+- The binary is not a POSTTRAN job: there is no `DALYTRAN` sequential file, no VSAM/INDEXED data, and no IBM Language Environment `CEE3ABD`
+- IBM Enterprise COBOL (`cob2`) is not the pin and is not used
+- Online CICS programs, remaining batch programs, JCL, and EBCDIC data are outside this slice
+
+CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. That workflow has no skip path. A missing `run-cobol.sh` fails. A PATH `cobc` mix fails. A `S3 COBC FAIL` / `work/COBC-FAIL` fails the GitHub job (GnuCOBOL error). Compile success must still print `S3 COMPILE OK` and `S3 HARNESS EXIT 2`, exit 2, and record `cobc_status=0` / `posttran_job=not-run`. Exit 2 is the harness job-not-run code, not a GnuCOBOL error. That is not paper S3.
 
 The script does not write a mutation score. This repository does not store a mutation score for S3.
 
