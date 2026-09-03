@@ -10,7 +10,7 @@ A deterministic certification harness. A completed run issues a three-line certi
 
 This repository makes no Generator, Adjudicator, or Executor calls.
 
-Unexecuted replication steps (S1–S3) and the draft pull requests that hold them are listed in [PROGRAMME.md](PROGRAMME.md). None of those steps is a paper execution until merged and the paper says so.
+Public-replication steps (S1–S3) and the merged pull requests that hold them are listed in [PROGRAMME.md](PROGRAMME.md). None of those steps is a paper execution until the paper says so.
 
 ## How to run
 
@@ -70,7 +70,7 @@ Three executed `accounting-service` chains are kept:
 
 An earlier April 2026 figure of 91.0% / 279 mutants is superseded. See `APRIL-2026-SUPERSEDED.md`. Do not cite that figure.
 
-Pull-request checks re-run the fixture verifier and, when the draft PR #1 runner is present, the django-accounting replay oracle. A match is a replay of 27 recorded traces, not a proof of accounting correctness and not a paper S1 result.
+Pull-request checks re-run the fixture verifier and the django-accounting replay oracle. A match is a replay of 27 recorded traces, not a proof of accounting correctness and not a paper S1 result.
 
 ```bash
 python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl

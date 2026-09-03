@@ -6,9 +6,9 @@ The live executed certificates on `master` are the three retained `accounting-se
 
 | Chain | Why it is kept | CONFIG hash | CERTIFICATE hash | Kill rate |
 |---|---|---|---|---|
-| `fixtures/accounting-service/` | Post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. | `60df647fc89a72ea0627b9bf933482bea4e9259f53f6614c4b61c78590a8be06` | `fe677dfcbee1e89de2a62509f1fb48bee8d5bce4508bb4e1cfde90cb1b9c9cd4` | 248/252 |
-| `fixtures/accounting-service/superseded/publish-4/` | Same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. | `eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b` | `05e14679f7a53a1958321d510280366d3c8b2c8faebb30156b736f02d7e05788` | 248/252 |
-| `fixtures/accounting-service/pre-remediation/` | The executed chain that found the two gaps. | `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd` | `9035f4357e14af7e610d93911cd8eefbbaf253f3e4f90bc789bea683fc41f811` | 246/252 |
+| `fixtures/accounting-service/` | Post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. | `8ecb042134c8fb756f2e3686489681b96c26b9f111b6b84b614c72f95729b455` | `26075fb863d02f812b7e0c5cd0022c331d300a5504a03074c06b1e901891c72e` | 248/252 |
+| `fixtures/accounting-service/superseded/publish-4/` | Same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. | `059f40e476d9e8d1d5be65e241e28acc334f110b7523d5bf3a562e4b2117e97e` | `4e9557b03e12a533d7d5e2579133af94162fe0a8232f9d2a9749f3927f4da5d4` | 248/252 |
+| `fixtures/accounting-service/pre-remediation/` | The executed chain that found the two gaps. | `1c206c919541b9d95637837e60570cd9ca466c2450cb4a6c2ee7f74e2f66581e` | `937af6a8368a3ab2104aed6e8a62803c2055a68e7dabc405921dccdebefffb40` | 246/252 |
 
 `fixtures/accounting-service/superseded/publish-4/` is a different supersession (signature order). It is not the April 2026 91.0% / 279 figure.
 
