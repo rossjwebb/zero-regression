@@ -15,3 +15,15 @@ Before selection, record the commit SHA, licence text, installation command, tes
 | [financial-health-calculator](https://github.com/engineerinvestor/financial-health-calculator) | one deterministic CEFR or withdrawal-calculation module | MIT project with pytest; exclude Monte Carlo and UI/API paths unless their determinism is established. |
 
 The entries are candidates, not completed replications. At selection time, reject any whose selected checkout cannot run offline under the exact certification pins. Record that rejection in the evidence folder rather than silently replacing the subject.
+
+## Selected: django-accounting
+
+| Field | Record |
+|---|---|
+| Upstream | https://github.com/dulacp/django-accounting |
+| Pin | `2e61776a653e719a4c15578ab385603a6066c2b6` (2 December 2017) |
+| Licence | MIT (`subjects/django-accounting/legacy/LICENSE`) |
+| Slice | `Price` and the collected-profits calculator (174 executable lines) |
+| Offline evidence | Import stubs only (no Django ORM/SQL). `python3.12 subjects/django-accounting/oracle.py` replays recorded traces against `golden/expected.json`. That match is not a proof of accounting correctness. |
+| Test command | `python3.12 subjects/django-accounting/oracle.py` |
+| Working tree | `subjects/django-accounting/` |
