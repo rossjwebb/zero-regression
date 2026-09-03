@@ -15,3 +15,17 @@ Before selection, record the commit SHA, licence text, installation command, tes
 | [financial-health-calculator](https://github.com/engineerinvestor/financial-health-calculator) | one deterministic CEFR or withdrawal-calculation module | MIT project with pytest; exclude Monte Carlo and UI/API paths unless their determinism is established. |
 
 The entries are candidates, not completed replications. At selection time, reject any whose selected checkout cannot run offline under the exact certification pins. Record that rejection in the evidence folder rather than silently replacing the subject.
+
+## Selected: CardDemo (S3)
+
+The 2 September programme note names S3 as CardDemo COBOL, no legacy tests. The public CardDemo is AWS Mainframe Modernization CardDemo (IBM-style COBOL/CICS/JCL). This is a pin and a fail-closed compile script. It is not a paper execution of S3 and it does not record a mutation score.
+
+| Field | Record |
+|---|---|
+| Upstream | https://github.com/aws-samples/aws-mainframe-modernization-carddemo |
+| Pin | `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e` (16 October 2025) |
+| Licence | Apache-2.0 (`subjects/carddemo/batch/LICENSE`) |
+| Slice | POSTTRAN / `CBTRN02C` plus five `COPY` books |
+| Legacy tests | none (no `tests/` tree; `test_paths = []`) |
+| Test command | `python3.12 subjects/carddemo/check-pins.py` then `./subjects/carddemo/run-cobol.sh` |
+| Working tree | `subjects/carddemo/` |

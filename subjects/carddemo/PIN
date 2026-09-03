@@ -1,0 +1,16 @@
+# S3 pin — public CardDemo COBOL batch (POSTTRAN / CBTRN02C).
+# Hashes in pins.toml were written from fetched artifacts, not typed from memory.
+# There are no legacy tests at this pin.
+
+carddemo_upstream=https://github.com/aws-samples/aws-mainframe-modernization-carddemo
+carddemo_name=AWS Mainframe Modernization CardDemo
+carddemo_commit=59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e
+carddemo_licence=Apache-2.0
+carddemo_legacy_tests=none
+
+slice_job=POSTTRAN
+slice_program=CBTRN02C
+slice_function=Post the records from daily transaction file.
+
+compiler_ibm_enterprise_cobol=absent
+compiler_gnucobol_cobc=not-on-this-vm
