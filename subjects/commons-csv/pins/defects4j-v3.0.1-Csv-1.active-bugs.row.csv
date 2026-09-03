@@ -1,0 +1,2 @@
+bug.id,revision.id.buggy,revision.id.fixed,report.id,report.url
+1,0833f45bffd40f44ba6f294d84e9bac8a9ba0a37,de1838ea067f3fbc4c7c21b9eeae077c739ecb73,CSV-75,https://issues.apache.org/jira/browse/CSV-75

@@ -1,0 +1,12 @@
+upstream=https://github.com/apache/commons-csv
+commit=de1838ea067f3fbc4c7c21b9eeae077c739ecb73
+committed=2012-03-27T00:49:17Z
+message=CSV-75 ExtendedBufferReader does not handle EOL consistently
+licence=Apache-2.0
+defects4j_project=Csv
+defects4j_version=1f
+defects4j_bug_id=1
+defects4j_buggy_commit=0833f45bffd40f44ba6f294d84e9bac8a9ba0a37
+defects4j_report=CSV-75
+defects4j_report_url=https://issues.apache.org/jira/browse/CSV-75
+modified_class=org.apache.commons.csv.ExtendedBufferedReader

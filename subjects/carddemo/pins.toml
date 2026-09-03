@@ -1,0 +1,113 @@
+# Written from fetched artifacts (aws-samples/aws-mainframe-modernization-carddemo
+# 59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e). Do not type hashes by hand.
+# Recompute with check-pins.py --write only after a deliberate pin change.
+
+[carddemo]
+name = "CardDemo"
+public_name = "AWS Mainframe Modernization CardDemo"
+upstream = "https://github.com/aws-samples/aws-mainframe-modernization-carddemo"
+commit = "59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e"
+committed = "2025-10-16T19:14:30Z"
+message = "Added Carddemo data export/import jcl,cobol,copybook and EBCDIC data."
+licence = "Apache-2.0"
+file_count = 329
+cobol_count = 44
+legacy_tests = "none"
+ibm_enterprise_cobol = "absent"
+gnucobol_cobc = "3.1.2.0"
+
+[slice]
+job = "POSTTRAN"
+program = "CBTRN02C"
+program_path = "batch/app/cbl/CBTRN02C.cbl"
+jcl_path = "batch/app/jcl/POSTTRAN.jcl"
+function = "Post the records from daily transaction file."
+physical_lines = 731
+copybooks = [
+    "batch/app/cpy/CVTRA06Y.cpy",
+    "batch/app/cpy/CVTRA05Y.cpy",
+    "batch/app/cpy/CVACT03Y.cpy",
+    "batch/app/cpy/CVACT01Y.cpy",
+    "batch/app/cpy/CVTRA01Y.cpy",
+]
+# Online CICS programs (CO*), remaining batch programs, VSAM data,
+# optional IMS/DB2/MQ modules, and sample JCL are outside this slice.
+
+[compiler]
+looks_for = ["cobc"]
+ibm_enterprise_cobol = "absent"
+note = "Use only the pinned GnuCOBOL cobc. Fail closed if cobc is missing, the version or .deb hash mismatches, compile fails, or compile succeeds (no legacy tests). Do not invent a mutation score. Compile is not a green POSTTRAN job."
+
+# PATH cobc is not trusted. Fetch the Ubuntu noble .deb, hash-check it,
+# then require /usr/bin/cobc to be that same package and version.
+# Hashes were written from the fetched .deb and the installed cobc binary.
+[gnucobol]
+vendor = "ubuntu"
+suite = "noble"
+component = "universe"
+package = "gnucobol3"
+version = "3.1.2-5.1ubuntu1"
+release = "3.1.2.0"
+version_marker = "3.1.2.0"
+version_line = "cobc (GnuCOBOL) 3.1.2.0"
+filename = "gnucobol3_3.1.2-5.1ubuntu1_amd64.deb"
+url = "http://archive.ubuntu.com/ubuntu/pool/universe/g/gnucobol3/gnucobol3_3.1.2-5.1ubuntu1_amd64.deb"
+sha256 = "3706d30bb9fb37473911e12888addee0132d38428520139683da289ea8bfd399"
+binary = "/usr/bin/cobc"
+cobc_sha256 = "89281a0a1e55968d32b6b344c8925f65ca1197e2ece1366d13a97571a59d8ac9"
+install = "sudo apt-get update && sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1"
+
+[[deb]]
+package = "gnucobol3"
+version = "3.1.2-5.1ubuntu1"
+filename = "gnucobol3_3.1.2-5.1ubuntu1_amd64.deb"
+url = "http://archive.ubuntu.com/ubuntu/pool/universe/g/gnucobol3/gnucobol3_3.1.2-5.1ubuntu1_amd64.deb"
+sha256 = "3706d30bb9fb37473911e12888addee0132d38428520139683da289ea8bfd399"
+
+[[deb]]
+package = "libcob4-dev"
+version = "3.1.2-5.1ubuntu1"
+filename = "libcob4-dev_3.1.2-5.1ubuntu1_amd64.deb"
+url = "http://archive.ubuntu.com/ubuntu/pool/universe/g/gnucobol3/libcob4-dev_3.1.2-5.1ubuntu1_amd64.deb"
+sha256 = "089b2e1c43ae7bc83e8fdbbeed2d60537c462c834ad67946755067c0265cec93"
+
+[[deb]]
+package = "libcob4t64"
+version = "3.1.2-5.1ubuntu1"
+filename = "libcob4t64_3.1.2-5.1ubuntu1_amd64.deb"
+url = "http://archive.ubuntu.com/ubuntu/pool/universe/g/gnucobol3/libcob4t64_3.1.2-5.1ubuntu1_amd64.deb"
+sha256 = "664d91e5d7b6219126e6255d7d1f99a9d232206d027005ecf5719dca3674923f"
+
+[[file]]
+path = "batch/LICENSE"
+sha256 = "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b"
+[[file]]
+path = "batch/NOTICE"
+sha256 = "d4290ed64c2edd0fce1d84e3f9dfb2881240fe534def76b8cd29ed6af683e287"
+[[file]]
+path = "batch/app/cbl/CBTRN02C.cbl"
+sha256 = "708f3cadc555acab63f11e2f3238f5372ac7180e6b01197bf960d96bf0d2e83f"
+[[file]]
+path = "batch/app/cpy/CVTRA06Y.cpy"
+sha256 = "c5c69f1b86c5a10156d3c5881d7cf387e6b925aae32825360f85bf4056a554a1"
+[[file]]
+path = "batch/app/cpy/CVTRA05Y.cpy"
+sha256 = "d7bde0e78ff608497087b9909c889ed39e347269f964bda767b92b547fbb5fec"
+[[file]]
+path = "batch/app/cpy/CVACT03Y.cpy"
+sha256 = "ffc6079e09b28739e154bf6c1e1c36d408209faa91f6cf7008078dc596a1c370"
+[[file]]
+path = "batch/app/cpy/CVACT01Y.cpy"
+sha256 = "81a08bad15af5664326a6f0af3650f570821c4857ffdec3a6a39f91f07dca728"
+[[file]]
+path = "batch/app/cpy/CVTRA01Y.cpy"
+sha256 = "50637f13692c89b17a2fc60d249dc54e9eb3569d933afca3cdcf65b491a9d5ba"
+[[file]]
+path = "batch/app/jcl/POSTTRAN.jcl"
+sha256 = "ecff62c691e6ce101de08690e72ec065bc98bd845744ddf914899097d37c9191"
+[[file]]
+path = "pins/carddemo-59cc6c2f.ls-tree.txt"
+sha256 = "48fa95f7d0864c9d5dd19c345044a006692fcccca594c95c91271f3477430df4"
+[[file]]
+path = "pins/no-legacy-tests.scan.txt"
+sha256 = "b8b25cbf15852df34a5da4617bedfeb24ecd624ef619ae437d15d0e09c66c495"
