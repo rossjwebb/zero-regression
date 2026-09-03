@@ -48,7 +48,8 @@ class CardDemoPinTests(unittest.TestCase):
         self.assertTrue(script_path.stat().st_mode & 0o111)
         self.assertIn("S3 FAIL-CLOSED", script)
         self.assertIn("no score is recorded", script)
-        self.assertIn("looked for cobc", script)
+        self.assertIn("toolchain.py", script)
+        self.assertIn("S3_COBC", script)
         self.assertIn("-x", script)
         self.assertNotIn("killed/seeded", script)
 
@@ -65,19 +66,26 @@ class CardDemoPinTests(unittest.TestCase):
         self.assertNotIn("killed/seeded", combined)
         self.assertIn("no score is recorded", combined)
         self.assertNotRegex(combined, r"killed/\s*seeded")
-        # If cobc is present the script must compile CBTRN02C and still
-        # fail closed (no legacy tests). If cobc is absent it must say so.
+        # If the pinned cobc is present the script must compile CBTRN02C
+        # and still fail closed (no legacy tests, not a POSTTRAN job).
+        # If cobc is missing or the pin mismatches it must say so.
         if shutil.which("cobc"):
             self.assertIn("s3 compile ok", combined)
             self.assertIn("compiled cbtrn02c", combined)
             self.assertIn("no legacy tests", combined)
+            self.assertIn("not a green posttran job", combined)
             self.assertTrue((SUBJECT / "work" / "CBTRN02C").is_file())
             self.assertTrue((SUBJECT / "work" / "COMPILE").is_file())
             receipt = (SUBJECT / "work" / "COMPILE").read_text(encoding="utf-8")
             self.assertIn("result=compile-ok", receipt)
             self.assertIn("mutation_score=not-recorded", receipt)
+            self.assertIn("posttran_job=not-run", receipt)
+            self.assertIn("compiler_release=3.1.2.0", receipt)
         else:
-            self.assertIn("no cobol compiler on path", combined)
+            self.assertTrue(
+                "pinned cobc is missing" in combined or "missing" in combined,
+                completed.stderr,
+            )
 
     def test_no_committed_mutation_score(self) -> None:
         forbidden_names = {"mutations.xml", "SCORE", "mutation-score"}

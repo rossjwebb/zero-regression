@@ -7,6 +7,7 @@ on:
     paths:
       - "subjects/carddemo/**"
       - "tests/test_carddemo_pins.py"
+      - "tests/test_carddemo_toolchain.py"
       - ".github/workflows/s3-carddemo.yml"
 
 jobs:
@@ -24,12 +25,11 @@ jobs:
       - name: Verify pins
         run: |
           python3.12 subjects/carddemo/check-pins.py
-          python3.12 -m unittest tests.test_carddemo_pins
+          python3.12 -m unittest tests.test_carddemo_pins tests.test_carddemo_toolchain
 
-  # GnuCOBOL is in Ubuntu universe (jammy and noble). ubuntu-latest
-  # can install the gnucobol metapackage, which provides cobc 3.1.2
-  # on Ubuntu 24.04. This job checks compile only. It is not a test
-  # run and it does not record a mutation score.
+  # Install the pinned Ubuntu noble package, not an unpinned PATH cobc.
+  # This job checks compile only. It is not a POSTTRAN job and it
+  # does not record a mutation score.
   compile:
     runs-on: ubuntu-latest
     steps:
@@ -41,12 +41,13 @@ jobs:
         with:
           python-version: "3.12.3"
 
-      - name: Install GnuCOBOL
+      - name: Install pinned GnuCOBOL
         run: |
           sudo apt-get update
-          sudo apt-get install -y gnucobol
-          command -v cobc
-          cobc --version
+          sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1
+          test "$(dpkg-query -W -f='${Version}' gnucobol3)" = "3.1.2-5.1ubuntu1"
+          test "$(command -v cobc)" = "/usr/bin/cobc"
+          cobc --version | grep -F "3.1.2.0"
 
       - name: Compile pinned POSTTRAN CBTRN02C
         run: |
@@ -68,4 +69,6 @@ jobs:
           fi
           grep -q "result=compile-ok" subjects/carddemo/work/COMPILE
           grep -q "mutation_score=not-recorded" subjects/carddemo/work/COMPILE
-          echo "CI compile check: cobc produced CBTRN02C; runner stayed fail-closed (exit 2, no tests)."
+          grep -q "posttran_job=not-run" subjects/carddemo/work/COMPILE
+          grep -q "compiler_release=3.1.2.0" subjects/carddemo/work/COMPILE
+          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; runner stayed fail-closed (exit 2, no tests, not a POSTTRAN job)."

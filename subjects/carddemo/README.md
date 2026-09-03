@@ -25,8 +25,9 @@ The three paths whose names contain `test` are sample IDCAMS/SORT JCL (`samples/
 
 - `batch/` — bit-identical snapshot of the POSTTRAN program, its copybooks, the POSTTRAN JCL, and the upstream licence/notice
 - `pins/` — full `ls-tree` at the pin, and the no-legacy-tests scan
-- `check-pins.py` — hash and metadata gate
-- `run-cobol.sh` — compile CBTRN02C with `cobc` when present; fail-closed if compile fails or if there are no tests; never records a score
+- `check-pins.py` — hash and metadata gate, including the GnuCOBOL pin
+- `toolchain.py` — fetch/hash-check the Ubuntu `gnucobol3` `.deb`; refuse a mixed PATH `cobc`
+- `run-cobol.sh` — compile `CBTRN02C` with the pinned `cobc` only; fail-closed if the pin mismatches, compile fails, or there are no tests; never records a score
 
 There is no `legacy/` directory. S1 uses `legacy/` for a Python oracle; S3 does not, because CardDemo has no legacy tests.
 
@@ -45,30 +46,34 @@ python3.12 -m unittest tests.test_carddemo_pins
 `run-cobol.sh` is fail-closed. It exits 2 if:
 
 1. the pin check fails, or
-2. no COBOL compiler is on `PATH` (looks for `cobc`, `cob`, `cob2`), or
-3. the compiler is present but `CBTRN02C` does not compile, or
-4. the compiler succeeds — there is still no test suite, so the script refuses to report a green run.
+2. the pinned `cobc` is missing, or
+3. the Ubuntu `.deb` hash, `/usr/bin/cobc` hash, `cobc --version`, or `dpkg` package version does not match the pin (PATH `cobc` cannot silently mix), or
+4. the pinned compiler is present but `CBTRN02C` does not compile, or
+5. the compiler succeeds — there is still no test suite, so the script refuses to report a green POSTTRAN job.
 
-## What compiles, and what still cannot
+## Pinned GnuCOBOL
 
-GnuCOBOL is installable on Ubuntu 24.04 and on GitHub Actions `ubuntu-latest` (jammy and noble both ship the `gnucobol` metapackage):
+S3 uses one compiler: Ubuntu noble `gnucobol3=3.1.2-5.1ubuntu1`, which provides `cobc (GnuCOBOL) 3.1.2.0` at `/usr/bin/cobc`. The runner fetches the `.deb` from the Ubuntu pool and checks its SHA-256, then requires the installed `cobc` binary hash and version to match. A different `cobc` earlier on `PATH` is a fail-closed error, not a substitute.
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y gnucobol
-cobc --version
+sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1
+python3.12 subjects/carddemo/check-pins.py
+./subjects/carddemo/run-cobol.sh
 ```
 
-Observed on Ubuntu 24.04.4: `cobc (GnuCOBOL) 3.1.2.0` from `gnucobol3=3.1.2-5.1ubuntu1`.
+## What this is, and what it is not
 
-With that compiler, `run-cobol.sh` **does compile** the pinned POSTTRAN program `CBTRN02C` (`cobc -std=ibm -x`) plus its five `COPY` books. That is a compile only.
+This is still **unexecuted S3**. Compile OK is the current truth. It is not a green CardDemo run and not a paper result.
 
-The following still cannot happen on this image, and the runner does not pretend otherwise:
+With the pinned compiler, `run-cobol.sh` **does compile** the pinned POSTTRAN program `CBTRN02C` (`cobc -std=ibm -x`) plus its five `COPY` books. That is a compile only. The script still exits 2.
 
-- IBM Enterprise COBOL (`cob2`) is absent
-- There is no legacy test suite, so the script still exits 2 after a successful compile
-- No mutation score is recorded
-- The binary is not a POSTTRAN job run: there is no `DALYTRAN` sequential file, no VSAM/INDEXED data, and no IBM Language Environment `CEE3ABD`
+The following still cannot happen, and the runner does not pretend otherwise:
+
+- There is no legacy test suite
+- No mutation score or test score is recorded
+- The binary is not a POSTTRAN job: there is no `DALYTRAN` sequential file, no VSAM/INDEXED data, and no IBM Language Environment `CEE3ABD`
+- IBM Enterprise COBOL (`cob2`) is not the pin and is not used
 - Online CICS programs, remaining batch programs, JCL, and EBCDIC data are outside this slice
 
 The script does not write a mutation score. This repository does not store a mutation score for S3.

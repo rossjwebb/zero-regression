@@ -43,6 +43,10 @@ def check_pin_text(pins: dict) -> list[str]:
         "carddemo_legacy_tests": pins["carddemo"]["legacy_tests"],
         "slice_job": pins["slice"]["job"],
         "slice_program": pins["slice"]["program"],
+        "compiler_gnucobol_cobc": pins["gnucobol"]["release"],
+        "compiler_gnucobol_package": f"{pins['gnucobol']['package']}={pins['gnucobol']['version']}",
+        "compiler_gnucobol_url": pins["gnucobol"]["url"],
+        "compiler_gnucobol_sha256": pins["gnucobol"]["sha256"],
     }
     for key, value in expected.items():
         line = f"{key}={value}"
@@ -91,6 +95,41 @@ def check_no_legacy_tests(pins: dict) -> list[str]:
     return errors
 
 
+def check_gnucobol_pin(pins: dict) -> list[str]:
+    errors: list[str] = []
+    if "gnucobol" not in pins:
+        return ["missing [gnucobol] pin"]
+    cfg = pins["gnucobol"]
+    required = {
+        "package": "gnucobol3",
+        "version": "3.1.2-5.1ubuntu1",
+        "release": "3.1.2.0",
+        "version_marker": "3.1.2.0",
+        "binary": "/usr/bin/cobc",
+    }
+    for key, value in required.items():
+        if cfg.get(key) != value:
+            errors.append(f"gnucobol.{key} must be {value!r}, got {cfg.get(key)!r}")
+    if not cfg.get("url", "").startswith("http://archive.ubuntu.com/ubuntu/pool/universe/g/gnucobol3/"):
+        errors.append("gnucobol.url must be the Ubuntu pool fetch for gnucobol3")
+    sha = cfg.get("sha256", "")
+    cobc_sha = cfg.get("cobc_sha256", "")
+    if len(sha) != 64 or any(ch not in "0123456789abcdef" for ch in sha):
+        errors.append("gnucobol.sha256 is not a lowercase SHA-256")
+    if len(cobc_sha) != 64 or any(ch not in "0123456789abcdef" for ch in cobc_sha):
+        errors.append("gnucobol.cobc_sha256 is not a lowercase SHA-256")
+    debs = pins.get("deb", [])
+    names = {entry.get("package") for entry in debs}
+    if names != {"gnucobol3", "libcob4-dev", "libcob4t64"}:
+        errors.append(f"[[deb]] packages must be gnucobol3, libcob4-dev, libcob4t64; got {sorted(names)}")
+    for entry in debs:
+        if entry.get("sha256") == "" or len(entry.get("sha256", "")) != 64:
+            errors.append(f"[[deb]] {entry.get('package')} is missing sha256")
+        if entry.get("package") == "gnucobol3" and entry.get("sha256") != sha:
+            errors.append("gnucobol3 [[deb]] sha256 must match [gnucobol].sha256")
+    return errors
+
+
 def write_hashes(pins: dict) -> None:
     raw = PINS.read_text(encoding="utf-8")
     for entry in pins["file"]:
@@ -123,7 +162,7 @@ def main() -> int:
     if args.write:
         write_hashes(pins)
         pins = load_pins()
-    errors = check_pin_text(pins) + check_files(pins) + check_no_legacy_tests(pins)
+    errors = check_pin_text(pins) + check_files(pins) + check_no_legacy_tests(pins) + check_gnucobol_pin(pins)
     if errors:
         print("S3 FAIL-CLOSED: pin check failed", file=sys.stderr)
         for error in errors:
