@@ -32,6 +32,8 @@ If the oracle is missing, the step skips. A skip is not a pass. The old `cases=1
 
 **PR #6.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`.
 
+**Dedicated workflows.** PR #1 now has `s1-django-accounting-oracle.yml` (always runs; requires `cases=27 replay-only`; skip not allowed). PR #6 now has `s3-carddemo-compile.yml` (always runs; `S3 COMPILE OK` + exit 2 + `posttran_job=not-run`; skip not allowed). Still not paper S1/S3.
+
 ## What this file is not
 
 It does not merge any pull request. It does not change the mutation harness. It does not rewrite the fixture hashes on `master` or the hashes proposed in PR #2. It does not invent a mutation score.
