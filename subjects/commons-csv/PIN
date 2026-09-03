@@ -1,0 +1,25 @@
+# S2 pin — Defects4J Commons-CSV (Csv-1f) under PIT.
+# Hashes in pins.toml were written from fetched artifacts, not typed from memory.
+
+defects4j_upstream=https://github.com/rjust/defects4j
+defects4j_tag=v3.0.1
+defects4j_commit=6d54320e0db5a357f9ab38a8e4d2e5aead7e1c09
+defects4j_project=Csv
+defects4j_bug_id=1
+defects4j_version=1f
+
+commons_csv_upstream=https://github.com/apache/commons-csv
+commons_csv_commit=de1838ea067f3fbc4c7c21b9eeae077c739ecb73
+commons_csv_buggy_commit=0833f45bffd40f44ba6f294d84e9bac8a9ba0a37
+commons_csv_report=CSV-75
+commons_csv_report_url=https://issues.apache.org/jira/browse/CSV-75
+modified_class=org.apache.commons.csv.ExtendedBufferedReader
+
+pit_tool=pitest
+pit_version=1.15.3
+pit_mutators=DEFAULTS
+subject_release=8
+pit_jdk=11.0.32.1+1
+pit_invocation=command-line jars (Maven is not required)
+junit_version=4.13.2
+hamcrest_core_version=1.3

@@ -1,0 +1,5 @@
+upstream=https://github.com/dulacp/django-accounting
+commit=2e61776a653e719a4c15578ab385603a6066c2b6
+committed=2017-12-02T12:36:10Z
+message=Remove old pip option --download-cache
+licence=MIT

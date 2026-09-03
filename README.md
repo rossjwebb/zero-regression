@@ -20,6 +20,21 @@ python3.12 -m venv .venv && . .venv/bin/activate && python -m pip install -r req
 ./verify.py subjects/accounting-service/evidence/run-*/evidence.jsonl
 ```
 
+The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6066c2b6`. From a fresh clone:
+
+```bash
+python3.12 subjects/django-accounting/oracle.py
+```
+
+That command replays recorded traces. CI on the S1 branch requires stdout to be exactly `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. `cases=19` fails. This is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
+
+S2 is Defects4J Commons-CSV under PIT. The pin is Csv-1f (`de1838ea067f3fbc4c7c21b9eeae077c739ecb73`). This repository does not record a mutation score for S2 and does not claim that the paper already executed it.
+
+```bash
+python3.12 subjects/commons-csv/check-pins.py
+./subjects/commons-csv/run-pit.sh
+```
+
 S3 is public CardDemo COBOL (batch POSTTRAN / `CBTRN02C`). The pin is `aws-samples/aws-mainframe-modernization-carddemo` `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e`. There are no legacy tests. This repository does not record a mutation score for S3 and does not claim that the paper already executed it.
 
 ```bash
@@ -48,3 +63,16 @@ Three executed `accounting-service` chains are kept:
 - `fixtures/accounting-service/` — post-approval chain. OVERRIDE records were written after the principal signed the four equivalents. `CONFIG` hash `60df647fc89a72ea0627b9bf933482bea4e9259f53f6614c4b61c78590a8be06`.
 - `fixtures/accounting-service/superseded/publish-4/` — same remediation, but its OVERRIDE records predate that approval; superseded, not deleted. `CONFIG` hash `eccc17cdcc1f82072451ef9a38a5555457b4d75aedf5112ab75d1c09f40b321b`.
 - `fixtures/accounting-service/pre-remediation/` — the executed chain that found the two gaps. `CONFIG` hash `1c7f02cc4305fc0aae65bb6f1ed8d62aaeda67fa793c579004143717926a3afd`.
+
+An earlier April 2026 figure of 91.0% / 279 mutants is superseded. See `APRIL-2026-SUPERSEDED.md`. Do not cite that figure.
+
+Pull-request checks re-run the fixture verifier and, when the draft PR #1 runner is present, the django-accounting replay oracle. A match is a replay of 27 recorded traces, not a proof of accounting correctness and not a paper S1 result.
+
+```bash
+python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl
+python3.12 ./verify.py fixtures/accounting-service/pre-remediation/evidence.jsonl
+python3.12 ./verify.py fixtures/accounting-service/superseded/publish-4/evidence.jsonl
+python3.12 subjects/django-accounting/oracle.py
+```
+
+The oracle must print `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only` and exit 0. Any other line fails the check.

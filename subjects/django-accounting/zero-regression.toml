@@ -1,0 +1,6 @@
+[subject]
+name = "django-accounting"
+source_paths = ["legacy/accounting/libs/prices.py", "legacy/accounting/apps/books/calculators.py"]
+test_paths = ["test_pricing_import.py"]
+operator_set = "mutmut-3.6.0-default"
+unverified_scope = "Pinned at dulacp/django-accounting 2e61776a653e719a4c15578ab385603a6066c2b6. Django ORM/SQL, UI, migrations, people, connect, reports, templates, static files, and model persistence are outside the certified slice and are not executed. The oracle replays recorded traces; it is not a proof of accounting correctness. A Generator must not read or edit legacy/ or golden/."
