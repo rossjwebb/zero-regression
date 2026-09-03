@@ -26,7 +26,7 @@ The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6
 python3.12 subjects/django-accounting/oracle.py
 ```
 
-That command replays recorded traces. It is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
+That command replays recorded traces. CI on the S1 branch requires stdout to be exactly `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. `cases=19` fails. This is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
 
 ## Evidence-chain schema
 

@@ -14,6 +14,8 @@ ORACLE = SUBJECT / "oracle.py"
 ORACLE_CLAIM = SUBJECT / "ORACLE.md"
 GOLDEN = SUBJECT / "golden" / "expected.json"
 PIN = "2e61776a653e719a4c15578ab385603a6066c2b6"
+EXPECTED_OK = "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only"
+WORKFLOW = REPO / ".github" / "workflows" / "s1-django-accounting-oracle.yml"
 SQL_BACKED_CASES = ("organization_derived", "overdue_total")
 
 
@@ -21,15 +23,15 @@ class DjangoAccountingOracleTests(unittest.TestCase):
     def test_oracle_matches_golden_file(self) -> None:
         result = subprocess.run([sys.executable, str(ORACLE)], cwd=REPO, capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn(PIN, result.stdout)
-        self.assertIn("replay-only", result.stdout)
+        self.assertEqual(result.stdout, EXPECTED_OK + "\n")
+        self.assertNotIn("cases=19", result.stdout)
 
     def test_golden_file_records_the_pin_and_the_claim(self) -> None:
         payload = json.loads(GOLDEN.read_text(encoding="utf-8"))
         self.assertEqual(payload["pin"], PIN)
         self.assertIn("not a proof of accounting correctness", payload["claim"])
         self.assertIn("Django ORM and SQL are not executed", payload["claim"])
-        self.assertGreaterEqual(len(payload["cases"]), 19)
+        self.assertEqual(len(payload["cases"]), 27)
         for name in SQL_BACKED_CASES:
             self.assertNotIn(name, payload["cases"])
         for name in (
@@ -65,6 +67,13 @@ class DjangoAccountingOracleTests(unittest.TestCase):
         items = QuerySet([type("Row", (), {"organization": "keep", "other": 1})()])
         filtered = items.filter(organization="missing", payments__date_paid__gte="ignored")
         self.assertEqual(len(filtered), 1)
+
+    def test_ci_runs_the_oracle_and_does_not_skip(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("python3.12 subjects/django-accounting/oracle.py", text)
+        self.assertIn(EXPECTED_OK, text)
+        self.assertNotIn('echo "The replay runner lives on draft PR #1. Skip.', text)
+        self.assertNotIn("exit 0", text)
 
     def test_tampered_golden_file_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -30,7 +30,13 @@ From the repository root, with Python 3.12.3:
 python3.12 subjects/django-accounting/oracle.py
 ```
 
-Exit 0 means the pinned slice still matches `golden/expected.json` for the recorded traces. The first mismatch is printed. `--write` regenerates the golden file and is not part of ordinary use.
+Stdout must be exactly:
+
+```
+ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only
+```
+
+`cases=19` fails. CI on this branch runs that same command and does not skip. A match is a replay, not paper S1. `--write` regenerates the golden file and is not part of ordinary use.
 
 ```bash
 python3.12 -m pytest tests/test_django_accounting_oracle.py
