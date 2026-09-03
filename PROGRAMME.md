@@ -4,15 +4,33 @@ This file maps the unexecuted public-replication steps to the draft pull request
 
 **None of S1–S3 is a paper execution until the matching pull request is merged and the paper says so.** A draft is not a result.
 
+Ross: no merges. The paper stays on the `master` post-approval chain `60df647f` / `fe677dfc`.
+
 ## Map
 
 | Step | What it is | Draft PR |
 |---|---|---|
-| S1 | Freeze the django-accounting pricing slice, stub Django, and put a golden-file oracle in place. | [PR #1](https://github.com/rossjwebb/zero-regression/pull/1) |
+| S1 | Freeze django-accounting, import-only stub, golden replay oracle. | [PR #1](https://github.com/rossjwebb/zero-regression/pull/1) |
 | Path-scrub | Replace leaked machine-local paths so CONFIG hashes change. | [PR #2](https://github.com/rossjwebb/zero-regression/pull/2) — parked. The paper and this repository still use the hashes on `master`. |
-| CI + April 91.0 | Pull-request checks for the existing verifier (and the S1 oracle when present), plus a marker that the April 2026 figure of 91.0 is superseded. | [PR #3](https://github.com/rossjwebb/zero-regression/pull/3) |
+| CI + April 91.0 | Pull-request checks, plus a marker that the April 2026 figure of 91.0 is superseded. | [PR #3](https://github.com/rossjwebb/zero-regression/pull/3) |
 | S2 | Defects4J Commons-CSV under PIT. | [PR #4](https://github.com/rossjwebb/zero-regression/pull/4) (pin and fail-closed runner); [PR #7](https://github.com/rossjwebb/zero-regression/pull/7) (CI). No mutation score is stored. |
-| S3 | CardDemo COBOL. | [PR #5](https://github.com/rossjwebb/zero-regression/pull/5) (pin); [PR #6](https://github.com/rossjwebb/zero-regression/pull/6) (GnuCOBOL compile of the pinned program). Compile succeeded. That is not a green test job. |
+| S3 | CardDemo COBOL. | [PR #5](https://github.com/rossjwebb/zero-regression/pull/5) (pin); [PR #6](https://github.com/rossjwebb/zero-regression/pull/6) (GnuCOBOL compile). Compile succeeded. That is not a green test job. |
+
+## Current unmerged truth
+
+**PR #1 follow-up.** The stub is import-only. The golden file holds 27 replay traces. A match is a replay of those traces, not a proof of accounting correctness. This is still not paper S1.
+
+**PR #3 CI.** When `subjects/django-accounting/oracle.py` is present, the check requires this stdout line and nothing else:
+
+```
+ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only
+```
+
+If the oracle is missing, the step skips. A skip is not a pass. The old `cases=19` line fails.
+
+**PR #4 / PR #7.** PIT runs on hash-checked Temurin 11.0.32.1. Subject classfiles are major 52 (`javac --release 8`). Mutators are the named DEFAULTS group. The runner is fail-closed. No mutation score is stored.
+
+**PR #6.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`.
 
 ## What this file is not
 
