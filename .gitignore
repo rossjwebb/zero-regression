@@ -4,3 +4,7 @@ __pycache__/
 *.egg-info/
 subjects/commons-csv/work/
 subjects/carddemo/work/
+.coverage
+.mutmut-cache
+mutants/
+

@@ -1,4 +1,6 @@
 {
+  "status": "SUPERSEDED",
+  "superseded_note": "April 2026 figure of 91.04 / 279 / 186. Do not cite. Live executed certificate is 248/252. See APRIL-2026-SUPERSEDED.md and fixtures/accounting-service/.",
   "pipeline_node": "node-3-mutation-testing",
   "tool": "mutmut-2.5.1",
   "target_module": "9598ed890672efbb.0473048be230661f",

@@ -2,6 +2,8 @@
 
 The April 2026 kill-rate figure of **91.0% / 279 mutants** is superseded. Do not cite it.
 
+The April JSON files under `subjects/accounting-service/` (`CryptographicParityCertificate.json`, `MutationTelemetry.json`, `pattern_export/MutationTelemetry.pattern.json`) are marked `SUPERSEDED` in place. A reader of that directory should start at `subjects/accounting-service/APRIL-2026-SUPERSEDED.md`.
+
 The live executed certificates on `master` are the three retained `accounting-service` chains. Their CONFIG and CERTIFICATE hashes are the values already documented in `README.md` and in each `certificate.txt`. This marker does not rewrite those chains.
 
 | Chain | Why it is kept | CONFIG hash | CERTIFICATE hash | Kill rate |

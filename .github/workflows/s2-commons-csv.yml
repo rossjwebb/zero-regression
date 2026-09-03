@@ -10,7 +10,7 @@ on:
       - "tests/test_commons_csv_toolchain.py"
       - ".github/workflows/s2-commons-csv.yml"
 
-# This branch carries the S2 files from draft PR #4, so the job RUNs.
+# This branch carries the S2 files from merged PR #4, so the job RUNs.
 # If this workflow is present without those files, the job SKIPs and
 # says so. A skip is not a PIT result and records no mutation score.
 #

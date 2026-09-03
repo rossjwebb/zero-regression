@@ -31,7 +31,7 @@ jobs:
           ORACLE=subjects/django-accounting/oracle.py
           if [ ! -f "$ORACLE" ]; then
             echo "subjects/django-accounting/oracle.py is not on this tree."
-            echo "The replay runner lives on draft PR #1. Skip. This is not paper S1."
+            echo "The replay runner lives on merged PR #1. Skip. This is not paper S1."
             exit 0
           fi
           output=$(python3.12 "$ORACLE")
