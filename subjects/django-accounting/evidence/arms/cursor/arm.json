@@ -1,0 +1,7 @@
+{
+  "arm": "cursor",
+  "name": "Cursor",
+  "status": "not-run",
+  "generators_run": false,
+  "note": "Scaffold only. No generator was run. No kill rate is stored. No mutation score is stored."
+}
