@@ -12,14 +12,25 @@ This repository makes no Generator, Adjudicator, or Executor calls.
 
 Public-replication steps (S1–S3) and the merged pull requests that hold them are listed in [PROGRAMME.md](PROGRAMME.md). None of those steps is a paper execution until the paper says so.
 
-## How to run
+## Supported path
 
-From a fresh clone, with Python 3.12.3 on `PATH`:
+From a fresh clone, with Python 3.12.3 on `PATH`, install the harness editable and verify the retained accounting-service fixture chains. Exit 0 means each chain holds.
 
 ```bash
-python3.12 -m venv .venv && . .venv/bin/activate && python -m pip install -r requirements-certification.txt
-./certify.sh subjects/accounting-service
-./verify.py subjects/accounting-service/evidence/run-*/evidence.jsonl
+python3.12 -m venv .venv && . .venv/bin/activate
+python -m pip install -e .
+zero-regression verify fixtures/accounting-service/evidence.jsonl
+zero-regression verify fixtures/accounting-service/pre-remediation/evidence.jsonl
+zero-regression verify fixtures/accounting-service/superseded/publish-4/evidence.jsonl
+```
+
+`zr` is an alias for `zero-regression`. `python -m zero_regression_harness` is the same entry. `./verify.py` remains a thin wrapper over that verify command.
+
+A certification run still needs the pinned lockfile, then `zero-regression certify <subject>` (or `./certify.sh`):
+
+```bash
+python -m pip install -r requirements-certification.txt
+zero-regression certify subjects/accounting-service
 ```
 
 The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6066c2b6`. From a fresh clone:
