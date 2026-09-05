@@ -41,6 +41,8 @@ python3.12 subjects/django-accounting/oracle.py
 
 That command replays recorded traces. CI on the S1 branch requires stdout to be exactly `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. `cases=19` fails. This is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
 
+Part B three-arm scaffolding posture (not a score) is in `subjects/django-accounting/evidence/`. The arms are Cursor, Claude Code, and Gemini. They have not been run. Codex is omitted. `python3.12 subjects/django-accounting/check-part-b.py` still requires that same oracle stdout line. A later zero-mismatch across arms would mean the oracle is too thin to discriminate, not “four clean generators”. See `subjects/django-accounting/evidence/EVIDENCE.md`.
+
 S2 is Defects4J Commons-CSV under PIT. The pin is Csv-1f (`de1838ea067f3fbc4c7c21b9eeae077c739ecb73`). This repository does not record a mutation score for S2 and does not claim that the paper already executed it.
 
 ```bash

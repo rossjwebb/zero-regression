@@ -10,7 +10,7 @@ Ross: merges happened. The paper stays on the `master` post-approval chain `8ecb
 
 | Step | What it is | Merged PR |
 |---|---|---|
-| S1 | Freeze django-accounting, import-only stub, golden replay oracle. | [PR #1](https://github.com/rossjwebb/zero-regression/pull/1) |
+| S1 | Freeze django-accounting, import-only stub, golden replay oracle. Part B three-arm scaffolding posture (not a score; generators not run; Codex omitted) is in `subjects/django-accounting/evidence/`. | [PR #1](https://github.com/rossjwebb/zero-regression/pull/1) |
 | Path-scrub | Replace leaked machine-local paths so CONFIG hashes change. | [PR #2](https://github.com/rossjwebb/zero-regression/pull/2) — merged. The paper and this repository use the hashes now on `master`. |
 | CI + April 91.0 | Pull-request checks, plus a marker that the April 2026 figure of 91.0 is superseded. | [PR #3](https://github.com/rossjwebb/zero-regression/pull/3) |
 | S2 | Defects4J Commons-CSV under PIT. | [PR #4](https://github.com/rossjwebb/zero-regression/pull/4) (pin and fail-closed runner); [PR #7](https://github.com/rossjwebb/zero-regression/pull/7) (CI). No mutation score is stored. Pin/runner posture (not a score) is in `subjects/commons-csv/evidence/`. |
@@ -18,7 +18,7 @@ Ross: merges happened. The paper stays on the `master` post-approval chain `8ecb
 
 ## Current merged truth
 
-**S1.** The stub is import-only. The golden file holds 27 replay traces. A match is a replay of those traces, not a proof of accounting correctness. This is still not paper S1.
+**S1.** The stub is import-only. The golden file holds 27 replay traces. A match is a replay of those traces, not a proof of accounting correctness. This is still not paper S1. `subjects/django-accounting/evidence/` records Part B three-arm scaffolding (Cursor, Claude Code, Gemini; `status=not-run`, `generators_run=false`). Codex is omitted on purpose. `mutation_score=not-stored`. Domain correctness is out of scope. That pack is scaffolding only. If a later three-arm run reports zero mismatches, the honest reading is that the oracle is too thin to discriminate — not “four clean generators” and not success theatre. It is not paper S1.
 
 **CI.** When `subjects/django-accounting/oracle.py` is present, the check requires this stdout line and nothing else:
 
@@ -32,7 +32,7 @@ If the oracle is missing, the step skips. A skip is not a pass. The old `cases=1
 
 **S3.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`. A `cobc` failure (`S3 COBC FAIL`, job fails) is split from compile-OK plus harness exit 2 (`S3 HARNESS EXIT 2`, `posttran_job=not-run`, not a GnuCOBOL error). Compile is not a POSTTRAN job. `subjects/carddemo/evidence/` records pin identities, the `check-pins.py` gate, and the fail-closed compile-runner claim (`S3 COMPILE OK` + exit 2 vs `S3 COBC FAIL`). That pack is scaffolding+compile-runner-only. It is not paper S3.
 
-**Dedicated workflows.** `s1-django-accounting-oracle.yml` always runs; requires `cases=27 replay-only`; skip not allowed. `s3-carddemo-compile.yml` always runs; `S3 COMPILE OK` + exit 2 + `posttran_job=not-run`; skip not allowed. Still not paper S1/S3.
+**Dedicated workflows.** `s1-django-accounting-oracle.yml` always runs; requires `cases=27 replay-only`; skip not allowed. `s1-django-accounting-part-b.yml` always runs; still requires that same oracle stdout, then `check-part-b.py` and the Part B honesty tests; skip not allowed. `s3-carddemo-compile.yml` always runs; `S3 COMPILE OK` + exit 2 + `posttran_job=not-run`; skip not allowed. Still not paper S1/S3.
 
 ## What this file is not
 

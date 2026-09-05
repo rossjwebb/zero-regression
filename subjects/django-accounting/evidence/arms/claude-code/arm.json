@@ -1,0 +1,7 @@
+{
+  "arm": "claude_code",
+  "name": "Claude Code",
+  "status": "not-run",
+  "generators_run": false,
+  "note": "Scaffold only. No generator was run. No kill rate is stored. No mutation score is stored."
+}
