@@ -1,0 +1,22 @@
+{
+  "command": "python3.12 subjects/django-accounting/oracle.py",
+  "domain_correctness": "out_of_scope",
+  "exit": 0,
+  "kind": "s1-part-b-oracle-receipt",
+  "match_count": 27,
+  "mismatch_count": 0,
+  "mutation_score": "not-stored",
+  "oracle": "replay-only",
+  "paper_s1": "unexecuted",
+  "pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
+  "python": "3.12.3",
+  "recorded_traces": 27,
+  "stderr": "",
+  "stdout": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
+  "zero_mismatch_does_not_mean": [
+    "four clean generators",
+    "success theatre",
+    "paper S1"
+  ],
+  "zero_mismatch_means": "oracle too thin to discriminate"
+}

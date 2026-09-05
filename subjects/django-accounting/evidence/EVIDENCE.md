@@ -1,7 +1,8 @@
 # S1 Part B django-accounting posture evidence
 
-This pack records the honesty posture for S1 Part B: three-arm
-replication scaffolding against the existing replay-only oracle. It is
+This pack records Stage B of S1 Part B: the Cursor arm executed
+against the existing 27-trace replay-only oracle; Claude Code and
+Gemini remain awaiting an external run. It is
 not a paper execution of S1.
 
 Machine-readable copy: [`s1-part-b-posture.json`](s1-part-b-posture.json).
@@ -15,22 +16,58 @@ Machine-readable copy: [`s1-part-b-posture.json`](s1-part-b-posture.json).
 - `import_only_stub=true`
 - `mutation_score=not-stored`
 - `domain_correctness=out_of_scope`
-- `status=scaffolding+three-arm-not-run`
+- `status=cursor-executed+external-awaiting`
 - `codex_arm=omitted`
 
-No mutation score is stored. The paper has not executed S1. This pack
-is scaffolding only. The three generator arms have not been run.
+No mutation score is stored. The paper has not executed S1. The
+three-arm comparison is not available.
 
 ## What Part B is
 
-Part B is the three-arm replication scaffold for the already-frozen
+Part B is the three-arm replication against the already-frozen
 django-accounting subject. The arms are Cursor, Claude Code, and
-Gemini. Each arm has an output slot under `arms/`. Those slots are
-empty of results: `status=not-run`, `generators_run=false`.
+Gemini. Each arm has an output slot under `arms/`.
 
 Codex is not an arm. `codex_arm=omitted` because the lock is three
 arms only. That omission is deliberate. It is not an exemption for a
 fourth run.
+
+## Stage B results
+
+**Cursor (executed).** This Cursor Cloud Agent is the Cursor arm. It
+ran the Stage A replication step: the shared probe
+`evidence/arms/run-arm-oracle.py` invoked
+`python3.12 subjects/django-accounting/oracle.py` on Python 3.12.3.
+No new candidate implementation was produced. The golden file was
+not widened. Observed oracle stdout was exactly:
+
+```
+ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only
+```
+
+Match count 27. Mismatch count 0. Exit 0. Receipt:
+`arms/cursor/oracle-receipt.json`. `generators_run.cursor=true`.
+
+That 27/0 result is a replay of the recorded traces. It is not a
+proof of accounting correctness. It is not clean-generator success.
+The honest reading of a zero-mismatch replay, even on one arm, is
+that the oracle is too thin to discriminate.
+
+**Claude Code (awaiting-external-run).** This VM cannot drive Claude
+Code. `generators_run.claude_code=false`. No oracle stdout, match
+count, or mismatch count is recorded. The paste-ready work order is
+`arms/claude-code/PROMPT.md` (also stored on `arm.json` as `prompt`).
+The runnable probe is `arms/run-arm-oracle.py`.
+
+**Gemini (awaiting-external-run).** This VM cannot drive Gemini.
+`generators_run.gemini=false`. No oracle stdout, match count, or
+mismatch count is recorded. The paste-ready work order is
+`arms/gemini/PROMPT.md` (also stored on `arm.json` as `prompt`).
+The runnable probe is `arms/run-arm-oracle.py`.
+
+`claims.generators_run` stays false: the three-arm set has not
+completed. Do not read the Cursor 27/0 receipt as a three-arm
+comparison.
 
 ## What the oracle is, and is not
 
@@ -63,10 +100,10 @@ honest reading is that the oracle is too thin to discriminate. That
 result is not “four clean generators”. It is not success theatre. It
 is not paper S1.
 
-This pack does not report a three-arm comparison. The arms have not
-run. There is no mismatch count to interpret yet. The zero-mismatch
-rule is recorded now so a later empty comparison cannot be dressed up
-as a clean generator result.
+The Cursor arm already returned zero mismatches. That single-arm
+replay does not become success theatre either. Claude Code and
+Gemini have not run, so there is no across-arms mismatch count to
+interpret yet.
 
 ## What is recorded
 
@@ -77,16 +114,20 @@ as a clean generator result.
   is a replay of recorded traces, not domain correctness and not
   paper S1.
 - `check-part-b.py` is the Part B honesty gate. It still requires
-  that same oracle stdout line. It does not run a generator and does
-  not store a mutation score.
-- Three arm output slots (Cursor, Claude Code, Gemini), each
-  `status=not-run` / `generators_run=false`.
+  that same oracle stdout line. It does not store a mutation score.
+- Cursor arm output (`status=executed`, `generators_run=true`) with
+  the live oracle receipt.
+- Claude Code and Gemini slots (`status=awaiting-external-run`,
+  `generators_run=false`) with paste-ready prompts and the shared
+  receipt script. Those slots are not results.
 
 ## What is not recorded
 
 - No mutation score, no kill rate, no percentage, no CERTIFICATE
   record in the harness log.
-- No generator survivors, no invented arm results.
+- No invented Claude Code or Gemini oracle outcomes.
 - No Codex arm and no Codex exemption.
 - No claim that paper S1 ran.
 - No widening of the 27-trace golden file.
+- No three-arm comparison and no claim that four clean generators
+  produced a paper result.
