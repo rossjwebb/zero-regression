@@ -10,7 +10,7 @@ Ross: merges happened. The paper stays on the `master` post-approval chain `8ecb
 
 | Step | What it is | Merged PR |
 |---|---|---|
-| S1 | Freeze django-accounting, import-only stub, golden replay oracle. Part B three-arm scaffolding posture (not a score; generators not run; Codex omitted) is in `subjects/django-accounting/evidence/`. | [PR #1](https://github.com/rossjwebb/zero-regression/pull/1) |
+| S1 | Freeze django-accounting, import-only stub, golden replay oracle. Part B: Cursor arm executed against the 27-trace replay-only oracle; Claude Code and Gemini awaiting external run (not a score; Codex omitted) is in `subjects/django-accounting/evidence/`. | [PR #1](https://github.com/rossjwebb/zero-regression/pull/1) |
 | Path-scrub | Replace leaked machine-local paths so CONFIG hashes change. | [PR #2](https://github.com/rossjwebb/zero-regression/pull/2) — merged. The paper and this repository use the hashes now on `master`. |
 | CI + April 91.0 | Pull-request checks, plus a marker that the April 2026 figure of 91.0 is superseded. | [PR #3](https://github.com/rossjwebb/zero-regression/pull/3) |
 | S2 | Defects4J Commons-CSV under PIT. | [PR #4](https://github.com/rossjwebb/zero-regression/pull/4) (pin and fail-closed runner); [PR #7](https://github.com/rossjwebb/zero-regression/pull/7) (CI). No mutation score is stored. Pin/runner posture (not a score) is in `subjects/commons-csv/evidence/`. |
@@ -18,7 +18,7 @@ Ross: merges happened. The paper stays on the `master` post-approval chain `8ecb
 
 ## Current merged truth
 
-**S1.** The stub is import-only. The golden file holds 27 replay traces. A match is a replay of those traces, not a proof of accounting correctness. This is still not paper S1. `subjects/django-accounting/evidence/` records Part B three-arm scaffolding (Cursor, Claude Code, Gemini; `status=not-run`, `generators_run=false`). Codex is omitted on purpose. `mutation_score=not-stored`. Domain correctness is out of scope. That pack is scaffolding only. If a later three-arm run reports zero mismatches, the honest reading is that the oracle is too thin to discriminate — not “four clean generators” and not success theatre. It is not paper S1.
+**S1.** The stub is import-only. The golden file holds 27 replay traces. A match is a replay of those traces, not a proof of accounting correctness. This is still not paper S1. `subjects/django-accounting/evidence/` records Part B Stage B: Cursor executed (`status=executed`, `generators_run=true`, oracle stdout the replay-only OK line, 27 matches / 0 mismatches). Claude Code and Gemini are `status=awaiting-external-run` / `generators_run=false` with paste-ready prompts. Codex is omitted on purpose. `mutation_score=not-stored`. Domain correctness is out of scope. The three-arm comparison is not available. Cursor’s 27/0 replay means the oracle is too thin to discriminate — not “four clean generators” and not success theatre. It is not paper S1.
 
 **CI.** When `subjects/django-accounting/oracle.py` is present, the check requires this stdout line and nothing else:
 

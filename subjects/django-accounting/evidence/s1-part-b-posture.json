@@ -1,7 +1,7 @@
 {
   "kind": "s1-django-accounting-part-b-posture",
   "subject": "django-accounting",
-  "status": "scaffolding+three-arm-not-run",
+  "status": "cursor-executed+external-awaiting",
   "paper_s1": "unexecuted",
   "oracle": "replay-only",
   "cases": 27,
@@ -11,6 +11,7 @@
   "domain_correctness": "out_of_scope",
   "codex_arm": "omitted",
   "codex_omission_reason": "Ross + Claude lock: Part B uses three generator arms only (Cursor, Claude Code, Gemini). Codex is not an S1 Part B arm and is omitted on purpose. This is not an exemption for a fourth run.",
+  "three_arm_comparison": "not-available",
   "claims": {
     "paper_s1": "unexecuted",
     "oracle": "replay-only",
@@ -19,7 +20,7 @@
     "import_only_stub": true,
     "mutation_score": "not-stored",
     "domain_correctness": "out_of_scope",
-    "status": "scaffolding+three-arm-not-run",
+    "status": "cursor-executed+external-awaiting",
     "codex_arm": "omitted",
     "generators_run": false
   },
@@ -38,26 +39,26 @@
     ]
   },
   "generators_run": {
-    "cursor": false,
+    "cursor": true,
     "claude_code": false,
     "gemini": false
   },
   "arms": {
     "cursor": {
       "name": "Cursor",
-      "status": "not-run",
-      "generators_run": false,
+      "status": "executed",
+      "generators_run": true,
       "output": "subjects/django-accounting/evidence/arms/cursor/arm.json"
     },
     "claude_code": {
       "name": "Claude Code",
-      "status": "not-run",
+      "status": "awaiting-external-run",
       "generators_run": false,
       "output": "subjects/django-accounting/evidence/arms/claude-code/arm.json"
     },
     "gemini": {
       "name": "Gemini",
-      "status": "not-run",
+      "status": "awaiting-external-run",
       "generators_run": false,
       "output": "subjects/django-accounting/evidence/arms/gemini/arm.json"
     }
@@ -79,7 +80,9 @@
     "requires_oracle_stdout": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
     "records_mutation_score": false,
     "records_kill_rate": false,
-    "executed_generators": false
+    "executed_generators": false,
+    "executed_arms": ["cursor"],
+    "awaiting_external_arms": ["claude_code", "gemini"]
   },
   "pins": {
     "django_accounting": {

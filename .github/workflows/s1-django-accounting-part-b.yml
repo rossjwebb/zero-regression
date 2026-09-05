@@ -51,6 +51,9 @@ jobs:
             exit 1
           fi
 
+      - name: Run the shared arm-oracle receipt script
+        run: python3.12 subjects/django-accounting/evidence/arms/run-arm-oracle.py
+
       - name: Run the Part B honesty gate
         run: python3.12 subjects/django-accounting/check-part-b.py
 

@@ -1,7 +1,37 @@
 {
   "arm": "cursor",
   "name": "Cursor",
-  "status": "not-run",
-  "generators_run": false,
-  "note": "Scaffold only. No generator was run. No kill rate is stored. No mutation score is stored."
+  "status": "executed",
+  "generators_run": true,
+  "executed_at": "2026-09-05T21:51:07Z",
+  "method": "This Cursor Cloud Agent is the Cursor arm. Stage B executed the Part B replication step defined by the Stage A evidence pack: run the existing replay-only oracle against the existing 27-trace pin, then record the observed stdout, match count, and mismatch count. The shared probe subjects/django-accounting/evidence/arms/run-arm-oracle.py invoked python3.12 subjects/django-accounting/oracle.py. No new implementation was generated. golden/expected.json was not widened.",
+  "prompt": "S1 Part B Stage B Cursor arm: execute the existing 27-trace replay-only oracle (pin 2e61776a653e719a4c15578ab385603a6066c2b6). Record exact stdout, match_count, and mismatch_count. Do not invent a mutation score. Do not claim paper S1. Zero mismatches mean the oracle is too thin to discriminate, not clean-generator success.",
+  "candidate_artefacts": {
+    "produced": false,
+    "paths": [],
+    "note": "No competing implementation or extra traces were generated. The arm used the existing pinned slice (legacy/ + stubs + oracle.py) and wrote only this slot plus the oracle receipt."
+  },
+  "oracle": {
+    "command": "python3.12 subjects/django-accounting/oracle.py",
+    "python": "3.12.3",
+    "exit": 0,
+    "stdout": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
+    "stderr": "",
+    "match_count": 27,
+    "mismatch_count": 0
+  },
+  "receipt": "subjects/django-accounting/evidence/arms/cursor/oracle-receipt.json",
+  "paper_s1": "unexecuted",
+  "mutation_score": "not-stored",
+  "domain_correctness": "out_of_scope",
+  "pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
+  "oracle_kind": "replay-only",
+  "recorded_traces": 27,
+  "zero_mismatch_means": "oracle too thin to discriminate",
+  "zero_mismatch_does_not_mean": [
+    "four clean generators",
+    "success theatre",
+    "paper S1"
+  ],
+  "note": "27 matches and 0 mismatches is a replay of the recorded traces. It is not a proof of accounting correctness and not clean-generator success. The three-arm comparison is not available: Claude Code and Gemini remain awaiting-external-run."
 }
