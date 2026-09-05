@@ -1,0 +1,56 @@
+{
+  "kind": "s2-commons-csv-posture",
+  "subject": "commons-csv",
+  "status": "scaffolding+runner-only",
+  "paper_s2": "unexecuted",
+  "mutation_score": "not-stored",
+  "claims": {
+    "mutation_score": "not-stored",
+    "paper_s2": "unexecuted",
+    "status": "scaffolding+runner-only"
+  },
+  "pin_gate": {
+    "path": "subjects/commons-csv/check-pins.py",
+    "role": "gate",
+    "command": "python3.12 subjects/commons-csv/check-pins.py",
+    "python": "3.12.3",
+    "exit": 0,
+    "stdout": "S2 PIN OK defects4j=v3.0.1@6d54320e0db5 csv=de1838ea067f pit=1.15.3 mutators=DEFAULTS jdk=11.0.32.1+1 release=8 files=18 jars=5",
+    "meaning": "pin integrity only; not a PIT result"
+  },
+  "runner": {
+    "path": "subjects/commons-csv/run-pit.sh",
+    "fail_closed": true,
+    "judge": "subjects/commons-csv/toolchain.py:judge_pit_log",
+    "exits_nonzero_on": ["TIMED_OUT", "MEMORY_ERROR", "RUN_ERROR"],
+    "records_mutation_score": false,
+    "html_report": "subjects/commons-csv/work/pit-reports/index.html",
+    "html_report_gitignored": true,
+    "executed_in_this_pack": false
+  },
+  "pins": {
+    "source": "subjects/commons-csv/pins.toml",
+    "defects4j": {
+      "tag": "v3.0.1",
+      "commit": "6d54320e0db5a357f9ab38a8e4d2e5aead7e1c09",
+      "project": "Csv",
+      "project_name": "commons-csv",
+      "version": "1f"
+    },
+    "commons_csv": {
+      "commit": "de1838ea067f3fbc4c7c21b9eeae077c739ecb73"
+    },
+    "pit": {
+      "tool": "pitest",
+      "version": "1.15.3",
+      "mutators": "DEFAULTS",
+      "subject_release": 8,
+      "target_class": "org.apache.commons.csv.ExtendedBufferedReader"
+    },
+    "jdk": {
+      "vendor": "eclipse-temurin",
+      "release": "11.0.32.1+1",
+      "sha256": "5c3f68887c325d36d852ba534303e1f5f1f5cae7d6cc1e951d73e0d8e98a058d"
+    }
+  }
+}

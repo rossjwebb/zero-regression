@@ -30,6 +30,7 @@ Hashes for every vendored file and every JAR are in `pins.toml`. They were writt
 - `pins/` — Defects4J v3.0.1 `active-bugs.csv` header plus the Csv-1 row, and `modified_classes/1.src`
 - `check-pins.py` — hash and metadata gate
 - `run-pit.sh` — compile, run the green JUnit classes, then PIT; fail closed
+- `evidence/` — pin and fail-closed runner posture only. No mutation score. Not paper S2. See `evidence/EVIDENCE.md`.
 
 PIT target: `ExtendedBufferedReader` only (161 source lines at this pin). The rest of the package is compiled so the green tests can run; it is `unverified_scope`.
 
@@ -63,6 +64,8 @@ The script exits 2 if any step fails (wrong JDK, download failure, hash mismatch
 Maven is not required. Defects4J Major is not used.
 
 The HTML report is written to `subjects/commons-csv/work/pit-reports/index.html`. That path is gitignored. This repository does not store a mutation score for S2.
+
+The committed pack under `evidence/` records pin identities, that `check-pins.py` is the gate, and that `run-pit.sh` is fail-closed. It states `mutation_score=not-stored`, `paper_s2=unexecuted`, and `status=scaffolding+runner-only`. It is not a paper execution of S2.
 
 ## Out of scope
 
