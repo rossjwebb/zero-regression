@@ -86,7 +86,7 @@ class CommonsCsvPinTests(unittest.TestCase):
         self.assertIn("mutation_score=not-stored", english)
         self.assertIn("paper_s2=unexecuted", english)
         self.assertIn("status=scaffolding+runner-only", english)
-        self.assertIn("not a paper execution of S2", english.lower())
+        self.assertIn("not a paper execution of s2", english.lower())
 
     def test_evidence_records_pins_gate_and_fail_closed_runner(self) -> None:
         pins = tomllib.loads((SUBJECT / "pins.toml").read_text(encoding="utf-8"))
