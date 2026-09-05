@@ -8,5 +8,16 @@ version = "0.1.0"
 description = "Deterministic, hash-chained mutation-certification harness"
 requires-python = ">=3.12,<3.13"
 
+[project.scripts]
+zero-regression = "zero_regression_harness.cli:main"
+zr = "zero_regression_harness.cli:main"
+
+[tool.setuptools]
+packages = ["zero_regression_harness", "adapters"]
+
+[tool.setuptools.package-dir]
+zero_regression_harness = "src/zero_regression_harness"
+adapters = "adapters"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
