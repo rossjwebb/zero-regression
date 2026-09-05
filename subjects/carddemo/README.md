@@ -28,6 +28,7 @@ The three paths whose names contain `test` are sample IDCAMS/SORT JCL (`samples/
 - `check-pins.py` — hash and metadata gate, including the GnuCOBOL pin
 - `toolchain.py` — fetch/hash-check the Ubuntu `gnucobol3` `.deb`; refuse a mixed PATH `cobc`
 - `run-cobol.sh` — compile `CBTRN02C` with the pinned `cobc` only; fail-closed if the pin mismatches, compile fails, or there are no tests; never records a score
+- `evidence/` — pin and fail-closed compile-runner posture only. No mutation score. Compile is not a POSTTRAN job. Not paper S3. See `evidence/EVIDENCE.md`.
 
 There is no `legacy/` directory. S1 uses `legacy/` for a Python oracle; S3 does not, because CardDemo has no legacy tests.
 
@@ -80,6 +81,8 @@ The following still cannot happen, and the runner does not pretend otherwise:
 CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. That workflow has no skip path. A missing `run-cobol.sh` fails. A PATH `cobc` mix fails. A `S3 COBC FAIL` / `work/COBC-FAIL` fails the GitHub job (GnuCOBOL error). Compile success must still print `S3 COMPILE OK` and `S3 HARNESS EXIT 2`, exit 2, and record `cobc_status=0` / `posttran_job=not-run`. Exit 2 is the harness job-not-run code, not a GnuCOBOL error. That is not paper S3.
 
 The script does not write a mutation score. This repository does not store a mutation score for S3.
+
+The committed pack under `evidence/` records pin identities, that `check-pins.py` is the gate, and that `run-cobol.sh` is fail-closed (`S3 COMPILE OK` + exit 2 vs `S3 COBC FAIL`). It states `mutation_score=not-stored`, `paper_s3=unexecuted`, `status=scaffolding+compile-runner-only`, `posttran_job=not-run`, and `executed_job=false`. It is not a paper execution of S3.
 
 ## Out of scope
 

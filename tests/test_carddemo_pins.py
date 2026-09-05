@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import tomllib
@@ -9,6 +10,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SUBJECT = REPO / "subjects" / "carddemo"
+EVIDENCE = SUBJECT / "evidence"
+POSTURE = EVIDENCE / "s3-posture.json"
 
 
 class CardDemoPinTests(unittest.TestCase):
@@ -110,3 +113,86 @@ class CardDemoPinTests(unittest.TestCase):
         for path in tracked:
             text = path.read_text(encoding="utf-8", errors="replace").lower()
             self.assertNotIn("killed/seeded", text)
+
+    def test_evidence_claim_fields_forbid_numeric_mutation_score(self) -> None:
+        self.assertTrue(POSTURE.is_file())
+        self.assertTrue((EVIDENCE / "EVIDENCE.md").is_file())
+        payload = json.loads(POSTURE.read_text(encoding="utf-8"))
+        self.assertEqual(payload["mutation_score"], "not-stored")
+        self.assertEqual(payload["paper_s3"], "unexecuted")
+        self.assertEqual(payload["status"], "scaffolding+compile-runner-only")
+        self.assertEqual(payload["posttran_job"], "not-run")
+        self.assertIs(payload["executed_job"], False)
+        self.assertNotIsInstance(payload["mutation_score"], (int, float))
+        self.assertIsInstance(payload["mutation_score"], str)
+        claims = payload["claims"]
+        self.assertEqual(claims["mutation_score"], "not-stored")
+        self.assertEqual(claims["paper_s3"], "unexecuted")
+        self.assertEqual(claims["status"], "scaffolding+compile-runner-only")
+        self.assertEqual(claims["posttran_job"], "not-run")
+        self.assertIs(claims["executed_job"], False)
+        self.assertNotIsInstance(claims["mutation_score"], (int, float))
+        self._assert_no_numeric_mutation_score(payload)
+        english = (EVIDENCE / "EVIDENCE.md").read_text(encoding="utf-8")
+        self.assertIn("mutation_score=not-stored", english)
+        self.assertIn("paper_s3=unexecuted", english)
+        self.assertIn("status=scaffolding+compile-runner-only", english)
+        self.assertIn("posttran_job=not-run", english)
+        self.assertIn("executed_job=false", english)
+        self.assertIn("not a paper execution of s3", english.lower())
+        self.assertIn("compiling is not paper s3", english.lower())
+
+    def test_evidence_records_pins_gate_and_fail_closed_runner(self) -> None:
+        pins = tomllib.loads((SUBJECT / "pins.toml").read_text(encoding="utf-8"))
+        zr = tomllib.loads((SUBJECT / "zero-regression.toml").read_text(encoding="utf-8"))
+        payload = json.loads(POSTURE.read_text(encoding="utf-8"))
+        recorded = payload["pins"]
+        self.assertEqual(recorded["carddemo"]["commit"], pins["carddemo"]["commit"])
+        self.assertEqual(recorded["carddemo"]["upstream"], pins["carddemo"]["upstream"])
+        self.assertEqual(recorded["carddemo"]["legacy_tests"], pins["carddemo"]["legacy_tests"])
+        self.assertEqual(recorded["slice"]["job"], pins["slice"]["job"])
+        self.assertEqual(recorded["slice"]["program"], pins["slice"]["program"])
+        self.assertEqual(recorded["slice"]["program_path"], pins["slice"]["program_path"])
+        self.assertEqual(recorded["gnucobol"]["package"], pins["gnucobol"]["package"])
+        self.assertEqual(recorded["gnucobol"]["version"], pins["gnucobol"]["version"])
+        self.assertEqual(recorded["gnucobol"]["release"], pins["gnucobol"]["release"])
+        self.assertEqual(recorded["gnucobol"]["url"], pins["gnucobol"]["url"])
+        self.assertEqual(recorded["gnucobol"]["sha256"], pins["gnucobol"]["sha256"])
+        self.assertEqual(recorded["gnucobol"]["cobc_sha256"], pins["gnucobol"]["cobc_sha256"])
+        self.assertEqual(recorded["zero_regression"]["test_paths"], zr["subject"]["test_paths"])
+        self.assertEqual(recorded["zero_regression"]["operator_set"], zr["subject"]["operator_set"])
+        self.assertEqual(payload["pin_gate"]["path"], "subjects/carddemo/check-pins.py")
+        self.assertEqual(payload["pin_gate"]["role"], "gate")
+        self.assertEqual(payload["pin_gate"]["exit"], 0)
+        self.assertEqual(payload["pin_gate"]["python"], "3.12.3")
+        self.assertTrue(payload["pin_gate"]["stdout"].startswith("S3 PIN OK"))
+        self.assertIn("pin integrity only", payload["pin_gate"]["meaning"])
+        self.assertIn("not a POSTTRAN job result", payload["pin_gate"]["meaning"])
+        self.assertEqual(payload["runner"]["path"], "subjects/carddemo/run-cobol.sh")
+        self.assertTrue(payload["runner"]["fail_closed"])
+        self.assertFalse(payload["runner"]["records_mutation_score"])
+        self.assertFalse(payload["runner"]["executed_in_this_pack"])
+        self.assertIs(payload["runner"]["executed_job"], False)
+        self.assertEqual(payload["runner"]["posttran_job"], "not-run")
+        self.assertEqual(payload["runner"]["compile_ok_marker"], "S3 COMPILE OK")
+        self.assertEqual(payload["runner"]["harness_exit_2_marker"], "S3 HARNESS EXIT 2")
+        self.assertEqual(payload["runner"]["compile_ok_exit"], 2)
+        self.assertEqual(payload["runner"]["compile_ok_meaning"], "posttran_job=not-run")
+        self.assertEqual(payload["runner"]["cobc_fail_marker"], "S3 COBC FAIL")
+        script = (SUBJECT / "run-cobol.sh").read_text(encoding="utf-8")
+        self.assertIn("S3 COMPILE OK", script)
+        self.assertIn("S3 COBC FAIL", script)
+        self.assertIn("S3 HARNESS EXIT 2", script)
+        self.assertIn("S3 FAIL-CLOSED", script)
+        self.assertIn("Do not change compile-OK to exit 0", script)
+
+    def _assert_no_numeric_mutation_score(self, node: object) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key == "mutation_score":
+                    self.assertFalse(isinstance(value, (int, float)), value)
+                    self.assertIn(value, ("not-stored", None))
+                self._assert_no_numeric_mutation_score(value)
+        elif isinstance(node, list):
+            for item in node:
+                self._assert_no_numeric_mutation_score(item)
