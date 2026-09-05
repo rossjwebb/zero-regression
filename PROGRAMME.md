@@ -14,7 +14,7 @@ Ross: merges happened. The paper stays on the `master` post-approval chain `8ecb
 | Path-scrub | Replace leaked machine-local paths so CONFIG hashes change. | [PR #2](https://github.com/rossjwebb/zero-regression/pull/2) — merged. The paper and this repository use the hashes now on `master`. |
 | CI + April 91.0 | Pull-request checks, plus a marker that the April 2026 figure of 91.0 is superseded. | [PR #3](https://github.com/rossjwebb/zero-regression/pull/3) |
 | S2 | Defects4J Commons-CSV under PIT. | [PR #4](https://github.com/rossjwebb/zero-regression/pull/4) (pin and fail-closed runner); [PR #7](https://github.com/rossjwebb/zero-regression/pull/7) (CI). No mutation score is stored. Pin/runner posture (not a score) is in `subjects/commons-csv/evidence/`. |
-| S3 | CardDemo COBOL. | [PR #5](https://github.com/rossjwebb/zero-regression/pull/5) (pin); [PR #6](https://github.com/rossjwebb/zero-regression/pull/6) (GnuCOBOL compile). Compile succeeded. That is not a POSTTRAN job. |
+| S3 | CardDemo COBOL. | [PR #5](https://github.com/rossjwebb/zero-regression/pull/5) (pin); [PR #6](https://github.com/rossjwebb/zero-regression/pull/6) (GnuCOBOL compile). Compile succeeded. That is not a POSTTRAN job. Pin/compile-runner posture (not a score) is in `subjects/carddemo/evidence/`. |
 
 ## Current merged truth
 
@@ -30,7 +30,7 @@ If the oracle is missing, the step skips. A skip is not a pass. The old `cases=1
 
 **S2.** PIT runs on hash-checked Temurin 11.0.32.1. Subject classfiles are major 52 (`javac --release 8`). Mutators are the named DEFAULTS group. The runner is fail-closed. No mutation score is stored. `subjects/commons-csv/evidence/` records pin identities, the `check-pins.py` gate, and the fail-closed runner claim. That pack is scaffolding+runner-only. It is not paper S2.
 
-**S3.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`. A `cobc` failure (`S3 COBC FAIL`, job fails) is split from compile-OK plus harness exit 2 (`S3 HARNESS EXIT 2`, `posttran_job=not-run`, not a GnuCOBOL error). Compile is not a POSTTRAN job. Still not paper S3.
+**S3.** GnuCOBOL 3.1.2 is hash-checked. Compile of the pinned POSTTRAN program succeeded. The runner then exits 2. `posttran_job=not-run`. A `cobc` failure (`S3 COBC FAIL`, job fails) is split from compile-OK plus harness exit 2 (`S3 HARNESS EXIT 2`, `posttran_job=not-run`, not a GnuCOBOL error). Compile is not a POSTTRAN job. `subjects/carddemo/evidence/` records pin identities, the `check-pins.py` gate, and the fail-closed compile-runner claim (`S3 COMPILE OK` + exit 2 vs `S3 COBC FAIL`). That pack is scaffolding+compile-runner-only. It is not paper S3.
 
 **Dedicated workflows.** `s1-django-accounting-oracle.yml` always runs; requires `cases=27 replay-only`; skip not allowed. `s3-carddemo-compile.yml` always runs; `S3 COMPILE OK` + exit 2 + `posttran_job=not-run`; skip not allowed. Still not paper S1/S3.
 

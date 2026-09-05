@@ -1,0 +1,68 @@
+{
+  "kind": "s3-carddemo-posture",
+  "subject": "carddemo",
+  "status": "scaffolding+compile-runner-only",
+  "paper_s3": "unexecuted",
+  "mutation_score": "not-stored",
+  "posttran_job": "not-run",
+  "executed_job": false,
+  "claims": {
+    "mutation_score": "not-stored",
+    "paper_s3": "unexecuted",
+    "status": "scaffolding+compile-runner-only",
+    "posttran_job": "not-run",
+    "executed_job": false
+  },
+  "pin_gate": {
+    "path": "subjects/carddemo/check-pins.py",
+    "role": "gate",
+    "command": "python3.12 subjects/carddemo/check-pins.py",
+    "python": "3.12.3",
+    "exit": 0,
+    "stdout": "S3 PIN OK carddemo=59cc6c2fd7eb slice=POSTTRAN/CBTRN02C legacy_tests=none files=11",
+    "meaning": "pin integrity only; not a POSTTRAN job result"
+  },
+  "runner": {
+    "path": "subjects/carddemo/run-cobol.sh",
+    "fail_closed": true,
+    "compile_ok_marker": "S3 COMPILE OK",
+    "harness_exit_2_marker": "S3 HARNESS EXIT 2",
+    "compile_ok_exit": 2,
+    "compile_ok_meaning": "posttran_job=not-run",
+    "cobc_fail_marker": "S3 COBC FAIL",
+    "records_mutation_score": false,
+    "posttran_job": "not-run",
+    "executed_job": false,
+    "executed_in_this_pack": false,
+    "work_receipt": "subjects/carddemo/work/COMPILE",
+    "work_receipt_gitignored": true
+  },
+  "pins": {
+    "source": "subjects/carddemo/pins.toml",
+    "carddemo": {
+      "upstream": "https://github.com/aws-samples/aws-mainframe-modernization-carddemo",
+      "commit": "59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e",
+      "legacy_tests": "none",
+      "licence": "Apache-2.0"
+    },
+    "slice": {
+      "job": "POSTTRAN",
+      "program": "CBTRN02C",
+      "program_path": "batch/app/cbl/CBTRN02C.cbl"
+    },
+    "gnucobol": {
+      "package": "gnucobol3",
+      "version": "3.1.2-5.1ubuntu1",
+      "release": "3.1.2.0",
+      "url": "http://archive.ubuntu.com/ubuntu/pool/universe/g/gnucobol3/gnucobol3_3.1.2-5.1ubuntu1_amd64.deb",
+      "sha256": "3706d30bb9fb37473911e12888addee0132d38428520139683da289ea8bfd399",
+      "binary": "/usr/bin/cobc",
+      "cobc_sha256": "89281a0a1e55968d32b6b344c8925f65ca1197e2ece1366d13a97571a59d8ac9"
+    },
+    "zero_regression": {
+      "source": "subjects/carddemo/zero-regression.toml",
+      "test_paths": [],
+      "operator_set": "none-no-legacy-tests"
+    }
+  }
+}
