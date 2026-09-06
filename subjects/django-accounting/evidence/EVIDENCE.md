@@ -1,9 +1,9 @@
 # S1 Part B django-accounting posture evidence
 
-This pack records S1 Part B after the Claude Code arm executed
-against the existing 27-trace replay-only oracle. Cursor was already
-executed. Gemini remains awaiting an external run. It is
-not a paper execution of S1.
+This pack records S1 Part B after all three arms executed against
+the existing 27-trace replay-only oracle. Cursor was already on
+master. Claude Code and Gemini are recorded on this combined fill.
+It is not a paper execution of S1.
 
 Machine-readable copy: [`s1-part-b-posture.json`](s1-part-b-posture.json).
 
@@ -16,11 +16,11 @@ Machine-readable copy: [`s1-part-b-posture.json`](s1-part-b-posture.json).
 - `import_only_stub=true`
 - `mutation_score=not-stored`
 - `domain_correctness=out_of_scope`
-- `status=cursor+claude-executed+gemini-awaiting`
+- `status=three-arms-executed`
 - `codex_arm=omitted`
 
 No mutation score is stored. The paper has not executed S1. The
-three-arm comparison is not available.
+three-arm comparison is available as a thin-oracle reading only.
 
 ## What Part B is
 
@@ -50,8 +50,8 @@ Match count 27. Mismatch count 0. Exit 0. Receipt:
 
 That 27/0 result is a replay of the recorded traces. It is not a
 proof of accounting correctness. It is not clean-generator success.
-The honest reading of a zero-mismatch replay, even on one arm, is
-that the oracle is too thin to discriminate.
+The honest reading of a zero-mismatch replay is that the oracle is
+too thin to discriminate.
 
 **Claude Code (executed).** Zero Regression drove the Claude Code
 arm. A Cursor cloud agent is the git packaging vehicle only; this is
@@ -69,18 +69,24 @@ ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only
 Match count 27. Mismatch count 0. Exit 0. Receipt:
 `arms/claude-code/oracle-receipt.json`. `generators_run.claude_code=true`.
 
-That 27/0 result is the same thin-oracle replay. It is not
-clean-generator success and not paper S1.
+**Gemini (executed).** CoS ran the shared probe on Mac Python 3.12.3
+and Gemini attested the live receipt. Gemini web could not run a
+local shell. No new candidate implementation was produced
+(`produced=false`). The golden file was not widened. Observed
+oracle stdout was exactly:
 
-**Gemini (awaiting-external-run).** This VM cannot drive Gemini.
-`generators_run.gemini=false`. No oracle stdout, match count, or
-mismatch count is recorded. The paste-ready work order is
-`arms/gemini/PROMPT.md` (also stored on `arm.json` as `prompt`).
-The runnable probe is `arms/run-arm-oracle.py`.
+```
+ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only
+```
 
-`claims.generators_run` stays false: the three-arm set has not
-completed. Do not read the Cursor or Claude Code 27/0 receipts as a
-three-arm comparison.
+Match count 27. Mismatch count 0. Exit 0. Receipt:
+`arms/gemini/oracle-receipt.json`. `generators_run.gemini=true`.
+The historical work order remains `arms/gemini/PROMPT.md`.
+
+No arm remains `awaiting-external-run`. `claims.generators_run` is
+true because the three-arm set has now run. The comparison is
+available only as the same thin-oracle reading on every arm. That
+is not paper S1 and not clean-generator success.
 
 ## What the oracle is, and is not
 
@@ -108,14 +114,9 @@ Any certificate or evidence for Part B must say, explicitly:
 - there are 27 recorded traces
 - domain correctness is out of scope
 
-If a later three-arm run reports zero mismatches across arms, the
-honest reading is that the oracle is too thin to discriminate. That
-result is not “four clean generators”. It is not success theatre. It
-is not paper S1.
-
-Cursor and Claude Code already returned zero mismatches. Those
-single-arm replays do not become success theatre. Gemini has not
-run, so there is no across-arms mismatch count to interpret yet.
+All three arms reported zero mismatches. The honest reading is that
+the oracle is too thin to discriminate. That result is not “four
+clean generators”. It is not success theatre. It is not paper S1.
 
 ## What is recorded
 
@@ -127,21 +128,17 @@ run, so there is no across-arms mismatch count to interpret yet.
   paper S1.
 - `check-part-b.py` is the Part B honesty gate. It still requires
   that same oracle stdout line. It does not store a mutation score.
-- Cursor arm output (`status=executed`, `generators_run=true`) with
-  the live oracle receipt.
-- Claude Code arm output (`status=executed`, `generators_run=true`)
-  with the live oracle receipt. `candidate_artefacts.produced=false`.
-- Gemini slot (`status=awaiting-external-run`,
-  `generators_run=false`) with a paste-ready prompt and the shared
-  receipt script. That slot is not a result.
+- Cursor, Claude Code, and Gemini arm output (`status=executed`,
+  `generators_run=true`) each with a 27/0 receipt and
+  `candidate_artefacts.produced=false`.
 
 ## What is not recorded
 
 - No mutation score, no kill rate, no percentage, no CERTIFICATE
   record in the harness log.
-- No invented Gemini oracle outcome.
+- No invented oracle numbers. Gemini numbers were copied from the
+  CoS-run receipt.
 - No Codex arm and no Codex exemption.
 - No claim that paper S1 ran.
 - No widening of the 27-trace golden file.
-- No three-arm comparison and no claim that four clean generators
-  produced a paper result.
+- No claim that four clean generators produced a paper result.

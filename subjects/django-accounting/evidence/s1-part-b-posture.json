@@ -1,7 +1,7 @@
 {
   "kind": "s1-django-accounting-part-b-posture",
   "subject": "django-accounting",
-  "status": "cursor+claude-executed+gemini-awaiting",
+  "status": "three-arms-executed",
   "paper_s1": "unexecuted",
   "oracle": "replay-only",
   "cases": 27,
@@ -11,7 +11,8 @@
   "domain_correctness": "out_of_scope",
   "codex_arm": "omitted",
   "codex_omission_reason": "Ross + Claude lock: Part B uses three generator arms only (Cursor, Claude Code, Gemini). Codex is not an S1 Part B arm and is omitted on purpose. This is not an exemption for a fourth run.",
-  "three_arm_comparison": "not-available",
+  "three_arm_comparison": "available",
+  "three_arm_comparison_reading": "27/0 on Cursor, Claude Code, and Gemini; oracle too thin to discriminate; not paper S1; not clean-generator success",
   "claims": {
     "paper_s1": "unexecuted",
     "oracle": "replay-only",
@@ -20,9 +21,9 @@
     "import_only_stub": true,
     "mutation_score": "not-stored",
     "domain_correctness": "out_of_scope",
-    "status": "cursor+claude-executed+gemini-awaiting",
+    "status": "three-arms-executed",
     "codex_arm": "omitted",
-    "generators_run": false
+    "generators_run": true
   },
   "certificate": {
     "kind": "honesty",
@@ -36,12 +37,14 @@
       "four clean generators",
       "success theatre",
       "paper S1"
-    ]
+    ],
+    "executed_arms": ["cursor", "claude_code", "gemini"],
+    "awaiting_external_arms": []
   },
   "generators_run": {
     "cursor": true,
     "claude_code": true,
-    "gemini": false
+    "gemini": true
   },
   "arms": {
     "cursor": {
@@ -58,8 +61,8 @@
     },
     "gemini": {
       "name": "Gemini",
-      "status": "awaiting-external-run",
-      "generators_run": false,
+      "status": "executed",
+      "generators_run": true,
       "output": "subjects/django-accounting/evidence/arms/gemini/arm.json"
     }
   },
@@ -80,9 +83,9 @@
     "requires_oracle_stdout": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
     "records_mutation_score": false,
     "records_kill_rate": false,
-    "executed_generators": false,
-    "executed_arms": ["cursor", "claude_code"],
-    "awaiting_external_arms": ["gemini"]
+    "executed_generators": true,
+    "executed_arms": ["cursor", "claude_code", "gemini"],
+    "awaiting_external_arms": []
   },
   "pins": {
     "django_accounting": {

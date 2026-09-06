@@ -3,9 +3,9 @@
 """S1 Part B honesty gate for django-accounting.
 
 Requires the existing replay-only oracle stdout exactly. Checks the
-Part B posture pack: Cursor and Claude Code executed against that
-oracle; Gemini awaiting an external run. Does not record a mutation
-score. This is not paper S1.
+Part B posture pack: Cursor, Claude Code, and Gemini executed
+against that oracle. Does not record a mutation score. This is not
+paper S1.
 """
 from __future__ import annotations
 
@@ -23,10 +23,10 @@ ARMS_DIR = SUBJECT / "evidence" / "arms"
 RECEIPT_SCRIPT = ARMS_DIR / "run-arm-oracle.py"
 PIN = "2e61776a653e719a4c15578ab385603a6066c2b6"
 EXPECTED_ORACLE = f"ORACLE OK pin={PIN} cases=27 replay-only"
-EXPECTED_STATUS = "cursor+claude-executed+gemini-awaiting"
+EXPECTED_STATUS = "three-arms-executed"
 ARM_KEYS = ("cursor", "claude_code", "gemini")
 ARM_DIRS = ("cursor", "claude-code", "gemini")
-EXECUTED_DIRS = ("cursor", "claude-code")
+EXECUTED_DIRS = ("cursor", "claude-code", "gemini")
 RESULT_KEYS = ("match_count", "mismatch_count", "stdout", "exit")
 
 
@@ -73,8 +73,8 @@ def check_honesty(payload: dict) -> list[str]:
             errors.append(f"claims.{key}: expected {expected!r} got {claims.get(key)!r}")
     if claims.get("status") != EXPECTED_STATUS:
         errors.append(f"claims.status: expected {EXPECTED_STATUS!r} got {claims.get('status')!r}")
-    if claims.get("generators_run") is not False:
-        errors.append("claims.generators_run must be false (three-arm set incomplete)")
+    if claims.get("generators_run") is not True:
+        errors.append("claims.generators_run must be true (three arms executed)")
     certificate = payload.get("certificate")
     if not isinstance(certificate, dict):
         errors.append("certificate object is missing")
@@ -91,13 +91,17 @@ def check_honesty(payload: dict) -> list[str]:
         for phrase in ("four clean generators", "success theatre"):
             if phrase not in forbidden:
                 errors.append(f"certificate must reject {phrase!r}")
+        if certificate.get("executed_arms") != ["cursor", "claude_code", "gemini"]:
+            errors.append("certificate.executed_arms must be ['cursor', 'claude_code', 'gemini']")
+        if certificate.get("awaiting_external_arms") != []:
+            errors.append("certificate.awaiting_external_arms must be empty")
     generators = payload.get("generators_run")
     if not isinstance(generators, dict):
         errors.append("generators_run object is missing")
     else:
         if set(generators) != set(ARM_KEYS):
             errors.append(f"generators_run keys must be {ARM_KEYS}, got {tuple(generators)}")
-        expected_run = {"cursor": True, "claude_code": True, "gemini": False}
+        expected_run = {"cursor": True, "claude_code": True, "gemini": True}
         for key, expected in expected_run.items():
             if generators.get(key) is not expected:
                 errors.append(f"generators_run.{key} must be {expected}")
@@ -112,9 +116,9 @@ def check_honesty(payload: dict) -> list[str]:
         expected_status = {
             "cursor": "executed",
             "claude_code": "executed",
-            "gemini": "awaiting-external-run",
+            "gemini": "executed",
         }
-        expected_run = {"cursor": True, "claude_code": True, "gemini": False}
+        expected_run = {"cursor": True, "claude_code": True, "gemini": True}
         for key in ARM_KEYS:
             arm = arms.get(key) or {}
             if arm.get("status") != expected_status[key]:
@@ -123,16 +127,21 @@ def check_honesty(payload: dict) -> list[str]:
                 errors.append(f"arms.{key}.generators_run must be {expected_run[key]}")
     if not payload.get("codex_omission_reason"):
         errors.append("codex_omission_reason is missing")
-    if payload.get("three_arm_comparison") != "not-available":
-        errors.append("three_arm_comparison must be not-available")
+    if payload.get("three_arm_comparison") != "available":
+        errors.append("three_arm_comparison must be available")
+    reading = payload.get("three_arm_comparison_reading") or ""
+    if "too thin to discriminate" not in reading:
+        errors.append("three_arm_comparison_reading must record the thin-oracle reading")
+    if "paper S1" not in reading:
+        errors.append("three_arm_comparison_reading must reject paper S1")
     oracle_gate = payload.get("oracle_gate") or {}
     if oracle_gate.get("stdout") != EXPECTED_ORACLE:
         errors.append("oracle_gate.stdout must be the exact replay-only OK line")
     posture_gate = payload.get("posture_gate") or {}
-    if posture_gate.get("executed_arms") != ["cursor", "claude_code"]:
-        errors.append("posture_gate.executed_arms must be ['cursor', 'claude_code']")
-    if posture_gate.get("awaiting_external_arms") != ["gemini"]:
-        errors.append("posture_gate.awaiting_external_arms must be ['gemini']")
+    if posture_gate.get("executed_arms") != ["cursor", "claude_code", "gemini"]:
+        errors.append("posture_gate.executed_arms must be ['cursor', 'claude_code', 'gemini']")
+    if posture_gate.get("awaiting_external_arms") != []:
+        errors.append("posture_gate.awaiting_external_arms must be empty")
     return errors
 
 
@@ -165,10 +174,7 @@ def check_arm_slots() -> list[str]:
             errors.append(f"{name}: mutation_score must not be numeric")
         if "kill_rate" in payload and isinstance(payload["kill_rate"], (int, float)):
             errors.append(f"{name}: kill_rate must not be numeric")
-        if name in EXECUTED_DIRS:
-            errors.extend(check_executed_slot(name, payload))
-        else:
-            errors.extend(check_external_slot(name, payload))
+        errors.extend(check_executed_slot(name, payload))
     return errors
 
 
@@ -178,6 +184,10 @@ def check_cursor_slot(payload: dict) -> list[str]:
 
 def check_claude_code_slot(payload: dict) -> list[str]:
     return check_executed_slot("claude-code", payload)
+
+
+def check_gemini_slot(payload: dict) -> list[str]:
+    return check_executed_slot("gemini", payload)
 
 
 def check_executed_slot(name: str, payload: dict) -> list[str]:
@@ -280,9 +290,10 @@ def check_english() -> list[str]:
         "Cursor",
         "Claude Code",
         "Gemini",
-        "awaiting-external-run",
         "Match count 27",
         "Mismatch count 0",
+        "three-arms-executed",
+        "produced=false",
     ):
         if phrase not in text:
             errors.append(f"EVIDENCE.md missing {phrase!r}")
@@ -332,8 +343,9 @@ def main() -> int:
         "codex_arm=omitted "
         "cursor=executed "
         "claude_code=executed "
-        "gemini=awaiting-external-run "
-        "generators_run=cursor+claude"
+        "gemini=executed "
+        "generators_run=cursor+claude+gemini "
+        "three_arm_comparison=available-thin-oracle"
     )
     return 0
 

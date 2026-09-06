@@ -8,8 +8,13 @@ Three arms only: Cursor, Claude Code, Gemini.
   oracle receipt. `oracle-receipt.json` is the probe output.
   `PROMPT.md` is the work order that was executed. This is the
   Claude Code arm slot, not a second Cursor arm.
-- `gemini/` — `status=awaiting-external-run`. The paste-ready prompt
-  is in `PROMPT.md` and on `arm.json`. It is not a result.
+- `gemini/` — executed. `arm.json` records the CoS-run replay-only
+  oracle receipt attested by Gemini. `oracle-receipt.json` is that
+  receipt. `PROMPT.md` remains as the historical work order.
+
+Each arm has `candidate_artefacts.produced=false`. Each receipt is
+27 matches / 0 mismatches. That is a thin-oracle replay, not paper
+S1.
 
 Shared probe: `run-arm-oracle.py`. It runs `oracle.py` and prints a
 JSON receipt. It does not write `arm.json`.
