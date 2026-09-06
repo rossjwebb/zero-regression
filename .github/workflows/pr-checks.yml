@@ -42,3 +42,14 @@ jobs:
             echo "expected: $expected" >&2
             exit 1
           fi
+
+      - name: Run the Stage C discrimination gate if present
+        run: |
+          set -euo pipefail
+          GATE=subjects/django-accounting/check-discrimination.py
+          if [ ! -f "$GATE" ]; then
+            echo "subjects/django-accounting/check-discrimination.py is not on this tree."
+            echo "Stage C lives on a later pull request. Skip. This is not paper S1."
+            exit 0
+          fi
+          python3.12 "$GATE"

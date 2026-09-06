@@ -6,9 +6,14 @@
 `2e61776a653e719a4c15578ab385603a6066c2b6` (2 December 2017, MIT).
 
 A match against `golden/expected.json` means those same calls still
-produce the same JSON. This is not a proof of accounting correctness.
-It does not certify tax law, double-entry invariants, or
-collected-versus-accrual profits.
+produce the same JSON. Stage C adds a discrimination gate
+(`check-discrimination.py`): the yardstick is **replay + rejects known-bad probes**. A golden echo stub that returns the golden file
+without calling the pin can still print the replay OK line; the
+invariant gate must reject it.
+
+This is not a proof of accounting correctness. It does not certify
+tax law, double-entry invariants, or collected-versus-accrual
+profits. It is not paper S1.
 
 ## What is executed
 
@@ -20,6 +25,19 @@ collected-versus-accrual profits.
 - `ProfitsLossCalculator` Python loops on the pin, including the
   in-process date checks on each payment
 
+Known-bad probes patch those same callables through an import hook.
+They do not edit `legacy/`. They do not add Django ORM or SQL.
+
+Golden-independent invariants (live pin objects, not the golden
+file):
+
+- `excl + tax == incl` when tax is known
+- `total_due_incl_tax == total_incl_tax - total_paid`
+- `profits() == total_collected() - total_expenses()`
+
+Those are arithmetic consistency checks. They are not accounting-law
+certification.
+
 ## What is not executed
 
 Django ORM and SQL are not executed. The stub under `stubs/` is an
@@ -29,6 +47,11 @@ lookups. There is no `aggregate`, so organisation-level
 `QuerySet.aggregate(Sum(...))` in the pin's managers) are not in the
 golden file.
 
-This file is the claim. The golden file repeats it in the `claim`
-field. S1 is not a paper execution until this pull request is merged
-and the paper says so.
+The golden file still holds 27 traces. Case count alone is not
+discrimination. The golden `claim` field remains the replay-only
+sentence stored with those traces. This file is the Stage C claim.
+
+`paper_s1` stays unexecuted. `mutation_score` is not stored.
+`known_bad_rejected=3` is a probe count, not a kill rate.
+
+S1 is not a paper execution until the paper says so.
