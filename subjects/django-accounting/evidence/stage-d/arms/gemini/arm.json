@@ -23,7 +23,7 @@
       "subjects/django-accounting/evidence/stage-d/arms/gemini/receipts/weak-tax-truncation.json",
       "subjects/django-accounting/evidence/stage-d/arms/gemini/receipts/weak-profits-zero-override.json"
     ],
-    "note": "faithful-price-round accepted. weak-tax-truncation rejected (expected). weak-profits-zero-override accepted because the 27-trace golden has no negative-profit case \u2014 Gemini's clamp-to-zero weak intent was not exercised by the yardstick. Accept \u2260 generator success. Not paper S1."
+    "note": "faithful-price-round accepted. weak-tax-truncation rejected (expected). weak-profits-zero-override historical receipt stays accepted (PR #23): the 27-trace golden has no negative-profit case. That accept is not rewritten. Stage C now rejects clamp-to-zero on a golden-independent expenses>collected live fixture (probe/check count, not a kill rate). Accept \u2260 generator success. Not paper S1."
   },
   "candidates": {
     "faithful-price-round": {

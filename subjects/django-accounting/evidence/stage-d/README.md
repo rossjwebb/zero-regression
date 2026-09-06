@@ -10,6 +10,9 @@ python3.12 subjects/django-accounting/evidence/stage-d/evaluate-candidate.py --c
 python3.12 subjects/django-accounting/check-stage-d.py
 ```
 
-Cursor candidates are under `arms/cursor/candidates/`. Claude Code
-and Gemini slots are `awaiting-external-run` with PROMPT.md files.
-Do not edit `legacy/`.
+Cursor candidates are under `arms/cursor/candidates/`. Gemini
+receipts under `arms/gemini/` stay historical (#23), including the
+weak-profits accept. Claude Code stays `awaiting-external-run`.
+Stage C live invariants include an expenses>collected org so
+clamp-to-zero `profits()` is rejected without widening the golden
+and without rewriting those Gemini receipts. Do not edit `legacy/`.

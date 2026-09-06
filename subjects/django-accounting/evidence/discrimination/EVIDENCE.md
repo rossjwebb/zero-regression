@@ -20,6 +20,8 @@ rewrite arm receipts and does not claim that generators rewrote code.
 - `known_bad_rejected=5` (probe count, not a kill rate)
 - `invariants=3`
 - `golden_echo_rejected=true`
+- `clamp_to_zero_rejected=1` (live fixture / yardstick-local
+  check count, not a kill rate; known-bad stays 5)
 - `golden_widened=false`
 
 ## Discrimination proof
@@ -45,10 +47,14 @@ Golden-independent invariants (live pin objects, not the golden file):
 
 - excl + tax == incl when tax is known
 - total_due_incl == incl − paid
-- profits == collected − expenses
+- profits == collected − expenses, including a live org where
+  expenses > collected (the 27-trace golden has no negative-profit
+  case; clamp-to-zero is rejected here without widening the golden)
 
 Those are arithmetic checks on the pin APIs. They are not accounting
-law.
+law. The gate also installs a yardstick-local clamp-to-zero
+`profits()` and requires that live identity to fail. That is not a
+known-bad probe and not a kill rate.
 
 Meta-check: `golden_echo` returns `golden/expected.json` without
 calling the pin. Pure replay can print the OK line. The invariant

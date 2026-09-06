@@ -8,7 +8,8 @@ The golden-echo stub must fail the invariant gate even if replay
 would have passed.
 
 This is not paper S1. It stores no mutation score. known_bad_rejected
-is a probe count, not a kill rate.
+is a probe count, not a kill rate. clamp_to_zero_rejected is a
+yardstick-local live-check count, not a kill rate.
 """
 from __future__ import annotations
 
@@ -66,6 +67,7 @@ def check_posture_file() -> list[str]:
         "known_bad_rejected": 5,
         "invariants": 3,
         "golden_echo_rejected": True,
+        "clamp_to_zero_rejected": 1,
         "domain_correctness": "out_of_scope",
     }
     for key, expected in required.items():
@@ -99,6 +101,10 @@ def main() -> int:
     live_errors = invariants.check_live_invariants()
     if live_errors:
         errors.extend(live_errors)
+
+    clamp_errors = invariants.check_clamp_to_zero_rejected()
+    if clamp_errors:
+        errors.extend(clamp_errors)
 
     rejected = 0
     for name, case in KNOWN_BAD:
@@ -145,6 +151,7 @@ def main() -> int:
         "good_pin=pass "
         f"known_bad_rejected={rejected} "
         "golden_echo_rejected=1 "
+        "clamp_to_zero_rejected=1 "
         f"invariants={INVARIANT_COUNT} "
         "paper_s1=unexecuted "
         "mutation_score=not-stored "
