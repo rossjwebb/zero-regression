@@ -4,9 +4,11 @@
 
 Requires the Stage C yardstick still green (good pin + discrimination).
 Re-evaluates produced Cursor candidates against that yardstick.
-Gemini may be executed with live receipts (re-evaluated via --arm gemini).
-Claude Code must remain awaiting-external-run with no invented oracle
-numbers until that arm actually runs.
+Gemini receipts stay historical (#23): oracle fields are re-checked;
+the weak-profits accept is not rewritten. Stage C now rejects
+clamp-to-zero on a live fixture. Claude Code must remain
+awaiting-external-run with no invented oracle numbers until that
+arm actually runs.
 
 This is not paper S1. It stores no mutation score.
 """
@@ -38,7 +40,8 @@ GEMINI_CANDIDATES = (
     "weak-tax-truncation",
     "weak-profits-zero-override",
 )
-GEMINI_REQUIRED_REJECTED = ("weak-tax-truncation", "weak-profits-zero-override")
+GEMINI_REQUIRED_REJECTED = ("weak-tax-truncation",)
+GEMINI_HISTORICAL_ACCEPT = ("weak-profits-zero-override",)
 
 
 def fail(message: str, extra: str = "") -> int:
@@ -171,10 +174,9 @@ def live_receipt(name: str, arm: str = "cursor") -> dict:
     return json.loads(result.stdout)
 
 
-def compare_receipt(name: str, stored: dict, live: dict) -> list[str]:
+def compare_oracle_fields(name: str, stored: dict, live: dict) -> list[str]:
     errors: list[str] = []
     pairs = (
-        ("gate.verdict", stored.get("gate", {}).get("verdict"), live.get("gate", {}).get("verdict")),
         ("oracle.exit", stored.get("oracle", {}).get("exit"), live.get("oracle", {}).get("exit")),
         (
             "oracle.mismatched_cases",
@@ -191,17 +193,58 @@ def compare_receipt(name: str, stored: dict, live: dict) -> list[str]:
             stored.get("oracle", {}).get("mismatch_count"),
             live.get("oracle", {}).get("mismatch_count"),
         ),
-        (
-            "invariants.failed",
-            stored.get("invariants", {}).get("failed"),
-            live.get("invariants", {}).get("failed"),
-        ),
         ("paper_s1", stored.get("paper_s1"), live.get("paper_s1")),
         ("mutation_score", stored.get("mutation_score"), live.get("mutation_score")),
     )
     for label, left, right in pairs:
         if left != right:
             errors.append(f"{name} {label}: stored {left!r} != live {right!r}")
+    return errors
+
+
+def compare_receipt(name: str, stored: dict, live: dict) -> list[str]:
+    errors = compare_oracle_fields(name, stored, live)
+    pairs = (
+        ("gate.verdict", stored.get("gate", {}).get("verdict"), live.get("gate", {}).get("verdict")),
+        (
+            "invariants.failed",
+            stored.get("invariants", {}).get("failed"),
+            live.get("invariants", {}).get("failed"),
+        ),
+    )
+    for label, left, right in pairs:
+        if left != right:
+            errors.append(f"{name} {label}: stored {left!r} != live {right!r}")
+    return errors
+
+
+def compare_historical_gemini_receipt(name: str, stored: dict, live: dict) -> list[str]:
+    """Keep #23 Gemini receipts frozen. Oracle replay must still match.
+
+    weak-profits-zero-override stays a historical accept: the 27-trace
+    golden has no loss case. Stage C live invariants must now reject
+    the clamp so the golden-gap is closed without rewriting the receipt.
+    """
+    if name not in GEMINI_HISTORICAL_ACCEPT:
+        return compare_receipt(f"gemini.{name}", stored, live)
+    errors = compare_oracle_fields(f"gemini.{name}", stored, live)
+    if stored.get("gate", {}).get("verdict") != "accepted":
+        errors.append(
+            f"gemini.{name} historical receipt verdict must stay accepted"
+        )
+    if stored.get("invariants", {}).get("failed") is not False:
+        errors.append(
+            f"gemini.{name} historical receipt invariants.failed must stay false"
+        )
+    if not live.get("invariants", {}).get("failed"):
+        errors.append(
+            f"gemini.{name} live yardstick must now reject clamp-to-zero"
+        )
+    failures = " ".join(live.get("invariants", {}).get("failures") or [])
+    if "cannot go negative" not in failures:
+        errors.append(
+            f"gemini.{name} live reject must name profits cannot go negative"
+        )
     return errors
 
 
@@ -301,16 +344,16 @@ def main() -> int:
                 stored_path = STAGE_D / "arms" / "gemini" / "receipts" / f"{cand}.json"
                 stored = load_json(stored_path)
                 live = live_receipt(cand, arm="gemini")
-                errors.extend(compare_receipt(f"gemini.{cand}", stored, live))
+                errors.extend(compare_historical_gemini_receipt(cand, stored, live))
                 if live.get("arm") != "gemini":
                     errors.append(f"gemini.{cand} live receipt arm must be gemini")
-                verdict = live.get("gate", {}).get("verdict")
+                verdict = stored.get("gate", {}).get("verdict")
                 if verdict == "rejected":
                     gemini_rejected.append(cand)
                 elif verdict == "accepted":
                     gemini_accepted.append(cand)
                 else:
-                    errors.append(f"gemini.{cand} has no honest gate verdict")
+                    errors.append(f"gemini.{cand} has no honest historical gate verdict")
                 if stored.get("produced") is not True:
                     errors.append(f"gemini.{cand} receipt produced must be true")
             for cand in GEMINI_REQUIRED_REJECTED:

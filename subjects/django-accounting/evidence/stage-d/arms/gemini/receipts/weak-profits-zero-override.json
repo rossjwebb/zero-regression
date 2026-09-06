@@ -5,26 +5,16 @@
   "domain_correctness": "out_of_scope",
   "gate": {
     "meaning": "Stage C replay + golden-independent invariants applied to a produced rewrite. Not a mutation score. Not paper S1.",
-    "reasons": [
-      "INVARIANT FAILURE: profits cannot go negative while collected - expenses is negative on live calculator[2] profits=0 collected=10 expenses=40",
-      "INVARIANT FAILURE: profits != collected - expenses on live calculator[2] profits=0 collected=10 expenses=40",
-      "INVARIANT FAILURE: profits cannot go negative while collected - expenses is negative on live calculator[3] profits=0 collected=10 expenses=40",
-      "INVARIANT FAILURE: profits != collected - expenses on live calculator[3] profits=0 collected=10 expenses=40"
-    ],
-    "verdict": "rejected",
+    "reasons": [],
+    "verdict": "accepted",
     "yardstick": "subjects/django-accounting/check-discrimination.py"
   },
   "golden_widened": false,
   "intent": "intentional-weak",
   "invariants": {
     "count": 3,
-    "failed": true,
-    "failures": [
-      "INVARIANT FAILURE: profits cannot go negative while collected - expenses is negative on live calculator[2] profits=0 collected=10 expenses=40",
-      "INVARIANT FAILURE: profits != collected - expenses on live calculator[2] profits=0 collected=10 expenses=40",
-      "INVARIANT FAILURE: profits cannot go negative while collected - expenses is negative on live calculator[3] profits=0 collected=10 expenses=40",
-      "INVARIANT FAILURE: profits != collected - expenses on live calculator[3] profits=0 collected=10 expenses=40"
-    ]
+    "failed": false,
+    "failures": []
   },
   "kind": "s1-django-accounting-stage-d-candidate-receipt",
   "legacy_edited": false,

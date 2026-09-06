@@ -23,7 +23,7 @@
       "subjects/django-accounting/evidence/stage-d/arms/gemini/receipts/weak-tax-truncation.json",
       "subjects/django-accounting/evidence/stage-d/arms/gemini/receipts/weak-profits-zero-override.json"
     ],
-    "note": "faithful-price-round accepted. weak-tax-truncation rejected (expected). PR #23 recorded weak-profits-zero-override accepted because the 27-trace golden has no negative-profit case \u2014 that was an honest then-yardstick reading, not generator success. The yardstick now rejects the same clamp via a golden-independent expenses>collected live fixture (replay still 27/0). Not paper S1."
+    "note": "faithful-price-round accepted. weak-tax-truncation rejected (expected). weak-profits-zero-override historical receipt stays accepted (PR #23): the 27-trace golden has no negative-profit case. That accept is not rewritten. Stage C now rejects clamp-to-zero on a golden-independent expenses>collected live fixture (probe/check count, not a kill rate). Accept \u2260 generator success. Not paper S1."
   },
   "candidates": {
     "faithful-price-round": {
@@ -59,17 +59,11 @@
     },
     "weak-profits-zero-override": {
       "intent": "intentional-weak",
-      "verdict": "rejected",
+      "verdict": "accepted",
       "oracle_exit": 0,
       "mismatch_count": 0,
       "mismatched_cases": [],
-      "invariants_failed": true,
-      "invariant_failures": [
-        "INVARIANT FAILURE: profits cannot go negative while collected - expenses is negative on live calculator[2] profits=0 collected=10 expenses=40",
-        "INVARIANT FAILURE: profits != collected - expenses on live calculator[2] profits=0 collected=10 expenses=40",
-        "INVARIANT FAILURE: profits cannot go negative while collected - expenses is negative on live calculator[3] profits=0 collected=10 expenses=40",
-        "INVARIANT FAILURE: profits != collected - expenses on live calculator[3] profits=0 collected=10 expenses=40"
-      ]
+      "invariants_failed": false
     }
   },
   "paper_s1": "unexecuted",

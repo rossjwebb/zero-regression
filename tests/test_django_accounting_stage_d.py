@@ -55,6 +55,7 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertIn("DISCRIMINATION OK", result.stdout)
         self.assertIn("known_bad_rejected=5", result.stdout)
         self.assertIn("golden_echo_rejected=1", result.stdout)
+        self.assertIn("clamp_to_zero_rejected=1", result.stdout)
 
     def test_each_candidate_is_evaluated(self) -> None:
         for name in CANDIDATES:
@@ -125,39 +126,38 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         )
         self.assertIn("profits_period_2024_jan_feb", profits["oracle"]["mismatched_cases"])
 
-    def test_gemini_clamp_to_zero_is_rejected_without_golden_widen(self) -> None:
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(EVALUATE),
-                "--arm",
-                "gemini",
-                "--candidate",
-                "weak-profits-zero-override",
-            ],
-            cwd=REPO,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        receipt = json.loads(result.stdout)
-        self.assertEqual(receipt["gate"]["verdict"], "rejected", receipt)
-        self.assertEqual(receipt["oracle"]["exit"], 0)
-        self.assertEqual(receipt["oracle"]["match_count"], 27)
-        self.assertEqual(receipt["oracle"]["mismatch_count"], 0)
-        self.assertEqual(receipt["oracle"]["mismatched_cases"], [])
-        self.assertTrue(receipt["invariants"]["failed"])
-        failures = " ".join(receipt["invariants"]["failures"])
-        self.assertIn("cannot go negative", failures)
-        self.assertFalse(receipt["golden_widened"])
+    def test_gemini_weak_profits_receipt_stays_historical(self) -> None:
         stored = json.loads(
             (STAGE_D / "arms" / "gemini" / "receipts" / "weak-profits-zero-override.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(stored["gate"]["verdict"], "rejected")
-        self.assertTrue(stored["invariants"]["failed"])
+        self.assertEqual(stored["gate"]["verdict"], "accepted")
+        self.assertFalse(stored["invariants"]["failed"])
+        self.assertEqual(stored["oracle"]["match_count"], 27)
+        self.assertEqual(stored["oracle"]["mismatch_count"], 0)
+
+        live = json.loads(
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(EVALUATE),
+                    "--arm",
+                    "gemini",
+                    "--candidate",
+                    "weak-profits-zero-override",
+                ],
+                cwd=REPO,
+                capture_output=True,
+                text=True,
+                check=False,
+            ).stdout
+        )
+        self.assertEqual(live["oracle"]["match_count"], 27)
+        self.assertEqual(live["oracle"]["mismatch_count"], 0)
+        self.assertTrue(live["invariants"]["failed"], live)
+        self.assertIn("cannot go negative", " ".join(live["invariants"]["failures"]))
+        self.assertFalse(live["golden_widened"])
 
     def test_stage_d_gate_is_green_and_score_free(self) -> None:
         result = subprocess.run(
@@ -178,7 +178,7 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertIn("discrimination_gate=required", result.stdout)
         self.assertIn("claude_code=awaiting-external-run", result.stdout)
         self.assertIn("gemini=executed", result.stdout)
-        self.assertIn("gemini_rejected=2", result.stdout)
+        self.assertIn("gemini_rejected=1", result.stdout)
         self.assertNotIn("killed/seeded", result.stdout.lower())
         self.assertNotIn("kill rate", result.stdout.lower())
 
@@ -218,6 +218,8 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertIn("rewrite attempt", english)
         self.assertNotIn("generators succeeded", english.lower())
         self.assertNotIn("paper s1 ran", english.lower())
+        self.assertIn("historical receipt", english.lower())
+        self.assertIn("expenses>collected", english)
 
     def test_external_slots_do_not_invent_oracle_results(self) -> None:
         import importlib.util

@@ -27,7 +27,7 @@
     "python": "3.12.3",
     "good_pin": "must print ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
     "known_bad": "Stage C probes must still fail; this pack does not weaken them",
-    "loss_making_live": "expenses>collected fixture rejects clamp-to-zero profits() without widening the 27-trace golden"
+    "loss_making_live": "Stage C expenses>collected fixture rejects clamp-to-zero without widening the golden; Gemini weak-profits receipt stays the historical #23 accept"
   },
   "arms": {
     "cursor": {

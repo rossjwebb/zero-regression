@@ -69,14 +69,17 @@ Claude run is claimed.
 candidates against a made-up Price API; raw designs sit under
 `arms/gemini/design/`. CoS adapted intents to the pin API, evaluated on
 Mac Python 3.12 with `evaluate-candidate.py --arm gemini`, and filed live
-receipts. `faithful-price-round` accepted; `weak-tax-truncation` rejected.
-PR #23 recorded `weak-profits-zero-override` as accepted because the
-27-trace golden has no negative-profit case — that receipt was an
-honest reading of the then-yardstick, not a generator success. The
-yardstick now includes a golden-independent expenses>collected live
-org, so the same clamp-to-zero rewrite is rejected by live
-invariants going forward (replay still matches 27/0). Not paper S1.
-Work order: [`arms/gemini/PROMPT.md`](arms/gemini/PROMPT.md).
+receipts. Those receipts stay historical. The weak-profits historical receipt
+stays the #23 accept. `faithful-price-round`
+accepted; `weak-tax-truncation` rejected; `weak-profits-zero-override`
+accepted because the 27-trace golden has no negative-profit case.
+That accept is not rewritten and is not generator success.
+
+The Stage D golden-gap note is closed on Stage C: a golden-independent
+expenses>collected live fixture plus a yardstick-local clamp-to-zero
+check (`clamp_to_zero_rejected=1`, a check count, not a kill rate).
+The golden file is not widened. Not paper S1. Work order:
+[`arms/gemini/PROMPT.md`](arms/gemini/PROMPT.md).
 
 Codex is omitted on purpose.
 

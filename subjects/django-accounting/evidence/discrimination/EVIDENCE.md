@@ -20,8 +20,8 @@ rewrite arm receipts and does not claim that generators rewrote code.
 - `known_bad_rejected=5` (probe count, not a kill rate)
 - `invariants=3`
 - `golden_echo_rejected=true`
-- `clamp_to_zero_rejected=true` (live fixture / yardstick-local
-  check; not a known-bad probe count)
+- `clamp_to_zero_rejected=1` (live fixture / yardstick-local
+  check count, not a kill rate; known-bad stays 5)
 - `golden_widened=false`
 
 ## Discrimination proof
