@@ -6,7 +6,7 @@ Public-replication subject: [dulacp/django-accounting](https://github.com/dulacp
 
 The snapshot under `legacy/` is bit-identical to that commit for the files that were copied. The upstream MIT licence is `legacy/LICENSE`. Do not edit `legacy/` or `golden/`.
 
-The subject is that pin. The files under `stubs/` are import shims so the pin can load on Python 3.12.3. They are not Django and they do not run ORM or SQL. Stage C adds a discrimination gate: replay plus known-bad probes that must fail. That is still not paper S1.
+The subject is that pin. The files under `stubs/` are import shims so the pin can load on Python 3.12.3. They are not Django and they do not run ORM or SQL. Stage C adds a discrimination gate: replay plus known-bad probes that must fail. Org-level aggregates use a separate Django 5.2.17 pin under `orm/`. That is still not paper S1.
 
 ## Layout
 
@@ -17,8 +17,10 @@ The subject is that pin. The files under `stubs/` are import shims so the pin ca
 - `check-part-b.py` — Part B honesty gate; still requires the replay-only oracle stdout
 - `check-discrimination.py` — Stage C gate: good pin passes; known-bad probes fail; golden echo fails invariants
 - `discrimination/` — import-hook probes; does not edit `legacy/`
-- `evidence/` — Part B historical thin-oracle record. Stage C posture is `evidence/discrimination/`. Stage D rewrite candidates versus that yardstick are `evidence/stage-d/`. No mutation score. Not paper S1.
+- `evidence/` — Part B historical thin-oracle record. Stage C posture is `evidence/discrimination/`. Stage D rewrite candidates versus that yardstick are `evidence/stage-d/`. Org-level ORM posture is `evidence/orm/`. No mutation score. Not paper S1.
 - `check-stage-d.py` — Stage D honesty gate: good pin + discrimination still green; Cursor candidates evaluated; Claude Code and Gemini awaiting-external-run
+- `orm/` — separate Django 5.2.17 pin + scaffold so org-level `turnover_*` / `debts_*` / `overdue_total` can issue real `SUM` SQL through the pin's manager QuerySets. The pin's `models.py` is not imported.
+- `check-orm.py` — ORM honesty gate; fail-closed if Django is missing
 - `golden/expected.json` — recorded trace outputs; a Generator must not read this
 
 Declared slice for a later certification run: `legacy/accounting/libs/prices.py` and `legacy/accounting/apps/books/calculators.py` (174 executable lines). Sale-line totals live on the models in `legacy/accounting/apps/books/models.py` and are exercised by the oracle as in-memory Python. Django persistence, UI, people/connect/reports, migrations, templates, and static files stay in `unverified_scope`.
@@ -58,8 +60,13 @@ python3.12 subjects/django-accounting/evidence/arms/run-arm-oracle.py
 python3.12 subjects/django-accounting/check-part-b.py
 python3.12 subjects/django-accounting/check-discrimination.py
 python3.12 subjects/django-accounting/check-stage-d.py
-python3.12 -m pytest tests/test_django_accounting_oracle.py tests/test_django_accounting_part_b.py tests/test_django_accounting_discrimination.py tests/test_django_accounting_stage_d.py
+python3.12 -m pytest tests/test_django_accounting_oracle.py tests/test_django_accounting_part_b.py tests/test_django_accounting_discrimination.py tests/test_django_accounting_stage_d.py tests/test_django_accounting_orm.py
 ```
 
 `check-part-b.py` still requires stdout from the oracle to include `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. It stores no mutation score. It is not paper S1.
-`check-discrimination.py` stores no mutation score either. `check-stage-d.py` re-evaluates produced Cursor rewrites against that yardstick and leaves Claude Code / Gemini awaiting-external-run. `paper_s1` stays unexecuted.
+`check-discrimination.py` stores no mutation score either. `check-stage-d.py` re-evaluates produced Cursor rewrites against that yardstick and leaves Claude Code / Gemini awaiting-external-run. The org-level ORM path (`orm/`, `check-orm.py`) is a later scaffold: Django 5.2.17 + SQLite runs the pin's manager QuerySets as SQL; `models.py` stays blocked; the golden file stays at 27 traces. `paper_s1` stays unexecuted.
+
+```bash
+python3.12 -m pip install --require-hashes -r subjects/django-accounting/orm/requirements.lock
+python3.12 subjects/django-accounting/check-orm.py
+```
