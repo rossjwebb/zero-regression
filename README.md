@@ -33,6 +33,8 @@ python -m pip install -r requirements-certification.txt
 zero-regression certify subjects/accounting-service
 ```
 
+`zero-regression certify` / `zr certify` also accepts the public S1–S3 subjects. That is not the mutmut five-stage path and it is not a paper execution. S1 runs the existing oracle, discrimination, Stage D, and ORM gates (`paper_s1=unexecuted`, `mutation_score=not-stored`). S2 checks the committed score-free PIT evidence (`mutation_score=not-stored`; it does not invent a mutation score). S3 runs the compile posture and keeps `posttran_job=not-run` (harness exit 2); it does not run POSTTRAN. `zero-regression verify` still checks accounting-service `evidence.jsonl` chains, and also the committed S1–S3 posture packs (score-free honesty, not a kill-rate certificate).
+
 The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6066c2b6`. From a fresh clone:
 
 ```bash

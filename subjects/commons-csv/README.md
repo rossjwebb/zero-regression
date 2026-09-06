@@ -76,5 +76,5 @@ S2 status: the PR #12 pack was scaffolding+runner-only. This slice ran the pinne
 
 - No paper, LaTeX, or citation work
 - No claim that the paper already executed S2
-- No `certify.sh` / mutmut run on this subject
+- No mutmut five-stage run on this subject. `zr certify subjects/commons-csv` is the score-free PIT evidence gate (`mutation_score=not-stored`), not a kill-rate certificate
 - No rewrite of the Python mutation harness

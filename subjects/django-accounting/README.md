@@ -69,4 +69,7 @@ python3.12 -m pytest tests/test_django_accounting_oracle.py tests/test_django_ac
 ```bash
 python3.12 -m pip install --require-hashes -r subjects/django-accounting/orm/requirements.lock
 python3.12 subjects/django-accounting/check-orm.py
+zero-regression certify subjects/django-accounting
 ```
+
+`zr certify subjects/django-accounting` runs those same oracle, discrimination, Stage D, and ORM gates. It stores no mutation score and is not paper S1. The Django lock is required; a missing install is fail-closed.

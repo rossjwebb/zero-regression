@@ -20,6 +20,7 @@ from typing import Any
 
 from .certificate import certificate_payload_from_records, render_certificate
 from .evidence import append_record, canonical_json, load_records
+from .public_subjects import certify_public, protocol_for, resolve_subject
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -248,8 +249,25 @@ def write_queue(run: Path, rows: list[dict[str, Any]], proposals: dict[str, dict
     (run / "survivors.json").write_text(json.dumps(queue, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def certify_command(subject: Path) -> int:
+    """Dispatch: mutmut five-stage protocol, or the public S1–S3 gates."""
+    try:
+        resolved = resolve_subject(subject)
+    except ValueError as exc:
+        die(str(exc))
+    if protocol_for(resolved) != "mutmut":
+        return certify_public(resolved)
+    certify(resolved)
+    return 0
+
+
 def certify(subject: Path) -> Path:
-    subject = subject.resolve()
+    try:
+        subject = resolve_subject(subject)
+    except ValueError as exc:
+        die(str(exc))
+    if protocol_for(subject) != "mutmut":
+        raise SystemExit(certify_public(subject))
     pins = pins_from_lockfile()
     environment = check_pins(pins)
     config = read_subject_config(subject)
@@ -294,11 +312,10 @@ def certify(subject: Path) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the Zero-Regression five-stage certification protocol")
+    parser = argparse.ArgumentParser(description="Run the Zero-Regression subject certification protocol")
     parser.add_argument("subject", type=Path)
     args = parser.parse_args()
-    certify(args.subject)
-    return 0
+    return certify_command(args.subject)
 
 
 if __name__ == "__main__":

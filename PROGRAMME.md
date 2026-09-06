@@ -34,6 +34,10 @@ If the oracle is missing, the step skips. A skip is not a pass. The old `cases=1
 
 **Dedicated workflows.** `s1-django-accounting-oracle.yml` always runs; requires `cases=27 replay-only`; skip not allowed. The same workflow has a `discrimination` job that runs `check-discrimination.py` (good pin passes; known-bad must fail), a `stage_d` job that runs `check-stage-d.py`, and an `orm` job that installs the Django 5.2.17 lock and runs `check-orm.py`. `s1-django-accounting-stage-d.yml` always runs the same Stage D gate plus its honesty tests; skip not allowed. `s1-django-accounting-orm.yml` always runs the org-level aggregates gate plus Stage C/D; skip not allowed. `s1-django-accounting-part-b.yml` always runs; still requires that same oracle stdout, then `check-part-b.py` and the Part B honesty tests; skip not allowed. `s3-carddemo-compile.yml` always runs; `S3 COMPILE OK` + exit 2 + `posttran_job=not-run`; skip not allowed. `s2-commons-csv.yml` always runs the pin tests, fail-closed PIT, and `check-s2-pit.py --require-live`; skip not allowed. Still not paper S1/S2/S3.
 
+## Certify CLI
+
+`zero-regression certify` / `zr certify` runs the accounting-service mutmut protocol, or the public S1–S3 gates. It does not invent a mutation score. S1 keeps the oracle, discrimination, Stage D, and ORM gates (`paper_s1=unexecuted`, `mutation_score=not-stored`). S2 checks score-free PIT evidence (`mutation_score=not-stored`; this command does not store a kill rate). S3 stays compile posture (`posttran_job=not-run`); it does not run POSTTRAN. `zr verify` still checks accounting-service `evidence.jsonl` chains and the committed S1–S3 posture packs. None of this is paper S1, paper S2, or paper S3.
+
 ## What this file is not
 
 It does not change the mutation harness. It does not rewrite the fixture hashes on `master`. It does not invent a mutation score. It does not rewrite the paper.
