@@ -1,0 +1,12 @@
+{
+  "name": "faithful-price-round",
+  "intent": "faithful-rewrite",
+  "slice": "Price",
+  "source": "prices.py",
+  "target": {
+    "module": "accounting.libs.prices",
+    "class": "Price"
+  },
+  "note": "Gemini design intent: faithful Price rewrite. CoS adapted to pin API (currency, excl_tax, incl_tax, tax). Stores tax-known on private fields. Not the pin. Not paper S1.",
+  "design_source": "arms/gemini/design/gemini-raw-2026-09-06/faithful-price-round.py"
+}

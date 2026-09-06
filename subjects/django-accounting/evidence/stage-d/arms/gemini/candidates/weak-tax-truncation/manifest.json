@@ -1,0 +1,12 @@
+{
+  "name": "weak-tax-truncation",
+  "intent": "intentional-weak",
+  "slice": "Price",
+  "source": "prices.py",
+  "target": {
+    "module": "accounting.libs.prices",
+    "class": "Price"
+  },
+  "note": "Gemini design intent: truncate tax with ROUND_DOWN. CoS adapted to pin API: tax getter/setter floors to 0.01 with ROUND_DOWN and can desync excl+tax from incl. Yardstick should reject. Not paper S1.",
+  "design_source": "arms/gemini/design/gemini-raw-2026-09-06/weak-tax-truncation.py"
+}
