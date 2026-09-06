@@ -1,0 +1,121 @@
+# SPDX-License-Identifier: Apache-2.0
+# This branch has subjects/carddemo/run-posttran.sh. Skip is not allowed.
+# A GnuCOBOL INDEXED/BDB fixture run is not IBM VSAM, not CICS, not paper S3.
+name: S3 CardDemo POSTTRAN job
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  posttran:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Require the pinned job runner
+        run: |
+          set -euo pipefail
+          if [[ ! -x subjects/carddemo/run-posttran.sh ]]; then
+            echo "S3 FAIL-CLOSED: subjects/carddemo/run-posttran.sh is missing or not executable. Skip is not a pass on this branch." >&2
+            exit 1
+          fi
+          if [[ ! -x subjects/carddemo/run-cobol.sh ]]; then
+            echo "S3 FAIL-CLOSED: subjects/carddemo/run-cobol.sh is missing or not executable. Skip is not a pass on this branch." >&2
+            exit 1
+          fi
+          if [[ ! -f subjects/carddemo/runtime/seed-indexed.cbl ]]; then
+            echo "S3 FAIL-CLOSED: fixture seeder is missing. Skip is not a pass on this branch." >&2
+            exit 1
+          fi
+
+      - name: Install pinned GnuCOBOL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gnucobol3=3.1.2-5.1ubuntu1
+          test "$(dpkg-query -W -f='${Version}' gnucobol3)" = "3.1.2-5.1ubuntu1"
+          test "$(command -v cobc)" = "/usr/bin/cobc"
+          cobc --version | grep -F "3.1.2.0"
+          cobc --info | grep -E "indexed file handler[[:space:]]*:[[:space:]]*BDB"
+
+      - name: Run POSTTRAN against GnuCOBOL fixtures
+        run: |
+          set -euo pipefail
+          set +e
+          output="$(./subjects/carddemo/run-posttran.sh 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [[ -f subjects/carddemo/work/COBC-FAIL ]]; then
+            echo "S3 CI: GnuCOBOL compile failed (work/COBC-FAIL). This is a cobc error. The job fails." >&2
+            cat subjects/carddemo/work/COBC-FAIL >&2 || true
+            exit 1
+          fi
+          if printf '%s\n' "$output" | grep -q "S3 COBC FAIL"; then
+            echo "S3 CI: stdout has S3 COBC FAIL. This is a GnuCOBOL compile error. The job fails." >&2
+            exit 1
+          fi
+          if [[ "$status" -ne 0 ]]; then
+            echo "S3 FAIL-CLOSED: run-posttran.sh expected exit 0 (job ran); got $status" >&2
+            exit 1
+          fi
+          printf '%s\n' "$output" | grep -q "S3 COMPILE OK"
+          printf '%s\n' "$output" | grep -q "S3 POSTTRAN OK"
+          printf '%s\n' "$output" | grep -q "posttran_job=run"
+          printf '%s\n' "$output" | grep -q "runtime=gnucobol-indexed-bdb-fixture"
+          printf '%s\n' "$output" | grep -q "TRANSACTIONS PROCESSED :000000002"
+          printf '%s\n' "$output" | grep -q "TRANSACTIONS REJECTED  :000000001"
+          printf '%s\n' "$output" | grep -q "not IBM VSAM"
+          grep -q "posttran_job=run" subjects/carddemo/work/POSTTRAN
+          grep -q "runtime=gnucobol-indexed-bdb-fixture" subjects/carddemo/work/POSTTRAN
+          grep -q "ibm_vsam=false" subjects/carddemo/work/POSTTRAN
+          grep -q "program_return_code=4" subjects/carddemo/work/POSTTRAN
+          grep -q "mutation_score=not-recorded" subjects/carddemo/work/POSTTRAN
+          grep -q "paper_s3=unexecuted" subjects/carddemo/work/POSTTRAN
+          if printf '%s\n' "$output" | grep -qi "killed/seeded"; then
+            echo "S3 FAIL-CLOSED: POSTTRAN output invented a score" >&2
+            exit 1
+          fi
+          echo "S3 CI: posttran_job=run runtime=gnucobol-indexed-bdb-fixture. This is not paper S3."
+
+      - name: Judge the live job receipt
+        run: |
+          set -euo pipefail
+          python3.12 subjects/carddemo/check-posttran.py --require-live
+
+      - name: Certify S3 through the installable CLI
+        run: |
+          set -euo pipefail
+          python3.12 -m pip install -e .
+          set +e
+          output="$(zero-regression certify subjects/carddemo 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if printf '%s\n' "$output" | grep -q "S3 COBC FAIL"; then
+            echo "S3 FAIL-CLOSED: zr certify reported a GnuCOBOL compile error" >&2
+            exit 1
+          fi
+          if [[ "$status" -ne 0 ]]; then
+            echo "S3 FAIL-CLOSED: zr certify expected exit 0 (posttran_job=run); got $status" >&2
+            exit 1
+          fi
+          printf '%s\n' "$output" | grep -q "CERTIFY S3 POSTTRAN OK"
+          printf '%s\n' "$output" | grep -q "posttran_job=run"
+          printf '%s\n' "$output" | grep -q "runtime=gnucobol-indexed-bdb-fixture"
+          printf '%s\n' "$output" | grep -q "mutation_score=not-stored"
+          printf '%s\n' "$output" | grep -q "paper_s3=unexecuted"
+          if printf '%s\n' "$output" | grep -qi "killed/seeded"; then
+            echo "S3 FAIL-CLOSED: zr certify invented a score" >&2
+            exit 1
+          fi
+          echo "S3 CLI: POSTTRAN fixture job held. posttran_job=run. This is not paper S3."

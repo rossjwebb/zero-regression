@@ -123,35 +123,5 @@ jobs:
             echo "S3 FAIL-CLOSED: compile output invented a score" >&2
             exit 1
           fi
-          echo "S3 CI: cobc_status=0. harness_exit=2 means posttran_job=not-run, not a GnuCOBOL error."
-          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; harness exit 2 is job-not-run. This is not paper S3."
-
-      - name: Certify S3 through the installable CLI
-        run: |
-          set -euo pipefail
-          python3.12 -m pip install -e .
-          set +e
-          output="$(zero-regression certify subjects/carddemo 2>&1)"
-          status=$?
-          set -e
-          printf '%s\n' "$output"
-          if printf '%s\n' "$output" | grep -q "S3 COBC FAIL"; then
-            echo "S3 FAIL-CLOSED: zr certify reported a GnuCOBOL compile error" >&2
-            exit 1
-          fi
-          if [[ "$status" -eq 0 ]]; then
-            echo "S3 FAIL-CLOSED: zr certify must not exit 0 (that would look like a passing POSTTRAN job)" >&2
-            exit 1
-          fi
-          if [[ "$status" -ne 2 ]]; then
-            echo "S3 FAIL-CLOSED: zr certify expected harness exit 2 (posttran_job=not-run); got $status" >&2
-            exit 1
-          fi
-          printf '%s\n' "$output" | grep -q "CERTIFY S3 COMPILE OK"
-          printf '%s\n' "$output" | grep -q "posttran_job=not-run"
-          printf '%s\n' "$output" | grep -q "mutation_score=not-stored"
-          if printf '%s\n' "$output" | grep -qi "killed/seeded"; then
-            echo "S3 FAIL-CLOSED: zr certify invented a score" >&2
-            exit 1
-          fi
-          echo "S3 CLI: compile posture held. posttran_job=not-run. This is not paper S3."
+          echo "S3 CI: cobc_status=0. harness_exit=2 means compile-only posttran_job=not-run, not a GnuCOBOL error."
+          echo "CI compile check: pinned cobc 3.1.2.0 produced CBTRN02C; harness exit 2 is job-not-run. The job path is s3-carddemo-posttran.yml. This is not paper S3."

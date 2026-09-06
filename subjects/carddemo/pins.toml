@@ -111,3 +111,13 @@ sha256 = "48fa95f7d0864c9d5dd19c345044a006692fcccca594c95c91271f3477430df4"
 [[file]]
 path = "pins/no-legacy-tests.scan.txt"
 sha256 = "b8b25cbf15852df34a5da4617bedfeb24ecd624ef619ae437d15d0e09c66c495"
+# Harness fixture sources (not upstream CardDemo). Hashes written by check-pins.py --write.
+[[file]]
+path = "runtime/cee3abd.cbl"
+sha256 = "ea48c6160744173c3da0235ebf2097d332f8ed0365ab998c4b1de2530186e778"
+[[file]]
+path = "runtime/seed-indexed.cbl"
+sha256 = "99549c6aff007a1aea69cce69eb77b3b05fed0828332067292c11018435eeac1"
+[[file]]
+path = "runtime/FIXTURE.md"
+sha256 = "c09c228f12ce5e4b9dc4a8dd783dde150efa70698bfa03cc32e34b1a3ed44892"

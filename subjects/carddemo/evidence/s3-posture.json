@@ -1,17 +1,24 @@
 {
   "kind": "s3-carddemo-posture",
   "subject": "carddemo",
-  "status": "scaffolding+compile-runner-only",
+  "status": "gnucobol-posttran-fixture-run",
   "paper_s3": "unexecuted",
   "mutation_score": "not-stored",
-  "posttran_job": "not-run",
-  "executed_job": false,
+  "posttran_job": "run",
+  "executed_job": true,
+  "runtime": "gnucobol-indexed-bdb-fixture",
+  "ibm_vsam": false,
+  "ibm_cics": false,
+  "ibm_le_cee3abd": "stub",
   "claims": {
     "mutation_score": "not-stored",
     "paper_s3": "unexecuted",
-    "status": "scaffolding+compile-runner-only",
-    "posttran_job": "not-run",
-    "executed_job": false
+    "status": "gnucobol-posttran-fixture-run",
+    "posttran_job": "run",
+    "executed_job": true,
+    "runtime": "gnucobol-indexed-bdb-fixture",
+    "ibm_vsam": false,
+    "ibm_cics": false
   },
   "pin_gate": {
     "path": "subjects/carddemo/check-pins.py",
@@ -19,10 +26,10 @@
     "command": "python3.12 subjects/carddemo/check-pins.py",
     "python": "3.12.3",
     "exit": 0,
-    "stdout": "S3 PIN OK carddemo=59cc6c2fd7eb slice=POSTTRAN/CBTRN02C legacy_tests=none files=11",
+    "stdout": "S3 PIN OK carddemo=59cc6c2fd7eb slice=POSTTRAN/CBTRN02C legacy_tests=none files=14",
     "meaning": "pin integrity only; not a POSTTRAN job result"
   },
-  "runner": {
+  "compile_runner": {
     "path": "subjects/carddemo/run-cobol.sh",
     "fail_closed": true,
     "compile_ok_marker": "S3 COMPILE OK",
@@ -33,8 +40,24 @@
     "records_mutation_score": false,
     "posttran_job": "not-run",
     "executed_job": false,
-    "executed_in_this_pack": false,
     "work_receipt": "subjects/carddemo/work/COMPILE",
+    "work_receipt_gitignored": true
+  },
+  "runner": {
+    "path": "subjects/carddemo/run-posttran.sh",
+    "fail_closed": true,
+    "job_ok_marker": "S3 POSTTRAN OK",
+    "job_ok_exit": 0,
+    "records_mutation_score": false,
+    "posttran_job": "run",
+    "executed_job": true,
+    "executed_in_this_pack": true,
+    "runtime": "gnucobol-indexed-bdb-fixture",
+    "ibm_vsam": false,
+    "ibm_cics": false,
+    "ibm_le_cee3abd": "stub",
+    "indexed_file_handler": "BDB",
+    "work_receipt": "subjects/carddemo/work/POSTTRAN",
     "work_receipt_gitignored": true
   },
   "pins": {

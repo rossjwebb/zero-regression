@@ -33,6 +33,7 @@ PR_CHECKS = REPO / ".github" / "workflows" / "pr-checks.yml"
 S1_ORM_WORKFLOW = REPO / ".github" / "workflows" / "s1-django-accounting-orm.yml"
 S2_WORKFLOW = REPO / ".github" / "workflows" / "s2-commons-csv.yml"
 S3_WORKFLOW = REPO / ".github" / "workflows" / "s3-carddemo-compile.yml"
+S3_JOB_WORKFLOW = REPO / ".github" / "workflows" / "s3-carddemo-posttran.yml"
 
 
 def _completed(command: list[str], returncode: int, stdout: str) -> subprocess.CompletedProcess[str]:
@@ -61,7 +62,7 @@ class PublicVerifyTests(unittest.TestCase):
         for target, needle in (
             (S1, "paper_s1=unexecuted"),
             (S2, "paper_s2=unexecuted"),
-            (S3, "posttran_job=not-run"),
+            (S3, "posttran_job=run"),
             ("s1", "S1 posture"),
             ("s2", "mutation_score=not-stored"),
             ("s3", "mutation_score=not-stored"),
@@ -128,10 +129,10 @@ class PublicCertifyTests(unittest.TestCase):
         with mock.patch("zero_regression_harness.public_subjects.run_process", side_effect=fake_run):
             self.assertEqual(certify_s1(S1), 2)
 
-    def test_s3_compile_ok_exits_2_and_does_not_claim_posttran(self) -> None:
+    def test_s3_job_run_exits_0_with_honesty_labels(self) -> None:
         work = S3 / "work"
         work.mkdir(exist_ok=True)
-        receipt = work / "COMPILE"
+        receipt = work / "POSTTRAN"
 
         def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
             if command[-1].endswith("check-pins.py"):
@@ -139,12 +140,14 @@ class PublicCertifyTests(unittest.TestCase):
             receipt.write_text(
                 "\n".join(
                     [
-                        "result=compile-ok",
-                        "cobc_status=0",
-                        "harness_exit=2",
-                        "harness_meaning=posttran-job-not-run",
-                        "posttran_job=not-run",
+                        "result=job-run",
+                        "posttran_job=run",
+                        "runtime=gnucobol-indexed-bdb-fixture",
+                        "ibm_vsam=false",
+                        "paper_s3=unexecuted",
                         "mutation_score=not-recorded",
+                        "program_return_code=4",
+                        "executed_job=true",
                     ]
                 )
                 + "\n",
@@ -152,18 +155,38 @@ class PublicCertifyTests(unittest.TestCase):
             )
             return _completed(
                 command,
-                2,
-                "S3 COMPILE OK: compile only\nS3 HARNESS EXIT 2: posttran_job=not-run\n",
+                0,
+                "S3 POSTTRAN OK: posttran_job=run runtime=gnucobol-indexed-bdb-fixture\n",
             )
 
         try:
+            captured = io.StringIO()
             with mock.patch("zero_regression_harness.public_subjects.run_process", side_effect=fake_run):
-                self.assertEqual(certify_s3(S3), 2)
+                with redirect_stdout(captured):
+                    self.assertEqual(certify_s3(S3), 0)
+            text = captured.getvalue()
+            self.assertIn("CERTIFY S3 POSTTRAN OK", text)
+            self.assertIn("posttran_job=run", text)
+            self.assertIn("paper_s3=unexecuted", text)
+            self.assertIn("mutation_score=not-stored", text)
         finally:
             if receipt.is_file():
                 receipt.unlink()
 
-    def test_s3_exit_0_is_fail_closed(self) -> None:
+    def test_s3_compile_only_is_not_job_success(self) -> None:
+        def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+            if command[-1].endswith("check-pins.py"):
+                return _completed(command, 0, "S3 PIN OK carddemo=59cc6c2fd7eb\n")
+            return _completed(
+                command,
+                2,
+                "S3 COMPILE OK: compile only\nS3 HARNESS EXIT 2: posttran_job=not-run\n",
+            )
+
+        with mock.patch("zero_regression_harness.public_subjects.run_process", side_effect=fake_run):
+            self.assertEqual(certify_s3(S3), 2)
+
+    def test_s3_exit_0_without_job_markers_is_fail_closed(self) -> None:
         def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
             if command[-1].endswith("check-pins.py"):
                 return _completed(command, 0, "S3 PIN OK carddemo=59cc6c2fd7eb\n")
@@ -172,7 +195,7 @@ class PublicCertifyTests(unittest.TestCase):
         with mock.patch("zero_regression_harness.public_subjects.run_process", side_effect=fake_run):
             self.assertEqual(certify_s3(S3), 2)
 
-    def test_s3_cobc_fail_is_not_job_not_run_success(self) -> None:
+    def test_s3_cobc_fail_is_not_job_run_success(self) -> None:
         def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
             if command[-1].endswith("check-pins.py"):
                 return _completed(command, 0, "S3 PIN OK carddemo=59cc6c2fd7eb\n")
@@ -194,6 +217,8 @@ class PublicDocsAndCiTests(unittest.TestCase):
             self.assertIn("zero-regression certify", lowered, path)
             self.assertIn("mutation_score=not-stored", text.replace("`", ""), path)
             self.assertIn("posttran_job=not-run", text.replace("`", ""), path)
+            self.assertIn("posttran_job=run", text.replace("`", ""), path)
+            self.assertIn("runtime=gnucobol-indexed-bdb-fixture", text.replace("`", ""), path)
             self.assertIn("not paper s1", lowered, path)
             self.assertIn("not paper s2", lowered, path)
             self.assertIn("not paper s3", lowered, path)
@@ -217,9 +242,14 @@ class PublicDocsAndCiTests(unittest.TestCase):
         self.assertIn("zero-regression certify subjects/django-accounting", S1_ORM_WORKFLOW.read_text(encoding="utf-8"))
         self.assertIn("zero-regression certify subjects/commons-csv", S2_WORKFLOW.read_text(encoding="utf-8"))
         s3 = S3_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("zero-regression certify subjects/carddemo", s3)
-        self.assertIn("CERTIFY S3 COMPILE OK", s3)
         self.assertIn("posttran_job=not-run", s3)
+        self.assertIn("run-cobol.sh", s3)
+        self.assertNotIn("zero-regression certify subjects/carddemo", s3)
+        s3_job = S3_JOB_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("zero-regression certify subjects/carddemo", s3_job)
+        self.assertIn("CERTIFY S3 POSTTRAN OK", s3_job)
+        self.assertIn("posttran_job=run", s3_job)
+        self.assertIn("runtime=gnucobol-indexed-bdb-fixture", s3_job)
 
     def test_pr_checks_do_not_skip_missing_s1_gates(self) -> None:
         text = PR_CHECKS.read_text(encoding="utf-8")

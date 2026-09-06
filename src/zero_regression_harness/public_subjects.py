@@ -2,7 +2,8 @@
 """Public S1–S3 certify/verify paths.
 
 These subjects do not use the mutmut five-stage protocol. They must not
-invent a mutation score, a kill-rate certificate, or a POSTTRAN run.
+invent a mutation score, a kill-rate certificate, or a paper S3 / IBM
+VSAM claim.
 """
 from __future__ import annotations
 
@@ -248,27 +249,54 @@ def verify_s2(subject: Path) -> tuple[list[str], dict[str, Any]]:
 
 def verify_s3(subject: Path) -> tuple[list[str], dict[str, Any]]:
     posture_path = subject / "evidence" / "s3-posture.json"
+    receipt_path = subject / "evidence" / "job-receipt.json"
     english = subject / "evidence" / "EVIDENCE.md"
     errors: list[str] = []
+    seen: dict[str, Any] = {}
     try:
         posture = load_json(posture_path)
+        receipt = load_json(receipt_path)
     except ValueError as exc:
         return [str(exc)], {}
+    seen["s3-posture.json"] = posture
+    seen["job-receipt.json"] = receipt
     required = {
         "paper_s3": "unexecuted",
         "mutation_score": "not-stored",
-        "posttran_job": "not-run",
-        "executed_job": False,
-        "status": "scaffolding+compile-runner-only",
+        "posttran_job": "run",
+        "executed_job": True,
+        "status": "gnucobol-posttran-fixture-run",
+        "runtime": "gnucobol-indexed-bdb-fixture",
+        "ibm_vsam": False,
+        "ibm_cics": False,
     }
     for key, expected in required.items():
         if posture.get(key) != expected:
             errors.append(f"posture.{key}: expected {expected!r} got {posture.get(key)!r}")
-    if posture.get("runner", {}).get("executed_job") is not False:
-        errors.append("runner.executed_job must be false")
-    if posture.get("runner", {}).get("posttran_job") != "not-run":
-        errors.append("runner.posttran_job must be not-run")
+    runner = posture.get("runner") or {}
+    if runner.get("executed_job") is not True:
+        errors.append("runner.executed_job must be true")
+    if runner.get("posttran_job") != "run":
+        errors.append("runner.posttran_job must be run")
+    if runner.get("runtime") != "gnucobol-indexed-bdb-fixture":
+        errors.append("runner.runtime must be gnucobol-indexed-bdb-fixture")
+    compile_runner = posture.get("compile_runner") or {}
+    if compile_runner.get("posttran_job") != "not-run":
+        errors.append("compile_runner.posttran_job must stay not-run")
+    if receipt.get("paper_s3") != "unexecuted":
+        errors.append("receipt.paper_s3 must be unexecuted")
+    if receipt.get("mutation_score") != "not-stored":
+        errors.append("receipt.mutation_score must be not-stored")
+    if receipt.get("posttran_job") != "run":
+        errors.append("receipt.posttran_job must be run")
+    if receipt.get("runtime") != "gnucobol-indexed-bdb-fixture":
+        errors.append("receipt.runtime must be gnucobol-indexed-bdb-fixture")
+    if receipt.get("ibm_vsam") is not False:
+        errors.append("receipt.ibm_vsam must be false")
+    if receipt.get("records_mutation_score") is not False:
+        errors.append("receipt.records_mutation_score must be false")
     errors.extend(score_errors(posture))
+    errors.extend(score_errors(receipt))
     if not english.is_file():
         errors.append(f"missing {english}")
     else:
@@ -276,16 +304,18 @@ def verify_s3(subject: Path) -> tuple[list[str], dict[str, Any]]:
         for needle in (
             "mutation_score=not-stored",
             "paper_s3=unexecuted",
-            "posttran_job=not-run",
-            "executed_job=false",
+            "posttran_job=run",
+            "runtime=gnucobol-indexed-bdb-fixture",
+            "executed_job=true",
+            "ibm_vsam=false",
         ):
             if needle not in text:
                 errors.append(f"EVIDENCE.md missing {needle!r}")
         if "killed/seeded" in text.lower():
             errors.append("EVIDENCE.md must not state a killed/seeded score")
-        if "executed_job=true" in text.replace(" ", "").lower():
-            errors.append("EVIDENCE.md must not set executed_job=true")
-    return _unique(errors), posture
+        if "paper s3 executed" in text.lower():
+            errors.append("EVIDENCE.md must not claim paper S3 executed")
+    return _unique(errors), seen
 
 
 def verify_public(subject: Path) -> int:
@@ -301,7 +331,12 @@ def verify_public(subject: Path) -> int:
     elif protocol == "s3":
         errors, _ = verify_s3(subject)
         label = "S3"
-        extra = "posttran_job=not-run paper_s3=unexecuted mutation_score=not-stored"
+        extra = (
+            "posttran_job=run "
+            "runtime=gnucobol-indexed-bdb-fixture "
+            "paper_s3=unexecuted "
+            "mutation_score=not-stored"
+        )
     else:
         return die(f"{subject} is not a public S1–S3 subject; pass an evidence.jsonl chain")
     if errors:
@@ -368,8 +403,8 @@ def certify_s2(subject: Path) -> int:
     return 0
 
 
-def _s3_compile_receipt(subject: Path) -> dict[str, str]:
-    receipt = subject / "work" / "COMPILE"
+def _s3_kv_receipt(subject: Path, name: str) -> dict[str, str]:
+    receipt = subject / "work" / name
     if not receipt.is_file():
         return {}
     values: dict[str, str] = {}
@@ -391,12 +426,13 @@ def certify_s3(subject: Path) -> int:
         if pins.stdout:
             print(pins.stdout, file=sys.stderr, end="" if pins.stdout.endswith("\n") else "\n")
         return 2
-    runner = subject / "run-cobol.sh"
-    errors = _require_executable(runner)
+    compile_runner = subject / "run-cobol.sh"
+    job_runner = subject / "run-posttran.sh"
+    errors = _require_executable(compile_runner) + _require_executable(job_runner)
     if errors:
         return die(errors[0])
-    result = run_process([str(runner)])
-    _print_gate_output("s3-compile", result.stdout)
+    result = run_process([str(job_runner)])
+    _print_gate_output("s3-posttran", result.stdout)
     combined = result.stdout
     if "killed/seeded" in combined.lower():
         return die("S3 certify invented a mutation score")
@@ -404,36 +440,33 @@ def certify_s3(subject: Path) -> int:
     if cobc_fail:
         print(
             "CERTIFY S3 FAIL: GnuCOBOL compile error (S3 COBC FAIL). "
-            "This is not posttran_job=not-run success.",
+            "This is not posttran_job=run success.",
             file=sys.stderr,
         )
         return 1
-    if result.returncode == 0:
-        print(
-            "S3 CERTIFY FAIL-CLOSED: compile-OK must not exit 0 "
-            "(that would look like a passing POSTTRAN job)",
-            file=sys.stderr,
-        )
-        return 2
-    receipt = _s3_compile_receipt(subject)
-    compile_ok = "S3 COMPILE OK" in combined
-    harness_exit_2 = result.returncode == 2 and "S3 HARNESS EXIT 2" in combined
-    job_not_run = (
-        receipt.get("posttran_job") == "not-run"
-        and receipt.get("result") == "compile-ok"
-        and receipt.get("cobc_status") == "0"
-        and receipt.get("harness_meaning") == "posttran-job-not-run"
+    receipt = _s3_kv_receipt(subject, "POSTTRAN")
+    job_ok = (
+        result.returncode == 0
+        and "S3 POSTTRAN OK" in combined
+        and receipt.get("posttran_job") == "run"
+        and receipt.get("runtime") == "gnucobol-indexed-bdb-fixture"
+        and receipt.get("ibm_vsam") == "false"
+        and receipt.get("paper_s3") == "unexecuted"
+        and receipt.get("mutation_score") == "not-recorded"
+        and receipt.get("program_return_code") == "4"
     )
-    if compile_ok and harness_exit_2 and job_not_run:
+    if job_ok:
         print(
-            "CERTIFY S3 COMPILE OK "
-            "posttran_job=not-run "
+            "CERTIFY S3 POSTTRAN OK "
+            "posttran_job=run "
+            "runtime=gnucobol-indexed-bdb-fixture "
             "paper_s3=unexecuted "
             "mutation_score=not-stored "
-            "executed_job=false"
+            "ibm_vsam=false "
+            "executed_job=true"
         )
-        return 2
-    print("S3 CERTIFY FAIL-CLOSED: compile posture did not hold", file=sys.stderr)
+        return 0
+    print("S3 CERTIFY FAIL-CLOSED: POSTTRAN job posture did not hold", file=sys.stderr)
     print(f"  runner_exit={result.returncode}", file=sys.stderr)
     return 2
 
