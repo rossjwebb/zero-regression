@@ -23,6 +23,31 @@ JAVA8_MAJOR = 52
 
 ABNORMAL = ("TIMED_OUT", "MEMORY_ERROR", "RUN_ERROR")
 
+# Keys that would smuggle a kill-rate into a score-free receipt.
+FORBIDDEN_NUMERIC_KEYS = frozenset(
+    {
+        "kill_rate",
+        "killed",
+        "seeded",
+        "survivors",
+        "mutation_percent",
+        "mutations_generated",
+        "mutations_killed",
+        "mutations_survived",
+        "score",
+    }
+)
+
+# Text that would store a mutation % or kill-rate. The field
+# mutation_score=not-stored is allowed; a numeric assignment is not.
+SCORE_TEXT_RE = re.compile(
+    r"killed\s*/\s*seeded|"
+    r"generated\s+\d+\s+mutations|"
+    r"\(\s*\d+(?:\.\d+)?\s*%\s*\)|"
+    r"mutation_score\s*[:=]\s*\d",
+    re.IGNORECASE,
+)
+
 
 def load_pins() -> dict:
     with PINS.open("rb") as handle:
@@ -184,3 +209,132 @@ def judge_pit_log(log_text: str) -> list[str]:
         if any(count > 0 for count in counts):
             errors.append(f"PIT reported {kind} (isolated per mutant; run is not a success)")
     return errors
+
+
+def contains_forbidden_score_text(text: str) -> bool:
+    """True if text would store a kill-rate or mutation percentage."""
+    return bool(SCORE_TEXT_RE.search(text))
+
+
+def receipt_score_errors(node: object, prefix: str = "") -> list[str]:
+    """Walk a receipt/posture tree. Reject numeric scores and kill-rate keys."""
+    errors: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            here = f"{prefix}.{key}" if prefix else key
+            if key == "mutation_score":
+                if isinstance(value, (int, float)):
+                    errors.append(f"{here} must not be numeric")
+                elif value not in ("not-stored", None):
+                    errors.append(f"{here}: expected 'not-stored' got {value!r}")
+            if key in FORBIDDEN_NUMERIC_KEYS and isinstance(value, (int, float)):
+                errors.append(f"{here} must not be numeric")
+            errors.extend(receipt_score_errors(value, here))
+    elif isinstance(node, list):
+        for index, item in enumerate(node):
+            errors.extend(receipt_score_errors(item, f"{prefix}[{index}]"))
+    elif isinstance(node, str) and contains_forbidden_score_text(node):
+        errors.append(f"{prefix or 'text'} stores a mutation-score claim")
+    return errors
+
+
+def classify_live_work(
+    work: Path,
+    pit_rc: int | None = None,
+) -> tuple[bool, str | None, list[str]]:
+    """Classify a run-pit.sh work tree without reading a mutation score.
+
+    Returns (executed, blocked, judge_errors). blocked is a token, not a
+    skip-as-pass. Missing work is blocked=pit-not-run.
+    """
+    html = work / "pit-reports" / "index.html"
+    log = work / "pit.log"
+    if pit_rc is None and not log.is_file() and not html.is_file():
+        return False, "pit-not-run", []
+
+    judge_errors: list[str] = []
+    if log.is_file():
+        judge_errors = judge_pit_log(log.read_text(encoding="utf-8", errors="replace"))
+    elif pit_rc == 0:
+        judge_errors = ["PIT log is missing; cannot judge TIMED_OUT / MEMORY_ERROR / RUN_ERROR"]
+
+    if pit_rc is not None and pit_rc != 0:
+        return False, f"pit-process-exit-{pit_rc}", judge_errors
+    if judge_errors:
+        return False, "pit-judge-fail-closed", judge_errors
+    if not html.is_file():
+        return False, "pit-html-missing", judge_errors
+    return True, None, []
+
+
+def build_live_receipt(
+    *,
+    pins: dict,
+    work: Path,
+    python_version: str,
+    pit_rc: int | None = None,
+    html_report_tracked: bool = False,
+) -> dict:
+    """Build a score-free receipt from a live work tree.
+
+    Never copies pit.log or the HTML report body. Those files contain
+    PIT's own kill counts. This receipt only records process facts.
+    """
+    executed, blocked, judge_errors = classify_live_work(work, pit_rc=pit_rc)
+    html = work / "pit-reports" / "index.html"
+    log = work / "pit.log"
+    pit = pins["pit"]
+    jdk = pins["jdk"]
+    receipt = {
+        "kind": "s2-commons-csv-pit-receipt",
+        "subject": "commons-csv",
+        "mutation_score": "not-stored",
+        "paper_s2": "unexecuted",
+        "status": "live-pit-executed" if executed else f"blocked={blocked}",
+        "executed": executed,
+        "blocked": blocked,
+        "python": python_version,
+        "pit_process_exit": pit_rc,
+        "judge_errors": list(judge_errors),
+        "judge": "subjects/commons-csv/toolchain.py:judge_pit_log",
+        "html_report_present": html.is_file(),
+        "html_report": "subjects/commons-csv/work/pit-reports/index.html",
+        "html_report_gitignored": True,
+        "html_report_tracked": html_report_tracked,
+        "html_report_body_stored": False,
+        "pit_log_present": log.is_file(),
+        "pit_log_body_stored": False,
+        "records_mutation_score": False,
+        "green_suite": "passed" if executed or (pit_rc == 0 and not judge_errors) else "not-claimed",
+        "classfile_major": JAVA8_MAJOR,
+        "pins": {
+            "defects4j": {
+                "tag": pins["defects4j"]["tag"],
+                "commit": pins["defects4j"]["commit"],
+                "project": pins["defects4j"]["project"],
+                "version": pins["defects4j"]["version"],
+            },
+            "commons_csv": {"commit": pins["commons_csv"]["commit"]},
+            "pit": {
+                "tool": pit["tool"],
+                "version": pit["version"],
+                "mutators": pit["mutators"],
+                "subject_release": pit["subject_release"],
+                "target_class": pit["target_class"],
+            },
+            "jdk": {
+                "vendor": jdk["vendor"],
+                "release": jdk["release"],
+                "sha256": jdk["sha256"],
+            },
+        },
+        "claims": {
+            "mutation_score": "not-stored",
+            "paper_s2": "unexecuted",
+            "records_mutation_score": False,
+        },
+    }
+    errors = receipt_score_errors(receipt)
+    if errors:
+        fail("receipt would store a mutation score: " + "; ".join(errors))
+    return receipt

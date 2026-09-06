@@ -1,25 +1,53 @@
-# S2 Commons-CSV posture evidence
+# S2 Commons-CSV live PIT evidence
 
-This pack records what is checkable without a mutation score. It is not a paper execution of S2.
+This pack records a live fail-closed PIT run without a mutation score.
+It is not paper S2. It is not a paper execution of S2.
 
-Machine-readable copy: [`s2-posture.json`](s2-posture.json).
+Machine-readable copies: [`s2-posture.json`](s2-posture.json),
+[`pit-receipt.json`](pit-receipt.json).
 
 ## Claims
 
 - `mutation_score=not-stored`
 - `paper_s2=unexecuted`
-- `status=scaffolding+runner-only`
+- `status=live-pit-executed`
 
-No mutation score is stored. The paper has not executed S2. This pack is scaffolding and runner posture only.
+No mutation score is stored. No kill-rate percentage is stored. The
+paper has not executed S2.
 
-## What is recorded
+## What ran
 
-- Pin identities already used in `pins.toml`: Defects4J v3.0.1 `6d54320e0db5a357f9ab38a8e4d2e5aead7e1c09`, Commons-CSV Csv-1f `de1838ea067f3fbc4c7c21b9eeae077c739ecb73`, PIT 1.15.3 named mutator group DEFAULTS, Temurin 11.0.32.1+1 (`sha256` as in `pins.toml`).
-- `check-pins.py` is the pin gate. On this tree it was run with Python 3.12.3 and exited 0. That exit is pin integrity, not a PIT result.
-- `run-pit.sh` is fail-closed. `toolchain.py:judge_pit_log` treats TIMED_OUT, MEMORY_ERROR, and RUN_ERROR as failures; the runner exits non-zero. This pack does not run PIT and does not store a report.
+On Python 3.12.3 this slice ran `./subjects/commons-csv/run-pit.sh`.
+That script fetched hash-checked Temurin 11.0.32.1+1, compiled the
+Csv-1f pin with `javac --release 8` (classfile major 52), ran the
+four green JUnit classes, then invoked PIT 1.15.3 with mutators
+DEFAULTS on `ExtendedBufferedReader` only. The process exited 0.
+`toolchain.py:judge_pit_log` reported no TIMED_OUT, MEMORY_ERROR, or
+RUN_ERROR. PIT wrote a local HTML report under `work/pit-reports/`
+(gitignored). The receipt does not copy that HTML or `pit.log`.
+
+`check-pins.py` is still the pin gate. On this tree it was run with
+Python 3.12.3 and exited 0. That exit is pin integrity, not a score.
+
+The PR #12 pack was `scaffolding+runner-only` with
+`executed_in_this_pack=false`. This slice advances that pack to a
+live run. It does not invent a mutation percentage.
 
 ## What is not recorded
 
 - No mutation score, no percentage, no CERTIFICATE.
 - No PIT HTML. `work/pit-reports/` remains gitignored.
+- No `killed` / `seeded` / `kill_rate` fields.
 - No claim that paper S2 ran.
+
+## How to re-run
+
+```bash
+python3.12 subjects/commons-csv/check-pins.py
+./subjects/commons-csv/run-pit.sh
+python3.12 subjects/commons-csv/record-pit-receipt.py --pit-exit 0 --stdout-only
+python3.12 subjects/commons-csv/check-s2-pit.py --require-live
+```
+
+`--require-live` is fail-closed if `work/` is missing or the judge
+fails. A skip is not a pass.

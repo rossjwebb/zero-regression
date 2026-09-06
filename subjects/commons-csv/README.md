@@ -30,7 +30,9 @@ Hashes for every vendored file and every JAR are in `pins.toml`. They were writt
 - `pins/` — Defects4J v3.0.1 `active-bugs.csv` header plus the Csv-1 row, and `modified_classes/1.src`
 - `check-pins.py` — hash and metadata gate
 - `run-pit.sh` — compile, run the green JUnit classes, then PIT; fail closed
-- `evidence/` — pin and fail-closed runner posture only. No mutation score. Not paper S2. See `evidence/EVIDENCE.md`.
+- `evidence/` — live fail-closed PIT receipt plus pin/runner posture. No mutation score. Not paper S2. See `evidence/EVIDENCE.md`.
+- `record-pit-receipt.py` — write a score-free receipt from `work/` (never copies HTML or `pit.log`)
+- `check-s2-pit.py` — honesty gate; `--require-live` is fail-closed if the work tree is missing or the judge fails
 
 PIT target: `ExtendedBufferedReader` only (161 source lines at this pin). The rest of the package is compiled so the green tests can run; it is `unverified_scope`.
 
@@ -51,8 +53,9 @@ From the repository root, with Python 3.12.3. Do not put Java 21 on `PATH` and e
 
 ```bash
 python3.12 subjects/commons-csv/check-pins.py
-python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain
+python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain tests.test_commons_csv_pit_evidence
 ./subjects/commons-csv/run-pit.sh
+python3.12 subjects/commons-csv/check-s2-pit.py --require-live
 ```
 
 `run-pit.sh` downloads the pinned JDK 11 and JARs into `subjects/commons-csv/work/`, checks SHA-256, compiles with that JDK's `javac --release 8`, checks the classfile major version is 52 (Java 8), runs the four green test classes on JDK 11, then invokes PIT on the same JDK with `--mutators DEFAULTS` and explicit target/exclude class filters.
@@ -65,7 +68,9 @@ Maven is not required. Defects4J Major is not used.
 
 The HTML report is written to `subjects/commons-csv/work/pit-reports/index.html`. That path is gitignored. This repository does not store a mutation score for S2.
 
-The committed pack under `evidence/` records pin identities, that `check-pins.py` is the gate, and that `run-pit.sh` is fail-closed. It states `mutation_score=not-stored`, `paper_s2=unexecuted`, and `status=scaffolding+runner-only`. It is not a paper execution of S2.
+The committed pack under `evidence/` records pin identities, that `check-pins.py` is the gate, that `run-pit.sh` is fail-closed, and that a live PIT process was executed on this slice. It states `mutation_score=not-stored`, `paper_s2=unexecuted`, and `status=live-pit-executed`. The receipt stores process facts only (exit 0, judge clean, HTML present and gitignored). It does not store a kill-rate percentage. It is not a paper execution of S2.
+
+S2 status: the PR #12 pack was scaffolding+runner-only. This slice ran the pinned PIT runner live and kept the score out of the repository. CI always re-runs that same fail-closed path (`check-s2-pit.py --require-live`). A missing work tree or a TIMED_OUT / MEMORY_ERROR / RUN_ERROR mutant is fail-closed, not a skip-as-pass. Operator has not allowed a mutation number; none is stored.
 
 ## Out of scope
 

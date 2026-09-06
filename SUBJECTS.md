@@ -30,7 +30,7 @@ The entries are candidates, not completed replications. At selection time, rejec
 
 ## Selected: Commons-CSV (S2)
 
-The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That is Apache Commons CSV (Defects4J project `Csv`), mutated with Pitest, not with Defects4J Major. This is a pin and a reproduce script. It is not a paper execution of S2 and it does not record a mutation score.
+The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That is Apache Commons CSV (Defects4J project `Csv`), mutated with Pitest, not with Defects4J Major. The pin and fail-closed runner are in place. A live score-free PIT receipt is in `subjects/commons-csv/evidence/` (`status=live-pit-executed`, `mutation_score=not-stored`). It is not a paper execution of S2.
 
 | Field | Record |
 |---|---|
@@ -41,7 +41,7 @@ The 2 September programme note names S2 as Defects4J Commons-CSV under PIT. That
 | Licence | Apache-2.0 (`subjects/commons-csv/legacy/LICENSE.txt`) |
 | Slice | `org.apache.commons.csv.ExtendedBufferedReader` (Defects4J modified class for Csv-1) |
 | PIT | Pitest 1.15.3 command-line JARs, mutators DEFAULTS, JDK Temurin 11.0.32.1+1, subject `--release 8` |
-| Test command | `python3.12 subjects/commons-csv/check-pins.py` then `./subjects/commons-csv/run-pit.sh` |
+| Test command | `python3.12 subjects/commons-csv/check-pins.py` then `./subjects/commons-csv/run-pit.sh` then `python3.12 subjects/commons-csv/check-s2-pit.py --require-live` |
 | Working tree | `subjects/commons-csv/` |
 
 ## Selected: CardDemo (S3)

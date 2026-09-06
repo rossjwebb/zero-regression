@@ -1,0 +1,51 @@
+{
+  "kind": "s2-commons-csv-pit-receipt",
+  "subject": "commons-csv",
+  "mutation_score": "not-stored",
+  "paper_s2": "unexecuted",
+  "status": "live-pit-executed",
+  "executed": true,
+  "blocked": null,
+  "python": "3.12.3",
+  "pit_process_exit": 0,
+  "judge_errors": [],
+  "judge": "subjects/commons-csv/toolchain.py:judge_pit_log",
+  "html_report_present": true,
+  "html_report": "subjects/commons-csv/work/pit-reports/index.html",
+  "html_report_gitignored": true,
+  "html_report_tracked": false,
+  "html_report_body_stored": false,
+  "pit_log_present": true,
+  "pit_log_body_stored": false,
+  "records_mutation_score": false,
+  "green_suite": "passed",
+  "classfile_major": 52,
+  "pins": {
+    "defects4j": {
+      "tag": "v3.0.1",
+      "commit": "6d54320e0db5a357f9ab38a8e4d2e5aead7e1c09",
+      "project": "Csv",
+      "version": "1f"
+    },
+    "commons_csv": {
+      "commit": "de1838ea067f3fbc4c7c21b9eeae077c739ecb73"
+    },
+    "pit": {
+      "tool": "pitest",
+      "version": "1.15.3",
+      "mutators": "DEFAULTS",
+      "subject_release": 8,
+      "target_class": "org.apache.commons.csv.ExtendedBufferedReader"
+    },
+    "jdk": {
+      "vendor": "eclipse-temurin",
+      "release": "11.0.32.1+1",
+      "sha256": "5c3f68887c325d36d852ba534303e1f5f1f5cae7d6cc1e951d73e0d8e98a058d"
+    }
+  },
+  "claims": {
+    "mutation_score": "not-stored",
+    "paper_s2": "unexecuted",
+    "records_mutation_score": false
+  }
+}

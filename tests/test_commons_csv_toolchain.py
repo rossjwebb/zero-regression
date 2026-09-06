@@ -10,7 +10,13 @@ SUBJECT = REPO / "subjects" / "commons-csv"
 if str(SUBJECT) not in sys.path:
     sys.path.insert(0, str(SUBJECT))
 
-from toolchain import JAVA8_MAJOR, judge_pit_log  # noqa: E402
+from toolchain import (  # noqa: E402
+    JAVA8_MAJOR,
+    classify_live_work,
+    contains_forbidden_score_text,
+    judge_pit_log,
+    receipt_score_errors,
+)
 
 
 class CommonsCsvToolchainTests(unittest.TestCase):
@@ -55,3 +61,19 @@ class CommonsCsvToolchainTests(unittest.TestCase):
 
     def test_java8_classfile_major_is_documented(self) -> None:
         self.assertEqual(JAVA8_MAJOR, 52)
+
+    def test_receipt_helpers_reject_a_numeric_score(self) -> None:
+        self.assertEqual(receipt_score_errors({"mutation_score": "not-stored"}), [])
+        self.assertTrue(receipt_score_errors({"mutation_score": 12}))
+        self.assertFalse(contains_forbidden_score_text("mutation_score=not-stored"))
+        self.assertTrue(contains_forbidden_score_text("Generated 10 mutations Killed 4 (40%)"))
+
+    def test_missing_work_is_blocked_not_a_pass(self) -> None:
+        from pathlib import Path
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temporary:
+            executed, blocked, errors = classify_live_work(Path(temporary))
+            self.assertFalse(executed)
+            self.assertEqual(blocked, "pit-not-run")
+            self.assertEqual(errors, [])

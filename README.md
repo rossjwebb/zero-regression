@@ -43,11 +43,12 @@ That command replays recorded traces. CI on the S1 branch requires stdout to be 
 
 Part B evidence (not a score) is in `subjects/django-accounting/evidence/` as the Stage B historical thin-oracle record. The arms are Cursor, Claude Code, and Gemini. All three executed the replay-only oracle (27 matches / 0 mismatches each, `produced=false`). Codex is omitted. `python3.12 subjects/django-accounting/check-part-b.py` still requires that same oracle stdout line. The three-arm comparison remains a Stage B thin-oracle reading, not “four clean generators” and not paper S1. Stage C posture is `subjects/django-accounting/evidence/discrimination/`. Stage D posture is `subjects/django-accounting/evidence/stage-d/`. The org-level aggregates path is a separate Django 5.2.17 pin (`subjects/django-accounting/orm/`) that executes the pin's manager QuerySets as real SQL; the pin's `models.py` remains blocked on Django 1.7-era APIs, and this is not paper S1. See `subjects/django-accounting/evidence/EVIDENCE.md` and `subjects/django-accounting/evidence/orm/`.
 
-S2 is Defects4J Commons-CSV under PIT. The pin is Csv-1f (`de1838ea067f3fbc4c7c21b9eeae077c739ecb73`). This repository does not record a mutation score for S2 and does not claim that the paper already executed it.
+S2 is Defects4J Commons-CSV under PIT. The pin is Csv-1f (`de1838ea067f3fbc4c7c21b9eeae077c739ecb73`). A live fail-closed PIT run is recorded in `subjects/commons-csv/evidence/` (`status=live-pit-executed`). `mutation_score=not-stored`. That is not paper S2.
 
 ```bash
 python3.12 subjects/commons-csv/check-pins.py
 ./subjects/commons-csv/run-pit.sh
+python3.12 subjects/commons-csv/check-s2-pit.py --require-live
 ```
 
 S3 is public CardDemo COBOL (batch POSTTRAN / `CBTRN02C`). The pin is `aws-samples/aws-mainframe-modernization-carddemo` `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e`. There are no legacy tests. This repository does not record a mutation score for S3 and does not claim that the paper already executed it.
