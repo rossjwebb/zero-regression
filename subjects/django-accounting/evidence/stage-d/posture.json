@@ -39,10 +39,11 @@
     },
     "claude_code": {
       "name": "Claude Code",
-      "status": "awaiting-external-run",
-      "generators_run": false,
-      "produced": false,
-      "output": "subjects/django-accounting/evidence/stage-d/arms/claude-code/arm.json"
+      "status": "executed",
+      "generators_run": true,
+      "produced": true,
+      "output": "subjects/django-accounting/evidence/stage-d/arms/claude-code/arm.json",
+      "note": "Claude · Max (Opus 5) designed candidates; pin-API adapted on this VM; live evaluate receipts. Not paper S1."
     },
     "gemini": {
       "name": "Gemini",

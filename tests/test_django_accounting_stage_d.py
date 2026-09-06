@@ -159,6 +159,84 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertIn("cannot go negative", " ".join(live["invariants"]["failures"]))
         self.assertFalse(live["golden_widened"])
 
+    def test_claude_candidates_are_live_evaluated(self) -> None:
+        names = (
+            "faithful-price-rewrite",
+            "weak-price-tax-floor",
+            "weak-profits-clamp-nonneg",
+        )
+        for name in names:
+            with self.subTest(candidate=name):
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(EVALUATE),
+                        "--arm",
+                        "claude-code",
+                        "--candidate",
+                        name,
+                    ],
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                receipt = json.loads(result.stdout)
+                self.assertEqual(receipt["arm"], "claude-code")
+                self.assertIs(receipt["produced"], True)
+                self.assertIn(receipt["gate"]["verdict"], ("accepted", "rejected"))
+                self.assertEqual(receipt["paper_s1"], "unexecuted")
+                self.assertEqual(receipt["mutation_score"], "not-stored")
+                self.assertFalse(receipt["legacy_edited"])
+                self.assertFalse(receipt["golden_widened"])
+                stored = json.loads(
+                    (STAGE_D / "arms" / "claude-code" / "receipts" / f"{name}.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(stored["gate"]["verdict"], receipt["gate"]["verdict"])
+                self.assertEqual(
+                    stored["oracle"]["mismatched_cases"],
+                    receipt["oracle"]["mismatched_cases"],
+                )
+                self.assertEqual(
+                    stored["invariants"]["failed"],
+                    receipt["invariants"]["failed"],
+                )
+
+    def test_claude_weak_profits_is_live_rejected(self) -> None:
+        stored = json.loads(
+            (
+                STAGE_D / "arms" / "claude-code" / "receipts" / "weak-profits-clamp-nonneg.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(stored["gate"]["verdict"], "rejected")
+        self.assertTrue(stored["invariants"]["failed"])
+        self.assertEqual(stored["oracle"]["match_count"], 27)
+        self.assertEqual(stored["oracle"]["mismatch_count"], 0)
+
+        live = json.loads(
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(EVALUATE),
+                    "--arm",
+                    "claude-code",
+                    "--candidate",
+                    "weak-profits-clamp-nonneg",
+                ],
+                cwd=REPO,
+                capture_output=True,
+                text=True,
+                check=False,
+            ).stdout
+        )
+        self.assertEqual(live["gate"]["verdict"], "rejected")
+        self.assertTrue(live["invariants"]["failed"], live)
+        self.assertIn("cannot go negative", " ".join(live["invariants"]["failures"]))
+        self.assertFalse(live["golden_widened"])
+
     def test_stage_d_gate_is_green_and_score_free(self) -> None:
         result = subprocess.run(
             [sys.executable, str(GATE)],
@@ -176,7 +254,8 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertIn("paper_s1=unexecuted", result.stdout)
         self.assertIn("mutation_score=not-stored", result.stdout)
         self.assertIn("discrimination_gate=required", result.stdout)
-        self.assertIn("claude_code=awaiting-external-run", result.stdout)
+        self.assertIn("claude_code=executed", result.stdout)
+        self.assertIn("claude_code_rejected=1", result.stdout)
         self.assertIn("gemini=executed", result.stdout)
         self.assertIn("gemini_rejected=1", result.stdout)
         self.assertNotIn("killed/seeded", result.stdout.lower())
@@ -208,7 +287,7 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertNotIsInstance(payload["mutation_score"], (int, float))
         self.assertNotIn("kill_rate", payload)
         self.assertEqual(payload["arms"]["cursor"]["status"], "executed")
-        self.assertEqual(payload["arms"]["claude_code"]["status"], "awaiting-external-run")
+        self.assertEqual(payload["arms"]["claude_code"]["status"], "executed")
         self.assertEqual(payload["arms"]["gemini"]["status"], "executed")
         english = ENGLISH.read_text(encoding="utf-8")
         self.assertIn("paper_s1=unexecuted", english)
