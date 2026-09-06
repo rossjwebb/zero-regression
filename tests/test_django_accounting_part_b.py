@@ -143,6 +143,10 @@ class DjangoAccountingPartBTests(unittest.TestCase):
             (EVIDENCE / "arms" / "claude-code" / "PROMPT.md").read_text(encoding="utf-8"),
         )
         self.assertIn("not a second Cursor arm", claude["method"])
+        self.assertIn("not a Claude · Max chat run", claude["method"])
+        self.assertIn("run-arm-oracle.py", claude["method"])
+        self.assertIn("Python 3.12.3", claude["method"])
+        self.assertIn("produced=false", claude["method"])
         gemini = json.loads((EVIDENCE / "arms" / "gemini" / "arm.json").read_text(encoding="utf-8"))
         self.assertEqual(gemini["arm"], "gemini")
         self.assertEqual(gemini["name"], "Gemini")

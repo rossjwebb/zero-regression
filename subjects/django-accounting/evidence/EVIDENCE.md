@@ -53,14 +53,16 @@ proof of accounting correctness. It is not clean-generator success.
 The honest reading of a zero-mismatch replay is that the oracle is
 too thin to discriminate.
 
-**Claude Code (executed).** Zero Regression drove the Claude Code
-arm. A Cursor cloud agent is the git packaging vehicle only; this is
-not a second Cursor arm. The work order is `arms/claude-code/PROMPT.md`
-(also stored on `arm.json` as `prompt`). The shared probe
-`evidence/arms/run-arm-oracle.py` invoked
-`python3.12 subjects/django-accounting/oracle.py` on Python 3.12.3.
-No new candidate implementation was produced (`produced=false`). The
-golden file was not widened. Observed oracle stdout was exactly:
+**Claude Code (executed).** Zero Regression packaged the Claude Code
+slot from a live `run-arm-oracle.py` receipt on Python 3.12.3 under
+the Ross/CoS GO. This Cursor cloud agent is the git vehicle /
+packager only. It is not a second Cursor arm and not a Claude · Max
+chat run (browser paste timed out; no Claude · Max session is
+claimed). The work order is `arms/claude-code/PROMPT.md` (also
+stored on `arm.json` as `prompt`). Numbers were copied from the
+live receipt only. No new candidate implementation was produced
+(`produced=false`). The golden file was not widened. Observed
+oracle stdout was exactly:
 
 ```
 ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only
