@@ -24,10 +24,19 @@ STAGE_D = Path(__file__).resolve().parent
 SUBJECT = STAGE_D.parents[1]
 STUBS = SUBJECT / "stubs"
 LEGACY = SUBJECT / "legacy"
-CANDIDATES = STAGE_D / "arms" / "cursor" / "candidates"
+DEFAULT_ARM = "cursor"
 
 _HOOK_INSTALLED = False
 _ORIGINAL_IMPORT = builtins.__import__
+_ACTIVE_ARM = DEFAULT_ARM
+
+
+def candidates_dir(arm: str = DEFAULT_ARM) -> Path:
+    return STAGE_D / "arms" / arm / "candidates"
+
+
+# Back-compat alias used by evaluate receipts / older callers.
+CANDIDATES = candidates_dir(DEFAULT_ARM)
 
 
 def ensure_pin_path() -> None:
@@ -37,8 +46,8 @@ def ensure_pin_path() -> None:
             sys.path.insert(0, text)
 
 
-def load_manifest(name: str) -> dict[str, Any]:
-    path = CANDIDATES / name / "manifest.json"
+def load_manifest(name: str, arm: str = DEFAULT_ARM) -> dict[str, Any]:
+    path = candidates_dir(arm) / name / "manifest.json"
     if not path.is_file():
         raise SystemExit(f"missing candidate manifest {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -47,8 +56,8 @@ def load_manifest(name: str) -> dict[str, Any]:
     return payload
 
 
-def load_candidate_module(name: str, source_name: str):
-    source = CANDIDATES / name / source_name
+def load_candidate_module(name: str, source_name: str, arm: str = DEFAULT_ARM):
+    source = candidates_dir(arm) / name / source_name
     if not source.is_file():
         raise SystemExit(f"missing candidate source {source}")
     spec = importlib.util.spec_from_file_location(f"stage_d_candidate_{name}", source)
@@ -92,11 +101,13 @@ def _apply_replacement(manifest: dict[str, Any], candidate) -> None:
     setattr(pin_module, class_name, getattr(candidate, exported))
 
 
-def install_candidate(name: str) -> dict[str, Any]:
+def install_candidate(name: str, arm: str = DEFAULT_ARM) -> dict[str, Any]:
     """Load the pin, then replace the candidate's target callable."""
-    global _HOOK_INSTALLED
+    global _HOOK_INSTALLED, _ACTIVE_ARM, CANDIDATES
     ensure_pin_path()
-    manifest = load_manifest(name)
+    _ACTIVE_ARM = arm
+    CANDIDATES = candidates_dir(arm)
+    manifest = load_manifest(name, arm=arm)
     applying = {"on": False}
 
     def apply() -> None:
@@ -104,7 +115,7 @@ def install_candidate(name: str) -> dict[str, Any]:
             return
         applying["on"] = True
         try:
-            candidate = load_candidate_module(name, manifest["source"])
+            candidate = load_candidate_module(name, manifest["source"], arm=arm)
             _apply_replacement(manifest, candidate)
         finally:
             applying["on"] = False

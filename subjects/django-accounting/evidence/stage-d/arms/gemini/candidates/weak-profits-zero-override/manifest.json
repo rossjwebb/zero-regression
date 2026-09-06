@@ -1,0 +1,12 @@
+{
+  "name": "weak-profits-zero-override",
+  "intent": "intentional-weak",
+  "slice": "ProfitsLossCalculator",
+  "source": "calculators.py",
+  "target": {
+    "module": "accounting.apps.books.calculators",
+    "class": "ProfitsLossCalculator"
+  },
+  "note": "Gemini design intent: clamp negative profits to zero. Raw design had wrong API + syntax error. CoS adapted to pin ProfitsLossCalculator.profits(). Golden currently has no negative-profit cases \u2014 receipt must report whatever the yardstick actually does. Not paper S1.",
+  "design_source": "arms/gemini/design/gemini-raw-2026-09-06/weak-profits-zero-override.py"
+}

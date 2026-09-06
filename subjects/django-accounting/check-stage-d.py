@@ -4,8 +4,9 @@
 
 Requires the Stage C yardstick still green (good pin + discrimination).
 Re-evaluates produced Cursor candidates against that yardstick.
-Claude Code and Gemini must remain awaiting-external-run with no
-invented oracle numbers.
+Gemini may be executed with live receipts (re-evaluated via --arm gemini).
+Claude Code must remain awaiting-external-run with no invented oracle
+numbers until that arm actually runs.
 
 This is not paper S1. It stores no mutation score.
 """
@@ -30,7 +31,14 @@ PIN = "2e61776a653e719a4c15578ab385603a6066c2b6"
 EXPECTED_ORACLE = f"ORACLE OK pin={PIN} cases=27 replay-only"
 REQUIRED_CANDIDATES = ("price-faithful", "price-tax-ignored", "profits-no-window")
 REQUIRED_REJECTED = ("price-tax-ignored", "profits-no-window")
-EXTERNAL_ARMS = ("claude-code", "gemini")
+AWAITING_EXTERNAL_ARMS = ("claude-code",)
+EXECUTABLE_EXTERNAL_ARMS = ("gemini",)
+GEMINI_CANDIDATES = (
+    "faithful-price-round",
+    "weak-tax-truncation",
+    "weak-profits-zero-override",
+)
+GEMINI_REQUIRED_REJECTED = ("weak-tax-truncation",)
 
 
 def fail(message: str, extra: str = "") -> int:
@@ -70,7 +78,7 @@ def check_score_free(node: object, prefix: str = "") -> list[str]:
     return errors
 
 
-def check_external_slot(name: str, slot: dict) -> list[str]:
+def check_awaiting_external_slot(name: str, slot: dict) -> list[str]:
     errors: list[str] = []
     if slot.get("status") != "awaiting-external-run":
         errors.append(f"{name}.status: expected awaiting-external-run got {slot.get('status')!r}")
@@ -89,6 +97,28 @@ def check_external_slot(name: str, slot: dict) -> list[str]:
             errors.append(
                 f"{name} invented an oracle result while awaiting-external-run"
             )
+    return errors
+
+
+def check_executed_external_slot(name: str, slot: dict) -> list[str]:
+    errors: list[str] = []
+    if slot.get("status") != "executed":
+        errors.append(f"{name}.status: expected executed got {slot.get('status')!r}")
+    if slot.get("generators_run") is not True:
+        errors.append(f"{name}.generators_run must be true")
+    artefacts = slot.get("candidate_artefacts") or {}
+    if artefacts.get("produced") is not True:
+        errors.append(f"{name}.candidate_artefacts.produced must be true")
+    if slot.get("paper_s1") != "unexecuted":
+        errors.append(f"{name}.paper_s1 must be unexecuted")
+    if slot.get("mutation_score") != "not-stored":
+        errors.append(f"{name}.mutation_score must be not-stored")
+    if slot.get("discrimination_gate") != "required":
+        errors.append(f"{name}.discrimination_gate must be required")
+    if slot.get("legacy_edited") is True:
+        errors.append(f"{name}.legacy_edited must not be true")
+    if slot.get("golden_widened") is True:
+        errors.append(f"{name}.golden_widened must not be true")
     return errors
 
 
@@ -128,8 +158,9 @@ def check_posture(payload: dict) -> list[str]:
     return errors
 
 
-def live_receipt(name: str) -> dict:
-    result = run([sys.executable, str(EVALUATE), "--candidate", name])
+def live_receipt(name: str, arm: str = "cursor") -> dict:
+    command = [sys.executable, str(EVALUATE), "--arm", arm, "--candidate", name]
+    result = run(command)
     if result.returncode != 0:
         raise SystemExit(
             fail(
@@ -233,15 +264,62 @@ def main() -> int:
         errors.append("cursor.mutation_score must be not-stored")
     errors.extend(check_score_free(cursor, "cursor"))
 
-    for name in EXTERNAL_ARMS:
+    for name in AWAITING_EXTERNAL_ARMS:
         slot = load_json(STAGE_D / "arms" / name / "arm.json")
-        errors.extend(check_external_slot(name, slot))
+        errors.extend(check_awaiting_external_slot(name, slot))
         errors.extend(check_score_free(slot, name))
         prompt_path = STAGE_D / "arms" / name / "PROMPT.md"
         if not prompt_path.is_file():
             errors.append(f"missing {prompt_path}")
         elif slot.get("prompt") != prompt_path.read_text(encoding="utf-8"):
             errors.append(f"{name}.prompt must match PROMPT.md")
+
+    gemini_status = "awaiting-external-run"
+    gemini_accepted: list[str] = []
+    gemini_rejected: list[str] = []
+    for name in EXECUTABLE_EXTERNAL_ARMS:
+        slot = load_json(STAGE_D / "arms" / name / "arm.json")
+        prompt_path = STAGE_D / "arms" / name / "PROMPT.md"
+        if not prompt_path.is_file():
+            errors.append(f"missing {prompt_path}")
+        elif slot.get("prompt") != prompt_path.read_text(encoding="utf-8"):
+            errors.append(f"{name}.prompt must match PROMPT.md")
+        errors.extend(check_score_free(slot, name))
+        status = slot.get("status")
+        if status == "awaiting-external-run":
+            errors.extend(check_awaiting_external_slot(name, slot))
+            continue
+        errors.extend(check_executed_external_slot(name, slot))
+        if name == "gemini":
+            gemini_status = "executed"
+            gemini_dir = STAGE_D / "arms" / "gemini" / "candidates"
+            for cand in GEMINI_CANDIDATES:
+                source = gemini_dir / cand / "manifest.json"
+                if not source.is_file():
+                    errors.append(f"missing gemini candidate {source}")
+                    continue
+                stored_path = STAGE_D / "arms" / "gemini" / "receipts" / f"{cand}.json"
+                stored = load_json(stored_path)
+                live = live_receipt(cand, arm="gemini")
+                errors.extend(compare_receipt(f"gemini.{cand}", stored, live))
+                if live.get("arm") != "gemini":
+                    errors.append(f"gemini.{cand} live receipt arm must be gemini")
+                verdict = live.get("gate", {}).get("verdict")
+                if verdict == "rejected":
+                    gemini_rejected.append(cand)
+                elif verdict == "accepted":
+                    gemini_accepted.append(cand)
+                else:
+                    errors.append(f"gemini.{cand} has no honest gate verdict")
+                if stored.get("produced") is not True:
+                    errors.append(f"gemini.{cand} receipt produced must be true")
+            for cand in GEMINI_REQUIRED_REJECTED:
+                if cand not in gemini_rejected:
+                    errors.append(
+                        f"gemini intentional weak {cand} must be rejected by the yardstick"
+                    )
+            if not gemini_rejected:
+                errors.append("gemini Stage D requires at least one rejected candidate")
 
     rejected = []
     accepted = []
@@ -288,7 +366,9 @@ def main() -> int:
         "mutation_score=not-stored "
         "discrimination_gate=required "
         "claude_code=awaiting-external-run "
-        "gemini=awaiting-external-run "
+        f"gemini={gemini_status} "
+        f"gemini_accepted={len(gemini_accepted)} "
+        f"gemini_rejected={len(gemini_rejected)} "
         "codex_arm=omitted"
     )
     return 0

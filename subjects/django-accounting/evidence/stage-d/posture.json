@@ -45,10 +45,11 @@
     },
     "gemini": {
       "name": "Gemini",
-      "status": "awaiting-external-run",
-      "generators_run": false,
-      "produced": false,
-      "output": "subjects/django-accounting/evidence/stage-d/arms/gemini/arm.json"
+      "status": "executed",
+      "generators_run": true,
+      "produced": true,
+      "output": "subjects/django-accounting/evidence/stage-d/arms/gemini/arm.json",
+      "note": "Mindway Gemini designed candidates; CoS adapted to pin API; live Mac evaluate receipts. Not paper S1."
     }
   },
   "cursor_candidates": {
@@ -64,7 +65,9 @@
       "verdict": "rejected",
       "oracle_exit": 1,
       "mismatch_count": 13,
-      "named_mismatches_include": ["price_from_tax"],
+      "named_mismatches_include": [
+        "price_from_tax"
+      ],
       "invariants_failed": true
     },
     "profits-no-window": {
@@ -72,7 +75,9 @@
       "verdict": "rejected",
       "oracle_exit": 1,
       "mismatch_count": 2,
-      "named_mismatches_include": ["profits_period_2024_jan_feb"],
+      "named_mismatches_include": [
+        "profits_period_2024_jan_feb"
+      ],
       "invariants_failed": false
     }
   },

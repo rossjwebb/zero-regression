@@ -53,7 +53,13 @@ def python_version() -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Evaluate a Stage D candidate against Stage C")
-    parser.add_argument("--candidate", required=True, help="candidate directory name under arms/cursor/candidates/")
+    parser.add_argument("--candidate", required=True, help="candidate directory name under arms/<arm>/candidates/")
+    parser.add_argument(
+        "--arm",
+        default="cursor",
+        choices=("cursor", "claude-code", "gemini"),
+        help="which Stage D arm candidate tree to load (default: cursor)",
+    )
     args = parser.parse_args()
 
     if str(STAGE_D) not in sys.path:
@@ -61,9 +67,10 @@ def main() -> int:
     if str(DISCRIMINATION) not in sys.path:
         sys.path.insert(0, str(DISCRIMINATION))
 
-    from apply import CANDIDATES, install_candidate
+    from apply import candidates_dir, install_candidate
 
-    manifest = install_candidate(args.candidate)
+    manifest = install_candidate(args.candidate, arm=args.arm)
+    CANDIDATES = candidates_dir(args.arm)
     oracle = load_oracle()
     payload = oracle.run_cases()
     expected = json.loads(GOLDEN.read_text(encoding="utf-8"))
@@ -102,7 +109,7 @@ def main() -> int:
 
     receipt = {
         "kind": "s1-django-accounting-stage-d-candidate-receipt",
-        "arm": "cursor",
+        "arm": args.arm,
         "candidate": manifest["name"],
         "intent": manifest["intent"],
         "slice": manifest["slice"],
@@ -120,7 +127,7 @@ def main() -> int:
         "oracle": {
             "command": (
                 "python3.12 subjects/django-accounting/evidence/stage-d/"
-                f"evaluate-candidate.py --candidate {manifest['name']}"
+                f"evaluate-candidate.py --arm {args.arm} --candidate {manifest['name']}"
             ),
             "python": python_version(),
             "exit": oracle_exit,

@@ -65,9 +65,15 @@ pin, unpatched, still prints the replay-only OK line.
 [`arms/claude-code/PROMPT.md`](arms/claude-code/PROMPT.md). No
 Claude run is claimed.
 
-**Gemini** — `awaiting-external-run`. Paste-ready work order:
-[`arms/gemini/PROMPT.md`](arms/gemini/PROMPT.md). No Gemini run is
-claimed.
+**Gemini** — `executed` (2026-09-06). Mindway Gemini designed three
+candidates against a made-up Price API; raw designs sit under
+`arms/gemini/design/`. CoS adapted intents to the pin API, evaluated on
+Mac Python 3.12 with `evaluate-candidate.py --arm gemini`, and filed live
+receipts. `faithful-price-round` accepted; `weak-tax-truncation` rejected;
+`weak-profits-zero-override` accepted because the golden has no
+negative-profit case (noted in `arm.json`). Accept is not generator
+success and not paper S1. Work order:
+[`arms/gemini/PROMPT.md`](arms/gemini/PROMPT.md).
 
 Codex is omitted on purpose.
 
