@@ -1,0 +1,41 @@
+{
+  "arm": "claude-code",
+  "candidate": "weak-price-tax-floor",
+  "discrimination_gate": "required",
+  "domain_correctness": "out_of_scope",
+  "gate": {
+    "meaning": "Stage C replay + golden-independent invariants applied to a produced rewrite. Not a mutation score. Not paper S1.",
+    "reasons": [],
+    "verdict": "accepted",
+    "yardstick": "subjects/django-accounting/check-discrimination.py"
+  },
+  "golden_widened": false,
+  "intent": "intentional-weak",
+  "invariants": {
+    "count": 3,
+    "failed": false,
+    "failures": []
+  },
+  "kind": "s1-django-accounting-stage-d-candidate-receipt",
+  "legacy_edited": false,
+  "manifest": "subjects/django-accounting/evidence/stage-d/arms/claude-code/candidates/weak-price-tax-floor/manifest.json",
+  "mutation_score": "not-stored",
+  "oracle": {
+    "command": "python3.12 subjects/django-accounting/evidence/stage-d/evaluate-candidate.py --arm claude-code --candidate weak-price-tax-floor",
+    "exit": 0,
+    "match_count": 27,
+    "mismatch_count": 0,
+    "mismatched_cases": [],
+    "python": "3.12.3",
+    "replay_ok": true,
+    "replay_ok_line": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
+    "stderr": "",
+    "stdout": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only"
+  },
+  "paper_s1": "unexecuted",
+  "path": "subjects/django-accounting/evidence/stage-d/arms/claude-code/candidates/weak-price-tax-floor/prices.py",
+  "pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
+  "produced": true,
+  "python": "3.12.3",
+  "slice": "Price"
+}

@@ -3,12 +3,11 @@
 """S1 Stage D honesty gate.
 
 Requires the Stage C yardstick still green (good pin + discrimination).
-Re-evaluates produced Cursor candidates against that yardstick.
-Gemini receipts stay historical (#23): oracle fields are re-checked;
-the weak-profits accept is not rewritten. Stage C now rejects
-clamp-to-zero on a live fixture. Claude Code must remain
-awaiting-external-run with no invented oracle numbers until that
-arm actually runs.
+Re-evaluates produced Cursor and Claude Code candidates against that
+yardstick. Gemini receipts stay historical (#23): oracle fields are
+re-checked; the weak-profits accept is not rewritten. Stage C now
+rejects clamp-to-zero on a live fixture. Claude Code is executed with
+live re-eval (not a frozen historical accept).
 
 This is not paper S1. It stores no mutation score.
 """
@@ -33,8 +32,14 @@ PIN = "2e61776a653e719a4c15578ab385603a6066c2b6"
 EXPECTED_ORACLE = f"ORACLE OK pin={PIN} cases=27 replay-only"
 REQUIRED_CANDIDATES = ("price-faithful", "price-tax-ignored", "profits-no-window")
 REQUIRED_REJECTED = ("price-tax-ignored", "profits-no-window")
-AWAITING_EXTERNAL_ARMS = ("claude-code",)
-EXECUTABLE_EXTERNAL_ARMS = ("gemini",)
+AWAITING_EXTERNAL_ARMS = ()
+EXECUTABLE_EXTERNAL_ARMS = ("claude-code", "gemini")
+CLAUDE_CANDIDATES = (
+    "faithful-price-rewrite",
+    "weak-price-tax-floor",
+    "weak-profits-clamp-nonneg",
+)
+CLAUDE_REQUIRED_REJECTED = ("weak-profits-clamp-nonneg",)
 GEMINI_CANDIDATES = (
     "faithful-price-round",
     "weak-tax-truncation",
@@ -317,6 +322,9 @@ def main() -> int:
         elif slot.get("prompt") != prompt_path.read_text(encoding="utf-8"):
             errors.append(f"{name}.prompt must match PROMPT.md")
 
+    claude_status = "awaiting-external-run"
+    claude_accepted: list[str] = []
+    claude_rejected: list[str] = []
     gemini_status = "awaiting-external-run"
     gemini_accepted: list[str] = []
     gemini_rejected: list[str] = []
@@ -333,6 +341,36 @@ def main() -> int:
             errors.extend(check_awaiting_external_slot(name, slot))
             continue
         errors.extend(check_executed_external_slot(name, slot))
+        if name == "claude-code":
+            claude_status = "executed"
+            claude_dir = STAGE_D / "arms" / "claude-code" / "candidates"
+            for cand in CLAUDE_CANDIDATES:
+                source = claude_dir / cand / "manifest.json"
+                if not source.is_file():
+                    errors.append(f"missing claude-code candidate {source}")
+                    continue
+                stored_path = STAGE_D / "arms" / "claude-code" / "receipts" / f"{cand}.json"
+                stored = load_json(stored_path)
+                live = live_receipt(cand, arm="claude-code")
+                errors.extend(compare_receipt(f"claude-code.{cand}", stored, live))
+                if live.get("arm") != "claude-code":
+                    errors.append(f"claude-code.{cand} live receipt arm must be claude-code")
+                verdict = live.get("gate", {}).get("verdict")
+                if verdict == "rejected":
+                    claude_rejected.append(cand)
+                elif verdict == "accepted":
+                    claude_accepted.append(cand)
+                else:
+                    errors.append(f"claude-code.{cand} has no honest live gate verdict")
+                if stored.get("produced") is not True:
+                    errors.append(f"claude-code.{cand} receipt produced must be true")
+            for cand in CLAUDE_REQUIRED_REJECTED:
+                if cand not in claude_rejected:
+                    errors.append(
+                        f"claude-code intentional weak {cand} must be rejected by the yardstick"
+                    )
+            if not claude_rejected:
+                errors.append("claude-code Stage D requires at least one rejected candidate")
         if name == "gemini":
             gemini_status = "executed"
             gemini_dir = STAGE_D / "arms" / "gemini" / "candidates"
@@ -408,7 +446,9 @@ def main() -> int:
         "paper_s1=unexecuted "
         "mutation_score=not-stored "
         "discrimination_gate=required "
-        "claude_code=awaiting-external-run "
+        f"claude_code={claude_status} "
+        f"claude_code_accepted={len(claude_accepted)} "
+        f"claude_code_rejected={len(claude_rejected)} "
         f"gemini={gemini_status} "
         f"gemini_accepted={len(gemini_accepted)} "
         f"gemini_rejected={len(gemini_rejected)} "

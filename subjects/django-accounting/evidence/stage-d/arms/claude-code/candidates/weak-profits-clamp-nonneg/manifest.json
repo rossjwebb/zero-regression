@@ -1,0 +1,12 @@
+{
+  "name": "weak-profits-clamp-nonneg",
+  "intent": "intentional-weak",
+  "slice": "ProfitsLossCalculator",
+  "source": "calculators.py",
+  "target": {
+    "module": "accounting.apps.books.calculators",
+    "class": "ProfitsLossCalculator"
+  },
+  "note": "Claude Max design intent: clamp profits() to >= 0. Raw was a design note, not a drop-in. Adapted to pin ProfitsLossCalculator; only profits() changes. Receipt must report whatever the yardstick actually does. Not paper S1.",
+  "design_source": "arms/claude-code/design/claude-max-raw-2026-09-06/weak-profits-clamp-nonneg.py"
+}

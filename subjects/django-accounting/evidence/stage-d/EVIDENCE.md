@@ -15,7 +15,7 @@ not rewrite those receipts. Stage C remains `evidence/discrimination/`.
 - `paper_s1=unexecuted`
 - `mutation_score=not-stored`
 - `discrimination_gate=required`
-- `produced=true` (Cursor arm only)
+- `produced=true` (Cursor, Claude Code, and Gemini arms)
 - `domain_correctness=out_of_scope`
 - `codex_arm=omitted`
 
@@ -61,9 +61,17 @@ pin, unpatched, still prints the replay-only OK line.
 
 ## External arms
 
-**Claude Code** — `awaiting-external-run`. Paste-ready work order:
-[`arms/claude-code/PROMPT.md`](arms/claude-code/PROMPT.md). No
-Claude run is claimed.
+**Claude Code** — `executed` (2026-09-06). Claude · Max (Opus 5)
+designed three candidates
+(https://claude.ai/chat/6f4ed17a-5001-40ee-969d-e5a28147091f);
+raw designs sit under `arms/claude-code/design/`. This VM adapted
+intents to the pin API, evaluated with
+`evaluate-candidate.py --arm claude-code`, and filed live receipts.
+`faithful-price-rewrite` accepted. `weak-price-tax-floor` accepted
+because the 27-trace golden has no negative-tax case. That accept
+is not generator success. `weak-profits-clamp-nonneg` rejected by
+the Stage C expenses>collected live fixture (oracle still 27/0).
+Work order: [`arms/claude-code/PROMPT.md`](arms/claude-code/PROMPT.md).
 
 **Gemini** — `executed` (2026-09-06). Mindway Gemini designed three
 candidates against a made-up Price API; raw designs sit under
