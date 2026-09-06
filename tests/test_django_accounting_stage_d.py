@@ -143,7 +143,8 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertIn("mutation_score=not-stored", result.stdout)
         self.assertIn("discrimination_gate=required", result.stdout)
         self.assertIn("claude_code=awaiting-external-run", result.stdout)
-        self.assertIn("gemini=awaiting-external-run", result.stdout)
+        self.assertIn("gemini=executed", result.stdout)
+        self.assertIn("gemini_rejected=1", result.stdout)
         self.assertNotIn("killed/seeded", result.stdout.lower())
         self.assertNotIn("kill rate", result.stdout.lower())
 
@@ -174,7 +175,7 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         self.assertNotIn("kill_rate", payload)
         self.assertEqual(payload["arms"]["cursor"]["status"], "executed")
         self.assertEqual(payload["arms"]["claude_code"]["status"], "awaiting-external-run")
-        self.assertEqual(payload["arms"]["gemini"]["status"], "awaiting-external-run")
+        self.assertEqual(payload["arms"]["gemini"]["status"], "executed")
         english = ENGLISH.read_text(encoding="utf-8")
         self.assertIn("paper_s1=unexecuted", english)
         self.assertIn("mutation_score=not-stored", english)
@@ -200,7 +201,7 @@ class DjangoAccountingStageDTests(unittest.TestCase):
             "candidate_artefacts": {"produced": False},
             "oracle": {"stdout": EXPECTED_OK, "match_count": 27, "mismatch_count": 0, "exit": 0},
         }
-        errors = module.check_external_slot("gemini", fake)
+        errors = module.check_awaiting_external_slot("claude-code", fake)
         self.assertTrue(any("invented" in error for error in errors), errors)
 
     def test_docs_name_stage_d_without_paper_s1(self) -> None:
