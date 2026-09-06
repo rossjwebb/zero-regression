@@ -14,7 +14,7 @@ Public-replication steps (S1–S3) and the merged pull requests that hold them a
 
 ## Supported path
 
-From a fresh clone, with Python 3.12.3 on `PATH`, install the harness editable and verify the retained accounting-service fixture chains. Exit 0 means each chain holds.
+From a fresh clone, with Python 3.12.3 on `PATH`, install the harness editable and verify the retained accounting-service fixture chains. Exit 0 means each chain holds. Prefer a real CPython 3.12 for the venv (Homebrew or the official installer).
 
 ```bash
 python3.12 -m venv .venv && . .venv/bin/activate
@@ -33,7 +33,14 @@ python -m pip install -r requirements-certification.txt
 zero-regression certify subjects/accounting-service
 ```
 
-`zero-regression certify` / `zr certify` also accepts the public S1–S3 subjects. That is not the mutmut five-stage path and it is not a paper execution. S1 runs the existing oracle, discrimination, Stage D, and ORM gates (`paper_s1=unexecuted`, `mutation_score=not-stored`). S2 checks the committed score-free PIT evidence (`mutation_score=not-stored`; it does not invent a mutation score). S3 runs the compile posture and keeps `posttran_job=not-run` (harness exit 2); it does not run POSTTRAN. `zero-regression verify` still checks accounting-service `evidence.jsonl` chains, and also the committed S1–S3 posture packs (score-free honesty, not a kill-rate certificate).
+`zero-regression certify` / `zr certify` also accepts the public S1–S3 subjects. That is not the mutmut five-stage path and it is not a paper execution. S1 runs the existing oracle, discrimination, Stage D, and ORM gates (`paper_s1=unexecuted`, `mutation_score=not-stored`). The ORM gate needs the pinned Django lock first:
+
+```bash
+python -m pip install --require-hashes -r subjects/django-accounting/orm/requirements.lock
+zero-regression certify subjects/django-accounting
+```
+
+A missing Django install is `blocked=django-not-installed`, not a pass. S2 checks the committed score-free PIT evidence (`mutation_score=not-stored`; it does not invent a mutation score). S3 runs the compile posture and keeps `posttran_job=not-run` (harness exit 2); it does not run POSTTRAN. That compile posture needs the pinned GnuCOBOL on Linux (CI). macOS will not satisfy `/usr/bin/cobc`; `zr certify subjects/carddemo` then fail-closes with exit 2. That is expected, not a mutation score. `zero-regression verify` still checks accounting-service `evidence.jsonl` chains, and also the committed S1–S3 posture packs (score-free honesty, not a kill-rate certificate).
 
 The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6066c2b6`. From a fresh clone:
 
@@ -60,7 +67,7 @@ python3.12 subjects/carddemo/check-pins.py
 ./subjects/carddemo/run-cobol.sh
 ```
 
-`check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. With the pin present, `run-cobol.sh` compiles `CBTRN02C` (`cobc_status=0`) and then the harness exits 2. That exit 2 means `posttran_job=not-run`, not a GnuCOBOL error. Do not treat it as a `cobc` failure, and do not change it to exit 0. A real GnuCOBOL error prints `S3 COBC FAIL` and CI fails the job. S3 remains unexecuted: no legacy tests, no claimed CardDemo run, no score.
+`check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. That is the Linux CI path. macOS will not satisfy `/usr/bin/cobc`; certify then fail-closes with exit 2. That is expected, not a mutation score. With the pin present, `run-cobol.sh` compiles `CBTRN02C` (`cobc_status=0`) and then the harness exits 2. That exit 2 means `posttran_job=not-run`, not a GnuCOBOL error. Do not treat it as a `cobc` failure, and do not change it to exit 0. A real GnuCOBOL error prints `S3 COBC FAIL` and CI fails the job. S3 remains unexecuted: no legacy tests, no claimed CardDemo run, no score.
 
 CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. There is no skip path. A missing runner fails. A `cobc` compile error fails the job. Success must still be `S3 COMPILE OK`, harness exit 2, `posttran_job=not-run`. That is not paper S3.
 
