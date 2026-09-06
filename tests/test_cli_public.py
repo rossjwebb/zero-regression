@@ -198,6 +198,14 @@ class PublicDocsAndCiTests(unittest.TestCase):
             self.assertIn("not paper s2", lowered, path)
             self.assertIn("not paper s3", lowered, path)
             self.assertIn("does not invent a mutation score", lowered, path)
+        readme = README.read_text(encoding="utf-8")
+        self.assertIn(
+            "python -m pip install --require-hashes -r subjects/django-accounting/orm/requirements.lock",
+            readme,
+        )
+        self.assertIn("blocked=django-not-installed", readme)
+        self.assertIn("/usr/bin/cobc", readme)
+        self.assertIn("macos will not satisfy", readme.lower())
 
     def test_ci_wires_public_certify(self) -> None:
         pr_checks = PR_CHECKS.read_text(encoding="utf-8")
