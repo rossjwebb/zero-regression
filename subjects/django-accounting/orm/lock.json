@@ -1,0 +1,43 @@
+{
+  "kind": "s1-django-accounting-orm-lock",
+  "mutation_score": "not-stored",
+  "paper_s1": "unexecuted",
+  "python": "3.12.3",
+  "subject_pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
+  "wheel": [
+    {
+      "filename": "django-5.2.17-py3-none-any.whl",
+      "licence": "BSD-3-Clause",
+      "name": "Django",
+      "pypi_json": "https://pypi.org/pypi/Django/5.2.17/json",
+      "requires_python": ">=3.10",
+      "sha256": "f04fb3b36ee119e1af4fa1d397d5fd6cf12700f49321e84d4f4c642c5b1973db",
+      "size": 8315563,
+      "url": "https://files.pythonhosted.org/packages/df/f8/ce120525ca78f12b07daf65786679c5d0b54a75285a8958d3ae55e39da35/django-5.2.17-py3-none-any.whl",
+      "version": "5.2.17"
+    },
+    {
+      "filename": "asgiref-3.12.1-py3-none-any.whl",
+      "licence": "BSD-3-Clause",
+      "name": "asgiref",
+      "pypi_json": "https://pypi.org/pypi/asgiref/3.12.1/json",
+      "requires_python": ">=3.9",
+      "sha256": "fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094",
+      "size": 25478,
+      "url": "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl",
+      "version": "3.12.1"
+    },
+    {
+      "filename": "sqlparse-0.6.0-py3-none-any.whl",
+      "licence": "BSD-3-Clause",
+      "name": "sqlparse",
+      "pypi_json": "https://pypi.org/pypi/sqlparse/0.6.0/json",
+      "requires_python": ">=3.8",
+      "sha256": "b861c0288ce2fa56209a9a6412d2e066ac664b3873b89c26c9d8415e8e32996f",
+      "size": 50070,
+      "url": "https://files.pythonhosted.org/packages/d9/50/f00935da0ec7cbf325f8dc4f772ae46fbc7b672dd62876e73f0a94adda57/sqlparse-0.6.0-py3-none-any.whl",
+      "version": "0.6.0"
+    }
+  ],
+  "written_from": "sha256 of downloaded wheels; URLs from PyPI JSON"
+}

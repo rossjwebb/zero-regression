@@ -12,6 +12,9 @@ recorded in [`stage-d/`](stage-d/). Stage D is not paper S1. This
 Stage B pack stays historical and is not rewritten as a Stage D
 result.
 
+The org-level ORM scaffold is [`orm/`](orm/). It is not a Stage B
+result and not paper S1.
+
 This pack records S1 Part B after all three arms executed against
 the existing 27-trace replay-only oracle. Cursor was already on
 master. Claude Code and Gemini are recorded on this combined fill.

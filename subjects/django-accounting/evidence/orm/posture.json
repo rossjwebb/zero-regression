@@ -1,0 +1,37 @@
+{
+  "kind": "s1-django-accounting-orm-org-aggregates",
+  "subject": "django-accounting",
+  "stage": "orm-scaffold",
+  "paper_s1": "unexecuted",
+  "mutation_score": "not-stored",
+  "pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
+  "django": "5.2.17",
+  "python": "3.12.3",
+  "path": "pin-managers-queryset-aggregate",
+  "orm_sql_executed": true,
+  "stub_used": false,
+  "pin_models_imported": false,
+  "pin_models_blocked": "django.core.urlresolvers (then SortedDict, ForeignKey on_delete, people.Client)",
+  "legacy_edited": false,
+  "golden_widened": false,
+  "import_only_stub": true,
+  "domain_correctness": "out_of_scope",
+  "cases": 27,
+  "sql_backed_cases": [
+    "organization_derived",
+    "overdue_total"
+  ],
+  "sql_backed_in_golden": false,
+  "blocked": "pin-models-django-1.7-apis",
+  "blocked_meaning": "The pin's models.py cannot load on Django 5.2 + Python 3.12.3. Org aggregates run through the pin's managers.py QuerySet classes on scaffold tables.",
+  "stage_c": "must stay green; this pack does not weaken discrimination",
+  "stage_d": "must stay green; this pack does not rewrite generators",
+  "claims": {
+    "paper_s1": "unexecuted",
+    "mutation_score": "not-stored",
+    "orm_sql_executed": true,
+    "path": "pin-managers-queryset-aggregate",
+    "pin_models_imported": false,
+    "domain_correctness": "out_of_scope"
+  }
+}

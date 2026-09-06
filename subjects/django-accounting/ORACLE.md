@@ -40,12 +40,15 @@ certification.
 
 ## What is not executed
 
-Django ORM and SQL are not executed. The stub under `stubs/` is an
-import shim for Django 1.7-era names. `QuerySet.filter` does not apply
-lookups. There is no `aggregate`, so organisation-level
-`turnover_*` / `debts_*` / `overdue_total` paths (which call
-`QuerySet.aggregate(Sum(...))` in the pin's managers) are not in the
-golden file.
+Django ORM and SQL are not executed by this oracle. The stub under
+`stubs/` is an import shim for Django 1.7-era names. `QuerySet.filter`
+does not apply lookups. There is no `aggregate` on the stub, so the
+27-trace golden file still omits organisation-level `turnover_*` /
+`debts_*` / `overdue_total`. A separate org-level scaffold
+(`orm/run-org-aggregates.py`, Django 5.2.17 pin) runs those manager
+QuerySets as real `SUM` SQL without editing `legacy/` or widening
+this golden file. The pin's `models.py` stays blocked on Django
+1.7-era APIs. That scaffold is not this oracle and is not paper S1.
 
 The golden file still holds 27 traces. Case count alone is not
 discrimination. The golden `claim` field remains the replay-only
