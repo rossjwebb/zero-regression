@@ -54,4 +54,8 @@ sentence stored with those traces. This file is the Stage C claim.
 `paper_s1` stays unexecuted. `mutation_score` is not stored.
 `known_bad_rejected=3` is a probe count, not a kill rate.
 
+Stage D uses this same yardstick against produced rewrite
+candidates (`check-stage-d.py`). A candidate accept or reject is
+not paper S1 and not a mutation score.
+
 S1 is not a paper execution until the paper says so.

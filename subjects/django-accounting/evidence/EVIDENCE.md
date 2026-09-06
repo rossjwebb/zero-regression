@@ -7,6 +7,11 @@ claim Stage C discrimination.
 Stage C (known-bad must fail; golden-independent invariants) is
 recorded in [`discrimination/`](discrimination/).
 
+Stage D (rewrite generators versus that Stage C yardstick) is
+recorded in [`stage-d/`](stage-d/). Stage D is not paper S1. This
+Stage B pack stays historical and is not rewritten as a Stage D
+result.
+
 This pack records S1 Part B after all three arms executed against
 the existing 27-trace replay-only oracle. Cursor was already on
 master. Claude Code and Gemini are recorded on this combined fill.

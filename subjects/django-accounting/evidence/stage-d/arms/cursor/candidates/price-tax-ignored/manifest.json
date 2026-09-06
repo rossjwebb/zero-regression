@@ -1,0 +1,11 @@
+{
+  "name": "price-tax-ignored",
+  "intent": "intentional-weak",
+  "slice": "Price",
+  "source": "prices.py",
+  "target": {
+    "module": "accounting.libs.prices",
+    "class": "Price"
+  },
+  "note": "Intentional weak rewrite: tax is dropped so incl_tax equals excl_tax. The Stage C yardstick must reject this. Not paper S1."
+}
