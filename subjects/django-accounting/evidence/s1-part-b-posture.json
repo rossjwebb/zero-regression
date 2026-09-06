@@ -1,7 +1,7 @@
 {
   "kind": "s1-django-accounting-part-b-posture",
   "subject": "django-accounting",
-  "status": "cursor-executed+external-awaiting",
+  "status": "cursor+claude-executed+gemini-awaiting",
   "paper_s1": "unexecuted",
   "oracle": "replay-only",
   "cases": 27,
@@ -20,7 +20,7 @@
     "import_only_stub": true,
     "mutation_score": "not-stored",
     "domain_correctness": "out_of_scope",
-    "status": "cursor-executed+external-awaiting",
+    "status": "cursor+claude-executed+gemini-awaiting",
     "codex_arm": "omitted",
     "generators_run": false
   },
@@ -40,7 +40,7 @@
   },
   "generators_run": {
     "cursor": true,
-    "claude_code": false,
+    "claude_code": true,
     "gemini": false
   },
   "arms": {
@@ -52,8 +52,8 @@
     },
     "claude_code": {
       "name": "Claude Code",
-      "status": "awaiting-external-run",
-      "generators_run": false,
+      "status": "executed",
+      "generators_run": true,
       "output": "subjects/django-accounting/evidence/arms/claude-code/arm.json"
     },
     "gemini": {
@@ -81,8 +81,8 @@
     "records_mutation_score": false,
     "records_kill_rate": false,
     "executed_generators": false,
-    "executed_arms": ["cursor"],
-    "awaiting_external_arms": ["claude_code", "gemini"]
+    "executed_arms": ["cursor", "claude_code"],
+    "awaiting_external_arms": ["gemini"]
   },
   "pins": {
     "django_accounting": {

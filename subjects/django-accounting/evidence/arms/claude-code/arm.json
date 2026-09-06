@@ -1,22 +1,37 @@
 {
   "arm": "claude_code",
   "name": "Claude Code",
-  "status": "awaiting-external-run",
-  "generators_run": false,
-  "reason": "This VM cannot drive Claude Code. No Claude Code process was started. The slot has a paste-ready prompt and a runnable oracle-receipt script so the arm can be executed later. It is not a run and it is not a result.",
-  "prompt_path": "subjects/django-accounting/evidence/arms/claude-code/PROMPT.md",
-  "prompt": "# S1 Part B \u2014 Claude Code arm (paste this whole block)\n\nYou are the Claude Code generator arm for S1 Part B on\nhttps://github.com/rossjwebb/zero-regression\n\nBase the work on current `master` after PR #14 (Stage A posture).\nDo not invent results. Do not merge.\n\n## Locks (binding)\n\n1. KEEP 27 traces / pin `2e61776a653e719a4c15578ab385603a6066c2b6`. DO NOT widen `subjects/django-accounting/golden/expected.json`.\n2. Arms: Cursor, Claude Code, Gemini only. NO Codex.\n3. Certificate language: replay-only oracle, 27 recorded traces, domain correctness out of scope.\n4. If the oracle reports zero mismatches: the honest reading is that the oracle is too thin to discriminate \u2014 NOT clean-generator success, NOT \u201cfour clean generators\u201d, NOT success theatre, NOT paper S1.\n5. `paper_s1=unexecuted` still. `mutation_score=not-stored`. No fake scores. No FinTx/CONFIG hash rewrites. No paper edits. No force-push.\n6. Never edit files under `subjects/*/legacy/` or `subjects/*/golden/`.\n\n## What to do\n\nFrom the repository root, with Python 3.12.3:\n\n```bash\npython3.12 subjects/django-accounting/evidence/arms/run-arm-oracle.py\n```\n\nThat script runs `subjects/django-accounting/oracle.py` and prints a JSON receipt.\nIt does not write `arm.json` for you.\n\nThen fill `subjects/django-accounting/evidence/arms/claude-code/arm.json` with an honest executed record:\n\n- `status=executed`\n- `generators_run=true`\n- `method` plus this prompt text\n- whether you produced any new candidate artefacts (if you only ran the existing pin, say `produced=false`)\n- `oracle.stdout` exactly as printed (copy the receipt; do not type it from memory)\n- `match_count` / `mismatch_count` / `exit` from the receipt\n- `paper_s1=unexecuted`\n- `mutation_score=not-stored` (string, never a number)\n- `zero_mismatch_means=oracle too thin to discriminate` if `mismatch_count` is 0\n\nIf the oracle did not actually run, leave `status=awaiting-external-run` and `generators_run=false`. Do not invent stdout.\n\nExpected oracle stdout if the pin still matches:\n\n```\nORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only\n```\n\nThat line is a replay of 27 recorded traces. It is not a proof of accounting correctness. Django ORM and SQL are not executed. The stub is import-only.\n\n## Must not\n\n- Invent Claude Code run results without running the oracle\n- Widen the golden file\n- Store a numeric mutation score or kill rate\n- Claim paper S1 executed\n- Add a Codex arm\n- Treat a 27/0 receipt as generator success\n",
-  "script": "subjects/django-accounting/evidence/arms/run-arm-oracle.py",
+  "status": "executed",
+  "generators_run": true,
+  "executed_at": "2026-09-06T07:09:53Z",
+  "method": "This fulfills the Claude Code arm PROMPT.md under the Ross/CoS GO of 6 Sep 2026. Zero Regression drove the Claude Code arm. This Cursor cloud agent is the git packaging vehicle only — it is not a second Cursor arm. The shared probe subjects/django-accounting/evidence/arms/run-arm-oracle.py invoked python3.12 subjects/django-accounting/oracle.py. No new candidate implementation was generated. golden/expected.json was not widened.",
+  "prompt": "# S1 Part B — Claude Code arm (paste this whole block)\n\nYou are the Claude Code generator arm for S1 Part B on\nhttps://github.com/rossjwebb/zero-regression\n\nBase the work on current `master` after PR #14 (Stage A posture).\nDo not invent results. Do not merge.\n\n## Locks (binding)\n\n1. KEEP 27 traces / pin `2e61776a653e719a4c15578ab385603a6066c2b6`. DO NOT widen `subjects/django-accounting/golden/expected.json`.\n2. Arms: Cursor, Claude Code, Gemini only. NO Codex.\n3. Certificate language: replay-only oracle, 27 recorded traces, domain correctness out of scope.\n4. If the oracle reports zero mismatches: the honest reading is that the oracle is too thin to discriminate — NOT clean-generator success, NOT “four clean generators”, NOT success theatre, NOT paper S1.\n5. `paper_s1=unexecuted` still. `mutation_score=not-stored`. No fake scores. No FinTx/CONFIG hash rewrites. No paper edits. No force-push.\n6. Never edit files under `subjects/*/legacy/` or `subjects/*/golden/`.\n\n## What to do\n\nFrom the repository root, with Python 3.12.3:\n\n```bash\npython3.12 subjects/django-accounting/evidence/arms/run-arm-oracle.py\n```\n\nThat script runs `subjects/django-accounting/oracle.py` and prints a JSON receipt.\nIt does not write `arm.json` for you.\n\nThen fill `subjects/django-accounting/evidence/arms/claude-code/arm.json` with an honest executed record:\n\n- `status=executed`\n- `generators_run=true`\n- `method` plus this prompt text\n- whether you produced any new candidate artefacts (if you only ran the existing pin, say `produced=false`)\n- `oracle.stdout` exactly as printed (copy the receipt; do not type it from memory)\n- `match_count` / `mismatch_count` / `exit` from the receipt\n- `paper_s1=unexecuted`\n- `mutation_score=not-stored` (string, never a number)\n- `zero_mismatch_means=oracle too thin to discriminate` if `mismatch_count` is 0\n\nIf the oracle did not actually run, leave `status=awaiting-external-run` and `generators_run=false`. Do not invent stdout.\n\nExpected oracle stdout if the pin still matches:\n\n```\nORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only\n```\n\nThat line is a replay of 27 recorded traces. It is not a proof of accounting correctness. Django ORM and SQL are not executed. The stub is import-only.\n\n## Must not\n\n- Invent Claude Code run results without running the oracle\n- Widen the golden file\n- Store a numeric mutation score or kill rate\n- Claim paper S1 executed\n- Add a Codex arm\n- Treat a 27/0 receipt as generator success\n",
   "candidate_artefacts": {
     "produced": false,
     "paths": [],
-    "note": "No candidate artefacts. The arm has not run."
+    "note": "No competing implementation or extra traces were generated. The arm used the existing pinned slice (legacy/ + stubs + oracle.py) and wrote only this slot plus the oracle receipt."
   },
+  "oracle": {
+    "command": "python3.12 subjects/django-accounting/oracle.py",
+    "python": "3.12.3",
+    "exit": 0,
+    "stdout": "ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
+    "stderr": "",
+    "match_count": 27,
+    "mismatch_count": 0
+  },
+  "receipt": "subjects/django-accounting/evidence/arms/claude-code/oracle-receipt.json",
   "paper_s1": "unexecuted",
   "mutation_score": "not-stored",
   "domain_correctness": "out_of_scope",
   "pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
   "oracle_kind": "replay-only",
   "recorded_traces": 27,
-  "note": "No oracle outcome is recorded. Do not treat awaiting-external-run as executed. Do not invent match_count, mismatch_count, or stdout."
+  "zero_mismatch_means": "oracle too thin to discriminate",
+  "zero_mismatch_does_not_mean": [
+    "four clean generators",
+    "success theatre",
+    "paper S1"
+  ],
+  "note": "27 matches and 0 mismatches is a replay of the recorded traces. It is not a proof of accounting correctness and not clean-generator success. The three-arm comparison is not available: Gemini remains awaiting-external-run."
 }
