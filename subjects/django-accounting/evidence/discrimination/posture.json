@@ -15,8 +15,10 @@
   "invariant_names": [
     "excl+tax==incl when tax known",
     "total_due_incl==incl-paid",
-    "profits==collected-expenses"
+    "profits==collected-expenses (including expenses>collected live org)"
   ],
+  "clamp_to_zero_rejected": true,
+  "clamp_to_zero_rejected_meaning": "yardstick-local live fixture; not a known-bad probe count; not a kill rate; golden not widened",
   "golden_echo_rejected": true,
   "golden_widened": false,
   "legacy_edited": false,
@@ -30,7 +32,8 @@
     "python": "3.12.3",
     "good_pin": "must print ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only",
     "known_bad": "each probe must exit non-zero and name its mismatch case",
-    "golden_echo": "replay OK line is not enough; invariant gate must reject pin-not-executed"
+    "golden_echo": "replay OK line is not enough; invariant gate must reject pin-not-executed",
+    "clamp_to_zero": "live expenses>collected org plus yardstick-local clamp must fail invariants; golden not widened"
   },
   "probes": {
     "bad_price_tax_zero": {
@@ -66,6 +69,7 @@
     "known_bad_rejected": 5,
     "invariants": 3,
     "golden_echo_rejected": true,
+    "clamp_to_zero_rejected": true,
     "import_only_stub": true,
     "domain_correctness": "out_of_scope"
   }

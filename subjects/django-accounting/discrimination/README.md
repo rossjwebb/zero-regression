@@ -33,9 +33,14 @@ Checked on live pin objects, not by reading the golden file:
 - `excl + tax == incl` when tax is known
 - `total_due_incl_tax == total_incl_tax - total_paid`
 - `profits() == total_collected() - total_expenses()`
+  (the live bundle includes an expenses>collected org; the 27-trace
+  golden does not, so a clamp-to-zero `profits()` is rejected here
+  without widening `expected.json`)
 
 These are arithmetic consistency checks on the pin APIs the oracle
-already calls. They are not accounting-law certification.
+already calls. They are not accounting-law certification. The Stage C
+gate also applies a yardstick-local clamp-to-zero rewrite and requires
+those live invariants to fail. That is not a known-bad probe count.
 
 ## How to run
 

@@ -34,6 +34,8 @@ file):
 - `excl + tax == incl` when tax is known
 - `total_due_incl_tax == total_incl_tax - total_paid`
 - `profits() == total_collected() - total_expenses()`
+  (live bundle includes an expenses>collected org so a clamp-to-zero
+  `profits()` is rejected without widening the 27-trace golden)
 
 Those are arithmetic consistency checks. They are not accounting-law
 certification.

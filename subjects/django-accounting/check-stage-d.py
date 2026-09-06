@@ -38,7 +38,7 @@ GEMINI_CANDIDATES = (
     "weak-tax-truncation",
     "weak-profits-zero-override",
 )
-GEMINI_REQUIRED_REJECTED = ("weak-tax-truncation",)
+GEMINI_REQUIRED_REJECTED = ("weak-tax-truncation", "weak-profits-zero-override")
 
 
 def fail(message: str, extra: str = "") -> int:

@@ -75,6 +75,8 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertTrue(any("pin not executed" in item for item in errors), errors)
         live = invariants.check_live_invariants()
         self.assertEqual(live, [], live)
+        clamp = invariants.check_clamp_to_zero_rejected()
+        self.assertEqual(clamp, [], clamp)
 
     def test_discrimination_gate_is_green_and_fail_closed(self) -> None:
         result = subprocess.run(
@@ -113,6 +115,7 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertEqual(payload["known_bad_rejected"], 5)
         self.assertEqual(payload["invariants"], 3)
         self.assertIs(payload["golden_echo_rejected"], True)
+        self.assertIs(payload["clamp_to_zero_rejected"], True)
         self.assertIs(payload["golden_widened"], False)
         self.assertIs(payload["legacy_edited"], False)
         self.assertIs(payload["orm_sql_executed"], False)
@@ -123,6 +126,7 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertIn("paper_s1=unexecuted", english)
         self.assertIn("mutation_score=not-stored", english)
         self.assertIn("known_bad_rejected=5", english)
+        self.assertIn("clamp_to_zero_rejected=true", english)
         self.assertIn("not a kill rate", english)
         self.assertIn("not a paper execution of s1", english.lower())
 
@@ -132,6 +136,7 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertIn("not a proof of accounting correctness", text)
         self.assertIn("Django ORM and SQL are not executed", text)
         self.assertIn("golden echo", text.lower())
+        self.assertIn("expenses>collected", text)
         self.assertIn(PIN, text)
 
     def test_ci_has_a_discrimination_job(self) -> None:
@@ -141,6 +146,23 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertIn("python3.12 subjects/django-accounting/check-discrimination.py", text)
         self.assertIn("discrimination:", text)
         self.assertNotIn("cases=19", text)
+
+    def test_live_bundle_has_a_loss_making_org(self) -> None:
+        if str(SUBJECT / "discrimination") not in sys.path:
+            sys.path.insert(0, str(SUBJECT / "discrimination"))
+        import invariants
+
+        live = invariants.collect_live_bundle()
+        loss_cases = [
+            calc
+            for calc in live.calculators
+            if calc.total_collected() - calc.total_expenses() < 0
+        ]
+        self.assertTrue(loss_cases, "live bundle must include expenses>collected")
+        for calc in loss_cases:
+            pin_net = calc.total_collected() - calc.total_expenses()
+            self.assertEqual(calc.profits(), pin_net)
+            self.assertLess(calc.profits(), 0)
 
 
 if __name__ == "__main__":

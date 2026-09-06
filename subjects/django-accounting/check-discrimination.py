@@ -66,6 +66,7 @@ def check_posture_file() -> list[str]:
         "known_bad_rejected": 5,
         "invariants": 3,
         "golden_echo_rejected": True,
+        "clamp_to_zero_rejected": True,
         "domain_correctness": "out_of_scope",
     }
     for key, expected in required.items():
@@ -99,6 +100,10 @@ def main() -> int:
     live_errors = invariants.check_live_invariants()
     if live_errors:
         errors.extend(live_errors)
+
+    clamp_errors = invariants.check_clamp_to_zero_rejected()
+    if clamp_errors:
+        errors.extend(clamp_errors)
 
     rejected = 0
     for name, case in KNOWN_BAD:
