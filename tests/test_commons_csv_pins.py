@@ -63,9 +63,12 @@ class CommonsCsvPinTests(unittest.TestCase):
         ]
         names = {path.name for path in tracked}
         self.assertTrue(forbidden_names.isdisjoint(names))
+        detector_names = {"toolchain.py", "check-s2-pit.py", "record-pit-receipt.py"}
         for path in tracked:
             text = path.read_text(encoding="utf-8", errors="replace").lower()
-            self.assertNotIn("killed/seeded", text)
+            if path.name in detector_names:
+                continue
+            self.assertNotIn("killed/seeded", text, path)
 
     def test_evidence_claim_fields_forbid_numeric_mutation_score(self) -> None:
         self.assertTrue(POSTURE.is_file())
@@ -73,19 +76,23 @@ class CommonsCsvPinTests(unittest.TestCase):
         payload = json.loads(POSTURE.read_text(encoding="utf-8"))
         self.assertEqual(payload["mutation_score"], "not-stored")
         self.assertEqual(payload["paper_s2"], "unexecuted")
-        self.assertEqual(payload["status"], "scaffolding+runner-only")
+        status = payload["status"]
+        self.assertTrue(
+            status == "live-pit-executed" or str(status).startswith("blocked="),
+            status,
+        )
         self.assertNotIsInstance(payload["mutation_score"], (int, float))
         self.assertIsInstance(payload["mutation_score"], str)
         claims = payload["claims"]
         self.assertEqual(claims["mutation_score"], "not-stored")
         self.assertEqual(claims["paper_s2"], "unexecuted")
-        self.assertEqual(claims["status"], "scaffolding+runner-only")
+        self.assertEqual(claims["status"], status)
         self.assertNotIsInstance(claims["mutation_score"], (int, float))
         self._assert_no_numeric_mutation_score(payload)
         english = (EVIDENCE / "EVIDENCE.md").read_text(encoding="utf-8")
         self.assertIn("mutation_score=not-stored", english)
         self.assertIn("paper_s2=unexecuted", english)
-        self.assertIn("status=scaffolding+runner-only", english)
+        self.assertIn(f"status={status}", english)
         self.assertIn("not a paper execution of s2", english.lower())
 
     def test_evidence_records_pins_gate_and_fail_closed_runner(self) -> None:
@@ -108,7 +115,11 @@ class CommonsCsvPinTests(unittest.TestCase):
         self.assertEqual(payload["runner"]["path"], "subjects/commons-csv/run-pit.sh")
         self.assertTrue(payload["runner"]["fail_closed"])
         self.assertFalse(payload["runner"]["records_mutation_score"])
-        self.assertFalse(payload["runner"]["executed_in_this_pack"])
+        status = payload["status"]
+        if status == "live-pit-executed":
+            self.assertTrue(payload["runner"]["executed_in_this_pack"])
+        else:
+            self.assertFalse(payload["runner"]["executed_in_this_pack"])
         self.assertEqual(
             payload["runner"]["exits_nonzero_on"],
             ["TIMED_OUT", "MEMORY_ERROR", "RUN_ERROR"],

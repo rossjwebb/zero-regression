@@ -1,23 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
-name: S2 Commons-CSV pins and PIT
-
-on:
-  pull_request:
-  push:
-    paths:
-      - "subjects/commons-csv/**"
-      - "tests/test_commons_csv_pins.py"
-      - "tests/test_commons_csv_toolchain.py"
-      - ".github/workflows/s2-commons-csv.yml"
-
-# This branch carries the S2 files from merged PR #4, so the job RUNs.
-# If this workflow is present without those files, the job SKIPs and
-# says so. A skip is not a PIT result and records no mutation score.
+# This branch has subjects/commons-csv/run-pit.sh. Skip is not allowed.
+# A live PIT run is not a stored mutation score and is not paper S2.
 #
 # Do not install PATH Java 21. The runner fetches hash-checked
 # Temurin 11.0.32.1+1 and uses that tree for javac --release 8,
 # classfile major 52, and PIT 1.15.3 --jvmPath. Mutators are
 # DEFAULTS as pinned in pins.toml.
+name: S2 Commons-CSV live PIT
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
 jobs:
   pins-and-pit:
     runs-on: ubuntu-latest
@@ -30,37 +26,56 @@ jobs:
         with:
           python-version: "3.12.3"
 
-      - name: Decide skip vs run
-        id: s2
+      - name: Require the pinned PIT runner
         run: |
-          if [ -f subjects/commons-csv/check-pins.py ] && [ -x subjects/commons-csv/run-pit.sh ]; then
-            echo "mode=run" >> "$GITHUB_OUTPUT"
-            echo "RUN: S2 files are on this branch."
-            echo "This job will run:"
-            echo "  python3.12 subjects/commons-csv/check-pins.py"
-            echo "  python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain"
-            echo "  ./subjects/commons-csv/run-pit.sh"
-            echo "The runner uses hash-checked Temurin 11.0.32.1+1, not PATH Java 21."
-          else
-            echo "mode=skip" >> "$GITHUB_OUTPUT"
-            echo "SKIP: S2 files are not on this branch."
-            echo "python3.12 subjects/commons-csv/check-pins.py was not run."
-            echo "./subjects/commons-csv/run-pit.sh was not run."
-            echo "This is not a PIT result. No mutation score is recorded."
+          set -euo pipefail
+          if [[ ! -f subjects/commons-csv/check-pins.py ]]; then
+            echo "S2 FAIL-CLOSED: subjects/commons-csv/check-pins.py is missing. Skip is not a pass." >&2
+            exit 1
+          fi
+          if [[ ! -x subjects/commons-csv/run-pit.sh ]]; then
+            echo "S2 FAIL-CLOSED: subjects/commons-csv/run-pit.sh is missing or not executable. Skip is not a pass." >&2
+            exit 1
+          fi
+          if [[ ! -f subjects/commons-csv/check-s2-pit.py ]]; then
+            echo "S2 FAIL-CLOSED: subjects/commons-csv/check-s2-pit.py is missing. Skip is not a pass." >&2
+            exit 1
           fi
 
-      - name: Verify pins
-        if: steps.s2.outputs.mode == 'run'
+      - name: Verify pins and score-free evidence tests
         run: |
           python3.12 subjects/commons-csv/check-pins.py
-          python3.12 -m unittest tests.test_commons_csv_pins tests.test_commons_csv_toolchain
+          python3.12 -m unittest \
+            tests.test_commons_csv_pins \
+            tests.test_commons_csv_toolchain \
+            tests.test_commons_csv_pit_evidence
 
       - name: Run PIT on pinned JDK 11 (fail closed)
-        if: steps.s2.outputs.mode == 'run'
         run: ./subjects/commons-csv/run-pit.sh
 
+      - name: Record and judge a score-free live receipt
+        run: |
+          set -euo pipefail
+          python3.12 subjects/commons-csv/record-pit-receipt.py --stdout-only --pit-exit 0 > /tmp/s2-pit-receipt.json
+          python3.12 - <<'PY'
+          import json
+          from pathlib import Path
+          receipt = json.loads(Path("/tmp/s2-pit-receipt.json").read_text(encoding="utf-8"))
+          if receipt.get("mutation_score") != "not-stored":
+              raise SystemExit("S2 FAIL-CLOSED: live receipt mutation_score is not not-stored")
+          if receipt.get("paper_s2") != "unexecuted":
+              raise SystemExit("S2 FAIL-CLOSED: live receipt claimed paper S2")
+          if receipt.get("records_mutation_score") is not False:
+              raise SystemExit("S2 FAIL-CLOSED: live receipt records a mutation score")
+          if receipt.get("html_report_body_stored") is not False:
+              raise SystemExit("S2 FAIL-CLOSED: live receipt stored HTML")
+          if receipt.get("executed") is not True:
+              raise SystemExit(f"S2 FAIL-CLOSED: live work is blocked={receipt.get('blocked')}")
+          print("S2 CI RECEIPT OK mutation_score=not-stored paper_s2=unexecuted executed=true")
+          PY
+          python3.12 subjects/commons-csv/check-s2-pit.py --require-live
+
       - name: Confirm PIT report is local and no score is stored
-        if: steps.s2.outputs.mode == 'run'
         run: |
           if [ ! -f subjects/commons-csv/work/pit-reports/index.html ]; then
             echo "S2 FAIL-CLOSED: PIT did not write work/pit-reports/index.html" >&2
@@ -76,3 +91,4 @@ jobs:
             exit 1
           fi
           echo "PIT wrote a local HTML report. It is gitignored. No mutation score is stored."
+          echo "This live run is not paper S2."

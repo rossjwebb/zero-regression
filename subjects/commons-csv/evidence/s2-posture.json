@@ -1,13 +1,16 @@
 {
   "kind": "s2-commons-csv-posture",
   "subject": "commons-csv",
-  "status": "scaffolding+runner-only",
+  "status": "live-pit-executed",
   "paper_s2": "unexecuted",
   "mutation_score": "not-stored",
+  "blocked": null,
+  "prior_pack": "scaffolding+runner-only",
+  "prior_pack_pr": 12,
   "claims": {
     "mutation_score": "not-stored",
     "paper_s2": "unexecuted",
-    "status": "scaffolding+runner-only"
+    "status": "live-pit-executed"
   },
   "pin_gate": {
     "path": "subjects/commons-csv/check-pins.py",
@@ -16,7 +19,7 @@
     "python": "3.12.3",
     "exit": 0,
     "stdout": "S2 PIN OK defects4j=v3.0.1@6d54320e0db5 csv=de1838ea067f pit=1.15.3 mutators=DEFAULTS jdk=11.0.32.1+1 release=8 files=18 jars=5",
-    "meaning": "pin integrity only; not a PIT result"
+    "meaning": "pin integrity only; not a mutation score"
   },
   "runner": {
     "path": "subjects/commons-csv/run-pit.sh",
@@ -26,7 +29,15 @@
     "records_mutation_score": false,
     "html_report": "subjects/commons-csv/work/pit-reports/index.html",
     "html_report_gitignored": true,
-    "executed_in_this_pack": false
+    "executed_in_this_pack": true
+  },
+  "live": {
+    "receipt": "subjects/commons-csv/evidence/pit-receipt.json",
+    "gate": "subjects/commons-csv/check-s2-pit.py",
+    "recorder": "subjects/commons-csv/record-pit-receipt.py",
+    "html_report_body_stored": false,
+    "pit_log_body_stored": false,
+    "mutation_score": "not-stored"
   },
   "pins": {
     "source": "subjects/commons-csv/pins.toml",
