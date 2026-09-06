@@ -19,11 +19,29 @@ jobs:
         with:
           python-version: "3.12.3"
 
+      - name: Install the harness CLI
+        run: python3.12 -m pip install -e .
+
       - name: Verify executed fixture chains
         run: |
           python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl
           python3.12 ./verify.py fixtures/accounting-service/pre-remediation/evidence.jsonl
           python3.12 ./verify.py fixtures/accounting-service/superseded/publish-4/evidence.jsonl
+          zero-regression verify fixtures/accounting-service/evidence.jsonl
+
+      - name: Verify public S1–S3 posture packs
+        run: |
+          set -euo pipefail
+          zero-regression verify subjects/django-accounting
+          zero-regression verify subjects/commons-csv
+          zero-regression verify subjects/carddemo
+          python3.12 -m unittest tests.test_cli tests.test_cli_public
+
+      - name: Certify S2 score-free evidence
+        run: |
+          set -euo pipefail
+          zero-regression certify subjects/commons-csv
+
 
       - name: Run django-accounting replay oracle if present
         run: |

@@ -88,7 +88,7 @@ The committed pack under `evidence/` records pin identities, that `check-pins.py
 
 - No paper, LaTeX, or citation work
 - No claim that the paper already executed S3
-- No `certify.sh` / mutmut run on this subject
+- No mutmut five-stage run on this subject. `zr certify subjects/carddemo` is the compile posture (`posttran_job=not-run`, harness exit 2). It does not run POSTTRAN
 - No rewrite of the Python mutation harness
 - No invented COBOL tests
 - No merge of PR #1, PR #2, PR #3, or PR #4

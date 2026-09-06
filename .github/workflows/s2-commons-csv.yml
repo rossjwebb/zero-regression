@@ -74,6 +74,9 @@ jobs:
           print("S2 CI RECEIPT OK mutation_score=not-stored paper_s2=unexecuted executed=true")
           PY
           python3.12 subjects/commons-csv/check-s2-pit.py --require-live
+          python3.12 -m pip install -e .
+          zero-regression certify subjects/commons-csv
+          zero-regression verify subjects/commons-csv
 
       - name: Confirm PIT report is local and no score is stored
         run: |

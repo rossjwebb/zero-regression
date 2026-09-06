@@ -62,5 +62,11 @@ jobs:
       - name: ORM org-aggregates gate
         run: python3.12 subjects/django-accounting/check-orm.py
 
+      - name: Certify S1 through the installable CLI
+        run: |
+          set -euo pipefail
+          python3.12 -m pip install -e .
+          zero-regression certify subjects/django-accounting
+
       - name: ORM unit tests
         run: python3.12 -m unittest tests.test_django_accounting_orm

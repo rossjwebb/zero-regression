@@ -14,7 +14,11 @@ from zero_regression_harness.cli import verify_command  # noqa: E402
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("log", type=Path, help="evidence.jsonl to verify")
+    parser.add_argument(
+        "log",
+        type=Path,
+        help="evidence.jsonl chain, or a public S1–S3 subject directory",
+    )
     args = parser.parse_args()
     return verify_command(args.log)
 
