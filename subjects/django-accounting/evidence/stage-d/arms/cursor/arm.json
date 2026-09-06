@@ -1,0 +1,77 @@
+{
+  "arm": "cursor",
+  "name": "Cursor",
+  "status": "executed",
+  "generators_run": true,
+  "executed_at": "2026-09-06T08:40:28Z",
+  "method": "This Cursor Cloud Agent is the Cursor arm. Stage D produced three competing rewrites of the already-exercised Price / profits slice, applied them through evidence/stage-d/apply.py (import hook; legacy/ not edited), and evaluated each with evaluate-candidate.py against the Stage C yardstick (oracle replay + golden-independent invariants). Python 3.12.3. The good pin was left on the ordinary oracle path. golden/expected.json was not widened. Stage B arm receipts were not rewritten.",
+  "prompt": "S1 Stage D Cursor arm: produce real candidate rewrites of Price / sale totals / profits; apply via import hook; evaluate against Stage C discrimination. Record honest accept/reject. Do not invent a mutation score. Do not claim paper S1. Do not edit legacy/.",
+  "candidate_artefacts": {
+    "produced": true,
+    "paths": [
+      "subjects/django-accounting/evidence/stage-d/arms/cursor/candidates/price-faithful/prices.py",
+      "subjects/django-accounting/evidence/stage-d/arms/cursor/candidates/price-tax-ignored/prices.py",
+      "subjects/django-accounting/evidence/stage-d/arms/cursor/candidates/profits-no-window/calculators.py"
+    ],
+    "receipts": [
+      "subjects/django-accounting/evidence/stage-d/arms/cursor/receipts/price-faithful.json",
+      "subjects/django-accounting/evidence/stage-d/arms/cursor/receipts/price-tax-ignored.json",
+      "subjects/django-accounting/evidence/stage-d/arms/cursor/receipts/profits-no-window.json"
+    ],
+    "note": "Three produced rewrites. price-faithful was accepted by replay + invariants. price-tax-ignored and profits-no-window were rejected. An accept is not generator success and not paper S1."
+  },
+  "candidates": {
+    "price-faithful": {
+      "intent": "faithful-rewrite",
+      "verdict": "accepted",
+      "oracle_exit": 0,
+      "mismatch_count": 0,
+      "mismatched_cases": [],
+      "invariants_failed": false
+    },
+    "price-tax-ignored": {
+      "intent": "intentional-weak",
+      "verdict": "rejected",
+      "oracle_exit": 1,
+      "mismatch_count": 13,
+      "mismatched_cases": [
+        "bill_standard",
+        "invoice_fully_paid",
+        "invoice_half_quantity",
+        "invoice_multi_rate",
+        "invoice_partial",
+        "invoice_past_due_unpaid",
+        "invoice_quantize_paid",
+        "price_equality",
+        "price_from_incl",
+        "price_from_tax",
+        "price_set_later",
+        "price_tax_zero",
+        "price_unknown_tax_access"
+      ],
+      "invariants_failed": true,
+      "named_invariant": "excl+tax != incl"
+    },
+    "profits-no-window": {
+      "intent": "intentional-weak",
+      "verdict": "rejected",
+      "oracle_exit": 1,
+      "mismatch_count": 2,
+      "mismatched_cases": [
+        "profits_dated_invoice_only",
+        "profits_period_2024_jan_feb"
+      ],
+      "invariants_failed": false
+    }
+  },
+  "paper_s1": "unexecuted",
+  "mutation_score": "not-stored",
+  "discrimination_gate": "required",
+  "domain_correctness": "out_of_scope",
+  "pin": "2e61776a653e719a4c15578ab385603a6066c2b6",
+  "oracle_kind": "replay-plus-known-bad-rejected",
+  "recorded_traces": 27,
+  "legacy_edited": false,
+  "golden_widened": false,
+  "note": "Stage D ran generators against the Stage C yardstick. It is not paper S1. It stores no mutation score."
+}

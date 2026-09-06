@@ -1,0 +1,11 @@
+{
+  "name": "price-faithful",
+  "intent": "faithful-rewrite",
+  "slice": "Price",
+  "source": "prices.py",
+  "target": {
+    "module": "accounting.libs.prices",
+    "class": "Price"
+  },
+  "note": "Competing rewrite of Price using private fields. Intended to keep pin arithmetic. Not the pin. Not paper S1."
+}

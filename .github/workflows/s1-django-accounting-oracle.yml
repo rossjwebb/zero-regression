@@ -72,3 +72,44 @@ jobs:
 
       - name: Discrimination unit tests
         run: python3.12 -m unittest tests.test_django_accounting_discrimination
+
+  stage_d:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.3"
+
+      - name: Require the Stage D gate
+        run: |
+          set -euo pipefail
+          if [[ ! -f subjects/django-accounting/check-stage-d.py ]]; then
+            echo "S1 STAGE D FAIL-CLOSED: check-stage-d.py is missing." >&2
+            exit 1
+          fi
+
+      - name: Good pin must still replay
+        run: |
+          set -euo pipefail
+          expected='ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only'
+          output=$(python3.12 subjects/django-accounting/oracle.py)
+          printf '%s\n' "$output"
+          if [ "$output" != "$expected" ]; then
+            echo "ORACLE FAILURE: stdout was not the required replay-only OK line" >&2
+            echo "expected: $expected" >&2
+            echo "got: $output" >&2
+            exit 1
+          fi
+
+      - name: Stage C discrimination must stay green
+        run: python3.12 subjects/django-accounting/check-discrimination.py
+
+      - name: Stage D candidates versus the yardstick
+        run: python3.12 subjects/django-accounting/check-stage-d.py
+
+      - name: Stage D unit tests
+        run: python3.12 -m unittest tests.test_django_accounting_stage_d

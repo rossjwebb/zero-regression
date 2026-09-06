@@ -1,0 +1,11 @@
+{
+  "name": "profits-no-window",
+  "intent": "intentional-weak",
+  "slice": "ProfitsLossCalculator",
+  "source": "calculators.py",
+  "target": {
+    "module": "accounting.apps.books.calculators",
+    "class": "ProfitsLossCalculator"
+  },
+  "note": "Intentional weak rewrite of ProfitsLossCalculator that drops the in-process payment date window. The Stage C yardstick must reject this. Not paper S1."
+}
