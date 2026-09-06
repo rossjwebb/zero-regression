@@ -55,7 +55,7 @@ discrimination. The golden `claim` field remains the replay-only
 sentence stored with those traces. This file is the Stage C claim.
 
 `paper_s1` stays unexecuted. `mutation_score` is not stored.
-`known_bad_rejected=3` is a probe count, not a kill rate.
+`known_bad_rejected=5` is a probe count, not a kill rate.
 
 Stage D uses this same yardstick against produced rewrite
 candidates (`check-stage-d.py`). A candidate accept or reject is

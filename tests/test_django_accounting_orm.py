@@ -59,7 +59,7 @@ class DjangoAccountingOrmTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("DISCRIMINATION OK", result.stdout)
-        self.assertIn("known_bad_rejected=3", result.stdout)
+        self.assertIn("known_bad_rejected=5", result.stdout)
 
     def test_stage_d_is_still_green(self) -> None:
         result = subprocess.run(

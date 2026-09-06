@@ -53,7 +53,7 @@ class DjangoAccountingStageDTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("DISCRIMINATION OK", result.stdout)
-        self.assertIn("known_bad_rejected=3", result.stdout)
+        self.assertIn("known_bad_rejected=5", result.stdout)
         self.assertIn("golden_echo_rejected=1", result.stdout)
 
     def test_each_candidate_is_evaluated(self) -> None:
