@@ -1,6 +1,7 @@
 .pin-python/
 .venv/
 __pycache__/
+*.pyc
 *.egg-info/
 subjects/commons-csv/work/
 subjects/carddemo/work/

@@ -213,6 +213,40 @@ class PublicDocsAndCiTests(unittest.TestCase):
         self.assertIn("CERTIFY S3 COMPILE OK", s3)
         self.assertIn("posttran_job=not-run", s3)
 
+    def test_pr_checks_do_not_skip_missing_s1_gates(self) -> None:
+        text = PR_CHECKS.read_text(encoding="utf-8")
+        self.assertIn("python3.12 subjects/django-accounting/oracle.py", text)
+        self.assertIn("python3.12 subjects/django-accounting/check-discrimination.py", text)
+        self.assertIn(S1_ORACLE_OK, text)
+        self.assertIn("Skip is not a pass", text)
+        self.assertNotIn("exit 0", text)
+        self.assertNotIn("if present", text.lower())
+        self.assertNotIn("draft PR", text)
+        self.assertNotIn("merged PR #1", text)
+        self.assertNotIn("later pull request", text)
+        self.assertNotIn("cases=19", text)
+        gitignore = (REPO / ".gitignore").read_text(encoding="utf-8")
+        for pattern in ("__pycache__/", "*.pyc", ".coverage", ".mutmut-cache", "mutants/"):
+            self.assertIn(pattern, gitignore)
+        tracked = subprocess.run(
+            ["git", "ls-files"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.splitlines()
+        junk = [
+            path
+            for path in tracked
+            if path.endswith(".pyc")
+            or path.endswith(".coverage")
+            or path.endswith(".mutmut-cache")
+            or "/__pycache__/" in path
+            or path.startswith("mutants/")
+            or "/mutants/" in path
+        ]
+        self.assertEqual(junk, [])
+
 
 if __name__ == "__main__":
     unittest.main()
