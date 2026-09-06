@@ -1,0 +1,12 @@
+{
+  "name": "weak-price-tax-floor",
+  "intent": "intentional-weak",
+  "slice": "Price",
+  "source": "prices.py",
+  "target": {
+    "module": "accounting.libs.prices",
+    "class": "Price"
+  },
+  "note": "Claude Max design intent: floor incl_tax at excl_tax when tax is set so negative tax cannot reduce incl below excl. Pin-API adaptation (incl_tax=None when unknown). Receipt must report whatever the yardstick actually does. Not paper S1.",
+  "design_source": "arms/claude-code/design/claude-max-raw-2026-09-06/weak-price-tax-floor.py"
+}

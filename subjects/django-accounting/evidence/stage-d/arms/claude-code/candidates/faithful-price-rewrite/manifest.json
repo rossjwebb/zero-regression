@@ -1,0 +1,12 @@
+{
+  "name": "faithful-price-rewrite",
+  "intent": "faithful-rewrite",
+  "slice": "Price",
+  "source": "prices.py",
+  "target": {
+    "module": "accounting.libs.prices",
+    "class": "Price"
+  },
+  "note": "Claude Max design intent: faithful Price rewrite. Adapted to pin API (incl_tax=None when unknown; gemini faithful-price-round shape). Raw omitted incl_tax=None and added operators the pin does not have. Not the pin. Not paper S1.",
+  "design_source": "arms/claude-code/design/claude-max-raw-2026-09-06/faithful-price-rewrite.py"
+}
