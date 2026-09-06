@@ -40,7 +40,7 @@ python -m pip install --require-hashes -r subjects/django-accounting/orm/require
 zero-regression certify subjects/django-accounting
 ```
 
-A missing Django install is `blocked=django-not-installed`, not a pass. S2 checks the committed score-free PIT evidence (`mutation_score=not-stored`; it does not invent a mutation score). S3 runs the compile posture and keeps `posttran_job=not-run` (harness exit 2); it does not run POSTTRAN. That compile posture needs the pinned GnuCOBOL on Linux (CI). macOS will not satisfy `/usr/bin/cobc`; `zr certify subjects/carddemo` then fail-closes with exit 2. That is expected, not a mutation score. `zero-regression verify` still checks accounting-service `evidence.jsonl` chains, and also the committed S1–S3 posture packs (score-free honesty, not a kill-rate certificate).
+A missing Django install is `blocked=django-not-installed`, not a pass. S2 checks the committed score-free PIT evidence (`mutation_score=not-stored`; it does not invent a mutation score). S3 compiles with `run-cobol.sh` (`posttran_job=not-run`, harness exit 2) and runs the fixture job with `run-posttran.sh` (`posttran_job=run`, `runtime=gnucobol-indexed-bdb-fixture`). That job path needs the pinned GnuCOBOL on Linux (CI). macOS will not satisfy `/usr/bin/cobc`; `zr certify subjects/carddemo` then fail-closes with exit 2. That is expected, not a mutation score. `zero-regression verify` still checks accounting-service `evidence.jsonl` chains, and also the committed S1–S3 posture packs (score-free honesty, not a kill-rate certificate).
 
 The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6066c2b6`. From a fresh clone:
 
@@ -65,11 +65,12 @@ S3 is public CardDemo COBOL (batch POSTTRAN / `CBTRN02C`). The pin is `aws-sampl
 ```bash
 python3.12 subjects/carddemo/check-pins.py
 ./subjects/carddemo/run-cobol.sh
+./subjects/carddemo/run-posttran.sh
 ```
 
-`check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. That is the Linux CI path. macOS will not satisfy `/usr/bin/cobc`; certify then fail-closes with exit 2. That is expected, not a mutation score. With the pin present, `run-cobol.sh` compiles `CBTRN02C` (`cobc_status=0`) and then the harness exits 2. That exit 2 means `posttran_job=not-run`, not a GnuCOBOL error. Do not treat it as a `cobc` failure, and do not change it to exit 0. A real GnuCOBOL error prints `S3 COBC FAIL` and CI fails the job. S3 remains unexecuted: no legacy tests, no claimed CardDemo run, no score.
+`check-pins.py` exits 0 when the pin holds. GnuCOBOL is pinned to Ubuntu `gnucobol3=3.1.2-5.1ubuntu1` (`cobc` 3.1.2.0): the runner fetches that `.deb`, hash-checks it, and refuses a different PATH `cobc`. That is the Linux CI path. macOS will not satisfy `/usr/bin/cobc`; certify then fail-closes with exit 2. That is expected, not a mutation score. With the pin present, `run-cobol.sh` compiles `CBTRN02C` (`cobc_status=0`) and then the harness exits 2. That exit 2 means compile-only `posttran_job=not-run`, not a GnuCOBOL error. Do not treat it as a `cobc` failure, and do not change compile-OK to exit 0. A real GnuCOBOL error prints `S3 COBC FAIL` and CI fails the job. `run-posttran.sh` then seeds GnuCOBOL INDEXED/BDB fixtures and executes `CBTRN02C`. Success is `posttran_job=run` with `runtime=gnucobol-indexed-bdb-fixture`. That is not IBM VSAM, not CICS, not a legacy test suite, and not paper S3. `mutation_score=not-stored`.
 
-CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml`. There is no skip path. A missing runner fails. A `cobc` compile error fails the job. Success must still be `S3 COMPILE OK`, harness exit 2, `posttran_job=not-run`. That is not paper S3.
+CI on this branch always runs `.github/workflows/s3-carddemo-compile.yml` (compile-only) and `.github/workflows/s3-carddemo-posttran.yml` (fixture job). There is no skip path. A missing runner fails. A `cobc` compile error fails the job. Compile-only success is still `S3 COMPILE OK`, harness exit 2, `posttran_job=not-run`. Job success is `S3 POSTTRAN OK`, `posttran_job=run`. That is not paper S3.
 
 ## Evidence-chain schema
 

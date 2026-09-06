@@ -110,3 +110,22 @@ class CardDemoToolchainTests(unittest.TestCase):
         self.assertIn("check-pins.py is missing", workflow)
         self.assertIn("not a GnuCOBOL error", workflow)
         self.assertIn("job not-run", workflow)
+        self.assertIn("s3-carddemo-posttran.yml", workflow)
+
+    def test_dedicated_posttran_workflow_never_skips(self) -> None:
+        workflow = (REPO / ".github" / "workflows" / "s3-carddemo-posttran.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("This branch has subjects/carddemo/run-posttran.sh. Skip is not allowed.", workflow)
+        self.assertNotIn("paths:", workflow)
+        self.assertNotIn("if: ", workflow)
+        self.assertIn("run-posttran.sh is missing", workflow)
+        self.assertIn("Skip is not a pass on this branch", workflow)
+        self.assertIn("S3 POSTTRAN OK", workflow)
+        self.assertIn("posttran_job=run", workflow)
+        self.assertIn("runtime=gnucobol-indexed-bdb-fixture", workflow)
+        self.assertIn("gnucobol3=3.1.2-5.1ubuntu1", workflow)
+        self.assertIn("not paper S3", workflow)
+        self.assertIn("zero-regression certify subjects/carddemo", workflow)
+        self.assertIn("CERTIFY S3 POSTTRAN OK", workflow)
+        self.assertIn("check-posttran.py --require-live", workflow)
