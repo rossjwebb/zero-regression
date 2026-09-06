@@ -1,5 +1,12 @@
 # S1 Part B django-accounting posture evidence
 
+This pack is the **Stage B historical record**. It documents the
+three-arm thin-oracle reading on the 27-trace replay. It does not
+claim Stage C discrimination.
+
+Stage C (known-bad must fail; golden-independent invariants) is
+recorded in [`discrimination/`](discrimination/).
+
 This pack records S1 Part B after all three arms executed against
 the existing 27-trace replay-only oracle. Cursor was already on
 master. Claude Code and Gemini are recorded on this combined fill.

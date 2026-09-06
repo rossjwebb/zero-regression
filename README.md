@@ -39,9 +39,9 @@ The S1 django-accounting subject is pinned at `2e61776a653e719a4c15578ab385603a6
 python3.12 subjects/django-accounting/oracle.py
 ```
 
-That command replays recorded traces. CI on the S1 branch requires stdout to be exactly `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. `cases=19` fails. This is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
+That command replays recorded traces. CI on the S1 branch requires stdout to be exactly `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`. `cases=19` fails. Stage C adds `python3.12 subjects/django-accounting/check-discrimination.py`: good pin must still print that line; known-bad probes must fail; a golden-echo stub is rejected by invariants. This is not a proof of accounting correctness and not a paper execution of S1. See `subjects/django-accounting/ORACLE.md`.
 
-Part B evidence (not a score) is in `subjects/django-accounting/evidence/`. The arms are Cursor, Claude Code, and Gemini. All three executed the replay-only oracle (27 matches / 0 mismatches each, `produced=false`). Codex is omitted. `python3.12 subjects/django-accounting/check-part-b.py` still requires that same oracle stdout line. The three-arm comparison is available only as a thin-oracle reading, not “four clean generators” and not paper S1. See `subjects/django-accounting/evidence/EVIDENCE.md`.
+Part B evidence (not a score) is in `subjects/django-accounting/evidence/` as the Stage B historical thin-oracle record. The arms are Cursor, Claude Code, and Gemini. All three executed the replay-only oracle (27 matches / 0 mismatches each, `produced=false`). Codex is omitted. `python3.12 subjects/django-accounting/check-part-b.py` still requires that same oracle stdout line. The three-arm comparison remains a Stage B thin-oracle reading, not “four clean generators” and not paper S1. Stage C posture is `subjects/django-accounting/evidence/discrimination/`. See `subjects/django-accounting/evidence/EVIDENCE.md`.
 
 S2 is Defects4J Commons-CSV under PIT. The pin is Csv-1f (`de1838ea067f3fbc4c7c21b9eeae077c739ecb73`). This repository does not record a mutation score for S2 and does not claim that the paper already executed it.
 
@@ -83,7 +83,7 @@ Three executed `accounting-service` chains are kept:
 
 An earlier April 2026 figure of 91.0% / 279 mutants is superseded. See `APRIL-2026-SUPERSEDED.md`. Do not cite that figure.
 
-Pull-request checks re-run the fixture verifier and the django-accounting replay oracle. A match is a replay of 27 recorded traces, not a proof of accounting correctness and not a paper S1 result.
+Pull-request checks re-run the fixture verifier and the django-accounting replay oracle. A match is a replay of 27 recorded traces, not a proof of accounting correctness and not a paper S1 result. The Stage C discrimination job additionally requires known-bad probes to fail.
 
 ```bash
 python3.12 ./verify.py fixtures/accounting-service/evidence.jsonl
