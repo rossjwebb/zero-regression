@@ -17,7 +17,7 @@ rewrite arm receipts and does not claim that generators rewrote code.
 - `pin=2e61776a653e719a4c15578ab385603a6066c2b6`
 - `import_only_stub=true`
 - `domain_correctness=out_of_scope`
-- `known_bad_rejected=3` (probe count, not a kill rate)
+- `known_bad_rejected=5` (probe count, not a kill rate)
 - `invariants=3`
 - `golden_echo_rejected=true`
 - `golden_widened=false`
@@ -38,6 +38,8 @@ runner already executes:
 - `bad_price_tax_zero` → `price_from_tax`
 - `bad_fully_paid` → `invoice_fully_paid`
 - `bad_profits` → `profits_period_2024_jan_feb`
+- `bad_mixed_rate_silent` → `payment_allocation_mixed_rate`
+- `bad_unknown_tax_silent` → `price_unknown_tax_access`
 
 Golden-independent invariants (live pin objects, not the golden file):
 

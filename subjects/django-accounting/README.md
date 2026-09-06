@@ -51,7 +51,7 @@ Stage C discrimination (not a score):
 python3.12 subjects/django-accounting/check-discrimination.py
 ```
 
-Good pin must still print the 27-trace OK line. Each known-bad probe must exit non-zero and name its mismatch case. A golden-echo stub that returns `expected.json` without calling the pin must fail the invariant gate. `known_bad_rejected=3` is a probe count, not a kill rate.
+Good pin must still print the 27-trace OK line. Each known-bad probe must exit non-zero and name its mismatch case. A golden-echo stub that returns `expected.json` without calling the pin must fail the invariant gate. `known_bad_rejected=5` is a probe count, not a kill rate.
 
 Part B (three arms, not a score) stays in `evidence/` as the Stage B historical thin-oracle record. Cursor, Claude Code, and Gemini are `status=executed` / `generators_run=true` with 27/0 receipts and `produced=false`. Codex is omitted on purpose. Domain correctness is out of scope. That three-arm comparison remains a Stage B thin-oracle reading — not “four clean generators” and not paper S1. Stage C posture is `evidence/discrimination/`. Stage D is a rewrite attempt against that Stage C yardstick (`evidence/stage-d/`); it is not paper S1.
 

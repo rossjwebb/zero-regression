@@ -28,6 +28,8 @@ KNOWN_BAD = (
     ("bad_price_tax_zero", "price_from_tax"),
     ("bad_fully_paid", "invoice_fully_paid"),
     ("bad_profits", "profits_period_2024_jan_feb"),
+    ("bad_mixed_rate_silent", "payment_allocation_mixed_rate"),
+    ("bad_unknown_tax_silent", "price_unknown_tax_access"),
 )
 INVARIANT_COUNT = 3
 
@@ -61,7 +63,7 @@ def check_posture_file() -> list[str]:
     required = {
         "paper_s1": "unexecuted",
         "mutation_score": "not-stored",
-        "known_bad_rejected": 3,
+        "known_bad_rejected": 5,
         "invariants": 3,
         "golden_echo_rejected": True,
         "domain_correctness": "out_of_scope",

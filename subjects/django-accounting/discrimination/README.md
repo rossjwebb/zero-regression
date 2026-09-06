@@ -8,13 +8,13 @@ score.
 
 - The good pin still prints
   `ORACLE OK pin=2e61776a653e719a4c15578ab385603a6066c2b6 cases=27 replay-only`.
-- Three known-bad probes, loaded by an import hook, fail that replay
+- Five known-bad probes, loaded by an import hook, fail that replay
   for a named already-executed case.
 - A golden-echo stub that returns `golden/expected.json` without
   calling the pin can print that same OK line, and is still rejected
   by the invariant gate.
 
-`known_bad_rejected=3` is a probe count. It is not a kill rate.
+`known_bad_rejected=5` is a probe count. It is not a kill rate.
 
 ## Known-bad probes
 
@@ -23,6 +23,8 @@ score.
 | `bad_price_tax_zero` | `Price.tax` / wrong `incl_tax` | `price_from_tax` |
 | `bad_fully_paid` | `AbstractSale.is_fully_paid` inverted | `invoice_fully_paid` |
 | `bad_profits` | `ProfitsLossCalculator.process_generator` drops the payment date window | `profits_period_2024_jan_feb` |
+| `bad_mixed_rate_silent` | `SalePaymentLineProcessed.process` swallows mixed-rate `NotImplementedError` | `payment_allocation_mixed_rate` |
+| `bad_unknown_tax_silent` | `Price.tax` returns 0 when tax is unknown | `price_unknown_tax_access` |
 
 ## Invariants (golden-independent)
 

@@ -16,6 +16,7 @@ POSTURE = SUBJECT / "evidence" / "discrimination" / "posture.json"
 ENGLISH = SUBJECT / "evidence" / "discrimination" / "EVIDENCE.md"
 ORACLE_CLAIM = SUBJECT / "ORACLE.md"
 LEGACY_PRICES = SUBJECT / "legacy" / "accounting" / "libs" / "prices.py"
+LEGACY_CALCULATORS = SUBJECT / "legacy" / "accounting" / "apps" / "books" / "calculators.py"
 ORACLE_WORKFLOW = REPO / ".github" / "workflows" / "s1-django-accounting-oracle.yml"
 PIN = "2e61776a653e719a4c15578ab385603a6066c2b6"
 EXPECTED_OK = f"ORACLE OK pin={PIN} cases=27 replay-only"
@@ -23,6 +24,8 @@ KNOWN_BAD = (
     ("bad_price_tax_zero", "price_from_tax"),
     ("bad_fully_paid", "invoice_fully_paid"),
     ("bad_profits", "profits_period_2024_jan_feb"),
+    ("bad_mixed_rate_silent", "payment_allocation_mixed_rate"),
+    ("bad_unknown_tax_silent", "price_unknown_tax_access"),
 )
 
 
@@ -85,7 +88,7 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertTrue(result.stdout.startswith(EXPECTED_OK + "\n"), result.stdout)
         self.assertIn("DISCRIMINATION OK", result.stdout)
         self.assertIn("good_pin=pass", result.stdout)
-        self.assertIn("known_bad_rejected=3", result.stdout)
+        self.assertIn("known_bad_rejected=5", result.stdout)
         self.assertIn("golden_echo_rejected=1", result.stdout)
         self.assertIn("invariants=3", result.stdout)
         self.assertIn("paper_s1=unexecuted", result.stdout)
@@ -98,11 +101,16 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         self.assertIn("return self.incl_tax - self.excl_tax", text)
         self.assertNotIn("Decimal(\"0\")", text)
 
+    def test_legacy_calculators_still_raise_on_mixed_rate(self) -> None:
+        text = LEGACY_CALCULATORS.read_text(encoding="utf-8")
+        self.assertIn("raise NotImplementedError", text)
+        self.assertIn("multiple tax rates", text)
+
     def test_posture_is_score_free(self) -> None:
         payload = json.loads(POSTURE.read_text(encoding="utf-8"))
         self.assertEqual(payload["paper_s1"], "unexecuted")
         self.assertEqual(payload["mutation_score"], "not-stored")
-        self.assertEqual(payload["known_bad_rejected"], 3)
+        self.assertEqual(payload["known_bad_rejected"], 5)
         self.assertEqual(payload["invariants"], 3)
         self.assertIs(payload["golden_echo_rejected"], True)
         self.assertIs(payload["golden_widened"], False)
@@ -114,7 +122,7 @@ class DjangoAccountingDiscriminationTests(unittest.TestCase):
         english = ENGLISH.read_text(encoding="utf-8")
         self.assertIn("paper_s1=unexecuted", english)
         self.assertIn("mutation_score=not-stored", english)
-        self.assertIn("known_bad_rejected=3", english)
+        self.assertIn("known_bad_rejected=5", english)
         self.assertIn("not a kill rate", english)
         self.assertIn("not a paper execution of s1", english.lower())
 
